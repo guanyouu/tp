@@ -12,7 +12,7 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 ## Project team
 
 ### Isha Sovasaria
-
+<img src="images/isha-sovasaria.png" width="200px">
 [[github](https://github.com/Isha-Sovasaria)]
 
 
