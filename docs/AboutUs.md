@@ -11,15 +11,14 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ## Project team
 
-### John Doe
+### Ashutosh Menon Rajeev
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/poaoaooa.png" width="200px">
 
-[[homepage](http://www.comp.nus.edu.sg/~damithch)]
-[[github](https://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](https://github.com/poaoaooa)]
 
-* Role: Project Advisor
+* Role: Developer
+* Responsibilities: Developer's Guide
 
 ### Jane Doe
 
