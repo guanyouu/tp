@@ -17,8 +17,8 @@ public class ListCommand extends Command {
 
     public static final String MESSAGE_SUCCESS = "Listed all persons";
 
-    public static final Comparator<Person> COMPARATOR_SORT_BY_NAME
-            = Comparator.comparing(p -> p.getName().fullName.toLowerCase());
+    public static final Comparator<Person> COMPARATOR_SORT_BY_NAME =
+            Comparator.comparing(p -> p.getName().fullName.toLowerCase());
 
     // mabye use updateSortedPersonList, as this does nothing :)
     @Override
