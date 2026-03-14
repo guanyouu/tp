@@ -2,14 +2,9 @@ package seedu.address.model.person;
 
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 import seedu.address.commons.util.ToStringBuilder;
-import seedu.address.model.tag.Tag;
-
 /**
  * Represents a Person in the address book.
  * Guarantees: details are present and not null, field values are validated, immutable.
@@ -18,47 +13,47 @@ public class Person {
 
     // Identity fields
     private final Name name;
-    private final Phone phone;
+    private final CourseId courseId;
     private final Email email;
-
-    // Data fields
-    private final Address address;
-    private final Set<Tag> tags = new HashSet<>();
+    private final StudentId studentId;
+    private final TGroup tGroup;
+    private final Tele tele;
 
     /**
      * Every field must be present and not null.
      */
-    public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, tags);
+    public Person(Name name, CourseId courseId, Email email, StudentId studentId, TGroup tGroup, Tele tele) {
+        requireAllNonNull(name, courseId, email, studentId, tGroup, tele);
         this.name = name;
-        this.phone = phone;
+        this.courseId = courseId;
         this.email = email;
-        this.address = address;
-        this.tags.addAll(tags);
+        this.studentId = studentId;
+        this.tGroup = tGroup;
+        this.tele = tele;
     }
 
     public Name getName() {
         return name;
     }
 
-    public Phone getPhone() {
-        return phone;
+    public CourseId getCourseId() {
+        return courseId;
     }
 
     public Email getEmail() {
         return email;
     }
 
-    public Address getAddress() {
-        return address;
+    public StudentId getStudentId() {
+        return studentId;
     }
 
-    /**
-     * Returns an immutable tag set, which throws {@code UnsupportedOperationException}
-     * if modification is attempted.
-     */
-    public Set<Tag> getTags() {
-        return Collections.unmodifiableSet(tags);
+    public TGroup getTGroup() {
+        return tGroup;
+    }
+
+    public Tele getTele() {
+        return tele;
     }
 
     /**
@@ -71,7 +66,7 @@ public class Person {
         }
 
         return otherPerson != null
-                && otherPerson.getName().equals(getName());
+                && otherPerson.getStudentId().equals(getStudentId());
     }
 
     /**
@@ -90,27 +85,26 @@ public class Person {
         }
 
         Person otherPerson = (Person) other;
-        return name.equals(otherPerson.name)
-                && phone.equals(otherPerson.phone)
-                && email.equals(otherPerson.email)
-                && address.equals(otherPerson.address)
-                && tags.equals(otherPerson.tags);
+        return studentId.equals(otherPerson.studentId)
+                || (otherPerson.getTele().equals(getTele()))
+                || otherPerson.getEmail().equals(getEmail());
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags);
+        return Objects.hash(name, courseId, email, studentId, tGroup, tele);
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
                 .add("name", name)
-                .add("phone", phone)
+                .add("courseId", courseId)
                 .add("email", email)
-                .add("address", address)
-                .add("tags", tags)
+                .add("studentId", studentId)
+                .add("tGroup", tGroup)
+                .add("tele", tele)
                 .toString();
     }
 

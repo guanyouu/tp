@@ -2,18 +2,16 @@ package seedu.address.logic.parser;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.person.Address;
+import seedu.address.model.person.CourseId;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
-import seedu.address.model.person.Phone;
-import seedu.address.model.tag.Tag;
+import seedu.address.model.person.StudentId;
+import seedu.address.model.person.TGroup;
+import seedu.address.model.person.Tele;
+
 
 /**
  * Contains utility methods used for parsing strings in the various *Parser classes.
@@ -51,33 +49,33 @@ public class ParserUtil {
     }
 
     /**
-     * Parses a {@code String phone} into a {@code Phone}.
+     * Parses a {@code String studentId} into a {@code StudentId}.
      * Leading and trailing whitespaces will be trimmed.
      *
-     * @throws ParseException if the given {@code phone} is invalid.
+     * @throws ParseException if the given {@code studentId} is invalid.
      */
-    public static Phone parsePhone(String phone) throws ParseException {
-        requireNonNull(phone);
-        String trimmedPhone = phone.trim();
-        if (!Phone.isValidPhone(trimmedPhone)) {
-            throw new ParseException(Phone.MESSAGE_CONSTRAINTS);
+    public static StudentId parseStudentId(String studentId) throws ParseException {
+        requireNonNull(studentId);
+        String trimmedStudentId = studentId.trim();
+        if (!StudentId.isValidStudentId(trimmedStudentId)) {
+            throw new ParseException(StudentId.MESSAGE_CONSTRAINTS);
         }
-        return new Phone(trimmedPhone);
+        return new StudentId(trimmedStudentId);
     }
 
     /**
-     * Parses a {@code String address} into an {@code Address}.
+     * Parses a {@code String courseId} into an {@code CourseId}.
      * Leading and trailing whitespaces will be trimmed.
      *
-     * @throws ParseException if the given {@code address} is invalid.
+     * @throws ParseException if the given {@code courseId} is invalid.
      */
-    public static Address parseAddress(String address) throws ParseException {
-        requireNonNull(address);
-        String trimmedAddress = address.trim();
-        if (!Address.isValidAddress(trimmedAddress)) {
-            throw new ParseException(Address.MESSAGE_CONSTRAINTS);
+    public static CourseId parseCourseId(String courseId) throws ParseException {
+        requireNonNull(courseId);
+        String trimmedCourseId = courseId.trim();
+        if (!CourseId.isValidCourseId(trimmedCourseId)) {
+            throw new ParseException(CourseId.MESSAGE_CONSTRAINTS);
         }
-        return new Address(trimmedAddress);
+        return new CourseId(trimmedCourseId);
     }
 
     /**
@@ -96,29 +94,29 @@ public class ParserUtil {
     }
 
     /**
-     * Parses a {@code String tag} into a {@code Tag}.
+     * Parses a {@code String TGroup} into a {@code TGroup}.
      * Leading and trailing whitespaces will be trimmed.
      *
-     * @throws ParseException if the given {@code tag} is invalid.
+     * @throws ParseException if the given {@code TGroup} is invalid.
      */
-    public static Tag parseTag(String tag) throws ParseException {
-        requireNonNull(tag);
-        String trimmedTag = tag.trim();
-        if (!Tag.isValidTagName(trimmedTag)) {
-            throw new ParseException(Tag.MESSAGE_CONSTRAINTS);
+    public static TGroup parseTGroup(String tGroup) throws ParseException {
+        requireNonNull(tGroup);
+        String trimmedTGroup = tGroup.trim();
+        if (!TGroup.isValidTGroup(trimmedTGroup)) {
+            throw new ParseException(TGroup.MESSAGE_CONSTRAINTS);
         }
-        return new Tag(trimmedTag);
+        return new TGroup(trimmedTGroup);
     }
 
     /**
      * Parses {@code Collection<String> tags} into a {@code Set<Tag>}.
      */
-    public static Set<Tag> parseTags(Collection<String> tags) throws ParseException {
-        requireNonNull(tags);
-        final Set<Tag> tagSet = new HashSet<>();
-        for (String tagName : tags) {
-            tagSet.add(parseTag(tagName));
+    public static Tele parseTele(String tele) throws ParseException {
+        requireNonNull(tele);
+        String trimmedTele = tele.trim();
+        if (!Tele.isValidTele(trimmedTele)) {
+            throw new ParseException(Tele.MESSAGE_CONSTRAINTS);
         }
-        return tagSet;
+        return new Tele(trimmedTele);
     }
 }
