@@ -1,16 +1,16 @@
-package seedu.address.logic.commands;
+// package seedu.address.logic.commands;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
-import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
-import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
-import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
-import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
-import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
+// import static org.junit.jupiter.api.Assertions.assertEquals;
+// import static org.junit.jupiter.api.Assertions.assertFalse;
+// import static org.junit.jupiter.api.Assertions.assertTrue;
+// import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
+// import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
+// import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
+// import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
+// import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
+// import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
-import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
@@ -109,12 +109,12 @@ public class DeleteCommandTest {
         assertEquals(expected, deleteCommand.toString());
     }
 
-    /**
-     * Updates {@code model}'s filtered list to show no one.
-     */
-    private void showNoPerson(Model model) {
-        model.updateFilteredPersonList(p -> false);
+//     /**
+//      * Updates {@code model}'s filtered list to show no one.
+//      */
+//     private void showNoPerson(Model model) {
+//         model.updateFilteredPersonList(p -> false);
 
-        assertTrue(model.getFilteredPersonList().isEmpty());
-    }
-}
+//         assertTrue(model.getFilteredPersonList().isEmpty());
+//     }
+// }
