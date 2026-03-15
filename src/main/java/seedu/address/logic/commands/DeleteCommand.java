@@ -3,6 +3,7 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.Objects;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
@@ -12,29 +13,52 @@ import seedu.address.model.Model;
 import seedu.address.model.person.Person;
 
 /**
- * Deletes a student identified using its displayed index from the address book.
+ * Deletes a student identified using its displayed index and name from the address book.
  */
 public class DeleteCommand extends Command {
 
     public static final String COMMAND_WORD = "delete";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Deletes the student identified by the index number used in the displayed student list.\n"
-            + "Parameters: INDEX (must be a positive integer)\n"
-            + "Example: " + COMMAND_WORD + " 1";
+            + ": Deletes the student identified by the index number "
+            + "and exact name used in the displayed student list.\n"
+            + "Parameters: INDEX (must be a positive integer), STUDENT_NAME (must be an exact match) \n"
+            + "Example: " + COMMAND_WORD + " 1" + " or " + COMMAND_WORD + " John Doe";
 
     public static final String MESSAGE_DELETE_STUDENT_SUCCESS = "Deleted Student: %1$s";
 
     private final Index targetIndex;
+    private final String targetName;
 
+    /**
+     * Creates a DeleteCommand to delete a student by displayed index.
+     *
+     * @param targetIndex Index of the student in the displayed student list.
+     */
     public DeleteCommand(Index targetIndex) {
         this.targetIndex = targetIndex;
+        this.targetName = null;
     }
 
+    /**
+     * Creates a DeleteCommand to delete a student by students name.
+     *
+     * @param targetName Name of the student to delete.
+     */
+    public DeleteCommand(String targetName) {
+        this.targetIndex = null;
+        this.targetName = targetName;
+    }
+
+    // no implementation for deleting by name yet
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         List<Person> lastShownList = model.getFilteredPersonList();
+
+        if (targetIndex == null) {
+            throw new CommandException("Deleting by name is not supported yet.");
+        }
 
         if (targetIndex.getZeroBased() >= lastShownList.size()) {
             throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
@@ -57,13 +81,15 @@ public class DeleteCommand extends Command {
         }
 
         DeleteCommand otherDeleteCommand = (DeleteCommand) other;
-        return targetIndex.equals(otherDeleteCommand.targetIndex);
+        return Objects.equals(targetIndex, otherDeleteCommand.targetIndex)
+                && Objects.equals(targetName, otherDeleteCommand.targetName);
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
                 .add("targetIndex", targetIndex)
+                .add("targetName", targetName)
                 .toString();
     }
 }
