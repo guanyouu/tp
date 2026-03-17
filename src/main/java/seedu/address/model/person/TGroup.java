@@ -10,8 +10,7 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 public class TGroup {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Tutorial group should only contain alphanumeric characters "
-            + "and should not be blank";
+            "Tutorial ID should follow the format used in the app, e.g. T03.";
     public static final String VALIDATION_REGEX = "\\p{Alnum}+";
     public final String value;
 
