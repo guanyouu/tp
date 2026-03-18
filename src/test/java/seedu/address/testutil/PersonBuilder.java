@@ -1,96 +1,124 @@
-// package seedu.address.testutil;
+package seedu.address.testutil;
 
-// import java.util.HashSet;
-// import java.util.Set;
+import seedu.address.model.person.CourseId;
+import seedu.address.model.person.Email;
+import seedu.address.model.person.Name;
+import seedu.address.model.person.Person;
+import seedu.address.model.person.StudentId;
+import seedu.address.model.person.TGroup;
+import seedu.address.model.person.Tele;
 
-// import seedu.address.model.person.Address;
-// import seedu.address.model.person.Email;
-// import seedu.address.model.person.Name;
-// import seedu.address.model.person.Person;
-// import seedu.address.model.person.Phone;
-// import seedu.address.model.tag.Tag;
-// import seedu.address.model.util.SampleDataUtil;
 
-// /**
-//  * A utility class to help with building Person objects.
-//  */
-// public class PersonBuilder {
+/**
+ * A utility class to help with building Person objects.
+ */
+public class PersonBuilder {
 
-//     public static final String DEFAULT_NAME = "Amy Bee";
-//     public static final String DEFAULT_PHONE = "85355255";
-//     public static final String DEFAULT_EMAIL = "amy@gmail.com";
-//     public static final String DEFAULT_ADDRESS = "123, Jurong West Ave 6, #08-111";
+    public static final String DEFAULT_NAME = "Amy Bee";
+    public static final String DEFAULT_STUDENT_ID = "A0123456X";
+    public static final String DEFAULT_EMAIL = "amy@gmail.com";
+    public static final String DEFAULT_COURSE_ID = "CS2103T";
+    public static final String DEFAULT_TUT_GROUP = "T01";
+    public static final String DEFAULT_TELE = "@amybee";
 
-//     private Name name;
-//     private Phone phone;
-//     private Email email;
-//     private Address address;
-//     private Set<Tag> tags;
+    private Name name;
+    private StudentId studentId;
+    private Email email;
+    private CourseId courseId;
+    private TGroup tutGroup;
+    private Tele tele;
 
-//     /**
-//      * Creates a {@code PersonBuilder} with the default details.
-//      */
-//     public PersonBuilder() {
-//         name = new Name(DEFAULT_NAME);
-//         phone = new Phone(DEFAULT_PHONE);
-//         email = new Email(DEFAULT_EMAIL);
-//         address = new Address(DEFAULT_ADDRESS);
-//         tags = new HashSet<>();
-//     }
+    /**
+     * Creates a {@code PersonBuilder} with the default details.
+     */
+    public PersonBuilder() {
+        name = new Name(DEFAULT_NAME);
+        studentId = new StudentId(DEFAULT_STUDENT_ID);
+        email = new Email(DEFAULT_EMAIL);
+        courseId = new CourseId(DEFAULT_COURSE_ID);
+        tutGroup = new TGroup(DEFAULT_TUT_GROUP);
+        tele = new Tele(DEFAULT_TELE);
+    }
 
-//     /**
-//      * Initializes the PersonBuilder with the data of {@code personToCopy}.
-//      */
-//     public PersonBuilder(Person personToCopy) {
-//         name = personToCopy.getName();
-//         phone = personToCopy.getPhone();
-//         email = personToCopy.getEmail();
-//         address = personToCopy.getAddress();
-//         tags = new HashSet<>(personToCopy.getTags());
-//     }
+    /**
+     * Initializes the PersonBuilder with the data of {@code personToCopy}.
+     */
+    public PersonBuilder(Person personToCopy) {
+        name = personToCopy.getName();
+        studentId = personToCopy.getStudentId();
+        email = personToCopy.getEmail();
+        courseId = personToCopy.getCourseId();
+        tutGroup = personToCopy.getTGroup();
+        tele = personToCopy.getTele();
+    }
 
-//     /**
-//      * Sets the {@code Name} of the {@code Person} that we are building.
-//      */
-//     public PersonBuilder withName(String name) {
-//         this.name = new Name(name);
-//         return this;
-//     }
+    /**
+     * Sets the {@link Name} of the {@code Person} being built.
+     *
+     * @param name The name to set.
+     * @return This {@code PersonBuilder} instance for method chaining.
+     */
+    public PersonBuilder withName(String name) {
+        this.name = new Name(name);
+        return this;
+    }
 
-//     /**
-//      * Parses the {@code tags} into a {@code Set<Tag>} and set it to the {@code Person} that we are building.
-//      */
-//     public PersonBuilder withTags(String ... tags) {
-//         this.tags = SampleDataUtil.getTagSet(tags);
-//         return this;
-//     }
+    /**
+     * Sets the {@link StudentId} of the {@code Person} being built.
+     *
+     * @param studentId The student ID to set.
+     * @return This {@code PersonBuilder} instance for method chaining.
+     */
+    public PersonBuilder withStudentId(String studentId) {
+        this.studentId = new StudentId(studentId);
+        return this;
+    }
 
-//     /**
-//      * Sets the {@code Address} of the {@code Person} that we are building.
-//      */
-//     public PersonBuilder withAddress(String address) {
-//         this.address = new Address(address);
-//         return this;
-//     }
+    /**
+     * Sets the {@link Email} of the {@code Person} being built.
+     *
+     * @param email The email to set.
+     * @return This {@code PersonBuilder} instance for method chaining.
+     */
+    public PersonBuilder withEmail(String email) {
+        this.email = new Email(email);
+        return this;
+    }
 
-//     /**
-//      * Sets the {@code Phone} of the {@code Person} that we are building.
-//      */
-//     public PersonBuilder withPhone(String phone) {
-//         this.phone = new Phone(phone);
-//         return this;
-//     }
+    /**
+     * Sets the {@link CourseId} of the {@code Person} being built.
+     *
+     * @param courseId The course ID to set.
+     * @return This {@code PersonBuilder} instance for method chaining.
+     */
+    public PersonBuilder withCourseId(String courseId) {
+        this.courseId = new CourseId(courseId);
+        return this;
+    }
 
-//     /**
-//      * Sets the {@code Email} of the {@code Person} that we are building.
-//      */
-//     public PersonBuilder withEmail(String email) {
-//         this.email = new Email(email);
-//         return this;
-//     }
+    /**
+     * Sets the {@link TGroup} of the {@code Person} being built.
+     *
+     * @param tutGroup The tutorial group to set.
+     * @return This {@code PersonBuilder} instance for method chaining.
+     */
+    public PersonBuilder withTutGroup(String tutGroup) {
+        this.tutGroup = new TGroup(tutGroup);
+        return this;
+    }
 
-//     public Person build() {
-//         return new Person(name, phone, email, address, tags);
-//     }
+    /**
+     * Sets the {@link Tele} (Telegram handle) of the {@code Person} being built.
+     *
+     * @param tele The Telegram handle to set.
+     * @return This {@code PersonBuilder} instance for method chaining.
+     */
+    public PersonBuilder withTele(String tele) {
+        this.tele = new Tele(tele);
+        return this;
+    }
 
-// }
+    public Person build() {
+        return new Person(name, courseId, email, studentId, tutGroup, tele);
+    }
+}
