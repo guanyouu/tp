@@ -31,6 +31,15 @@ public class DeleteCommand extends Command {
     public static final String MESSAGE_PERSON_NOT_FOUND_BY_NAME =
             "No person with the name \"%1$s\" found on the list.";
 
+    public static final String MESSAGE_EMPTY_INPUT =
+            "No student specified. Please provide the index number or student name.";
+
+    public static final String MESSAGE_INVALID_INDEX =
+            "Invalid index number";
+
+    public static final String MESSAGE_UNEXPECTED_TEXT_AFTER_INDEX =
+            "Unexpected text after index.";
+
     private final Index targetIndex;
     private final Name targetName;
 

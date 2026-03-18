@@ -21,8 +21,15 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
         // trim the input
         String trimmedInput = args.trim();
         if (trimmedInput.isEmpty()) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
+            throw new ParseException(DeleteCommand.MESSAGE_EMPTY_INPUT
+                    + "\n" + DeleteCommand.MESSAGE_USAGE);
         }
+
+        if (trimmedInput.matches("[1-9]\\d*\\s+.+")) {
+            throw new ParseException(DeleteCommand.MESSAGE_UNEXPECTED_TEXT_AFTER_INDEX
+                    + "\n" + DeleteCommand.MESSAGE_USAGE);
+        }
+
         if (trimmedInput.matches("[1-9]\\d*")) { // allows non-0 positive numbers
             try {
                 Index index = ParserUtil.parseIndex(trimmedInput);
@@ -31,7 +38,14 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
                 throw new ParseException(
                     String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE), pe);
             }
-        } else {
+        }
+
+        if (trimmedInput.matches("-?\\d+(\\.\\d+)?")) {
+            throw new ParseException(DeleteCommand.MESSAGE_INVALID_INDEX
+                    + "\n" + DeleteCommand.MESSAGE_USAGE);
+        }
+
+        else {
             try {
                 Name name = ParserUtil.parseName(trimmedInput);
                 return new DeleteCommand(name);
