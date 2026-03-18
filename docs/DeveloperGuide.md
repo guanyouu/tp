@@ -318,6 +318,44 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
     * 3a1. AddressBook shows an error message.
     * Use case ends.
+    
+**Use Case: UC01 - Purge Sample Data**<br>
+**Actor:** User<br>
+**MSS:**
+1. User enters the purge command.
+2. TCMS detects sample data present.
+3. TCMS asks for confirmation.
+4. User confirms the purge.
+5. TCMS deletes all sample records.
+6. TCMS confirms that sample data has been removed.
+7. Use case ends.
+
+**Extensions:** 
+
+* 3a. User cancels the purge.
+    * 3a1. TCMS aborts the purge operation.
+    * Use case ends.
+
+**Use Case: UC02 – Add Student**<br>
+**Actor:** User<br>
+**MSS:**
+1. User enters the command to add a student.
+2. User provides the student’s name, student ID, course, tutorial group, and optionally a Telegram username.
+3. TCMS validates the input.
+4. TCMS creates the student record.
+5. TCMS adds the student to the student list.
+6. TCMS confirms that the student has been added.
+7. Use case ends.
+
+**Extensions:**
+
+* 3a. The input format is invalid.
+    * 3a1. TCMS displays an error message and the correct command format.
+    * Use case ends.
+* 3b. A student with the same student ID already exists.
+    * 3b1. TCMS rejects the command.
+    * 3b2. TCMS informs the user that the student already exists.
+    * Use case ends.
 
 **Use Case: UC05 – Mark Attendance**<br>
 **Actor:** User<br>
