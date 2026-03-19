@@ -379,7 +379,31 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 5. TeachAssist attaches the note with a timestamp to the student profile.
 6. TeachAssist confirms the addition.
 7. Use case ends.
- 
+
+**Use Case: UC07 – Record Participation**<br>
+**Actor:** User<br>
+**MSS:**
+
+1. User selects a student.
+2. User enters the participation recording command.
+3. TCMS requests participation details.
+4. User enters the participation score or description.
+5. TCMS records the participation entry.
+6. TCMS confirms the update.
+7. Use case ends
+
+**Use Case: UC08 – Update Student Progress Status**<br>
+**Actor:** User<br>
+**MSS:**
+
+1. User selects a student.
+2. User enters the progress status update command.
+3. TCMS requests the new status (Red, Yellow, Green).
+4. User enters the status.
+5. TCMS updates the student progress status.
+6. TCMS confirms the update.
+7. Use case ends.
+
 **Use Case: UC09 – View Student History**<br>
 **Actor:** User<br>
 **MSS:**
