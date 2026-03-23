@@ -5,6 +5,7 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.Objects;
 
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.model.person.exceptions.RemarksExceedLengthException;
 /**
  * Represents a Person in the address book.
  * Guarantees: details are present and not null, field values are validated, immutable.
@@ -19,6 +20,7 @@ public class Person {
     private final TGroup tGroup;
     private final Tele tele;
     private final Progress progress;
+    private String remarks;
 
     /**
      * Every field must be present and not null.
@@ -33,6 +35,7 @@ public class Person {
         this.tGroup = tGroup;
         this.tele = tele;
         this.progress = progress;
+        this.remarks = "";
     }
 
     public Name getName() {
@@ -63,6 +66,23 @@ public class Person {
         return progress;
     }
 
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        if (remarks == null) {
+            throw new IllegalArgumentException("Remarks cannot be null");
+        }
+        if (remarks.length() > 100) {
+            throw new RemarksExceedLengthException("Remarks cannot exceed 100 characters");
+        }
+        this.remarks = remarks;
+    }
+
+    public void deleteRemarks() {
+        this.remarks = "";
+    }
 
     /**
      * Returns true if both persons have the same name.
