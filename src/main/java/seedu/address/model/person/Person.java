@@ -70,7 +70,6 @@ public class Person {
     public WeeklyAttendanceList getWeeklyAttendanceList() {
         return weeklyAttendanceList;
     }
-    
     public String getRemarks() {
         return remarks;
     }
