@@ -41,7 +41,7 @@ class JsonAdaptedPerson {
             @JsonProperty("studentId") String studentId,
             @JsonProperty("tGroup") String tGroup,
             @JsonProperty("tele") String tele,
-            @JsonProperty("weeklyAttendanceList") String weeklyAttendanceList) {
+            @JsonProperty("weeklyAttendanceList") String weeklyAttendanceList,
             @JsonProperty("progress") String progress) {
         this.name = name;
         this.courseId = courseId;

@@ -183,7 +183,7 @@ public class ParserUtil {
             throw new ParseException("Week status must be 'Y' (attended), 'A' (absent), or 'N' (not marked).");
         }
     }
-
+    /**
      * Parses a {@code String progress} into a {@code Progress}.
      * Leading and trailing whitespaces will be trimmed.
      *

@@ -8,9 +8,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Progress;
 import seedu.address.model.person.Week;
 import seedu.address.model.person.WeekList;
-import seedu.address.model.person.Progress;
 
 /**
  * An UI component that displays information of a {@code Person}.
@@ -63,12 +63,15 @@ public class PersonCard extends UiPart<Region> {
         tGroup.setText(person.getTGroup().value);
         email.setText(person.getEmail().value);
         tele.setText(person.getTele() == null ? "-" : person.getTele().value);
-        renderProgress()
+        renderProgress();
         renderWeekAttendance(weekAttendance, (WeekList) person.getWeeklyAttendanceList());
     }
-  
-    public renderProgress() {
-    // clear old style classes
+
+    /**
+     * Render the Progress tag
+     */
+    public void renderProgress() {
+        // clear old style classes
         progress.getStyleClass().removeAll("progress-on-track", "progress-needs-attention", "progress-at-risk");
 
         if (person.getProgress() == Progress.NOT_SET) {

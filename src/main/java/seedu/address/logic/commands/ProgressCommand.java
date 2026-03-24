@@ -136,6 +136,7 @@ public class ProgressCommand extends Command {
                 personToEdit.getStudentId(),
                 personToEdit.getTGroup(),
                 personToEdit.getTele(),
+                personToEdit.getWeeklyAttendanceList(),
                 updatedProgress);
     }
 

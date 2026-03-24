@@ -90,7 +90,8 @@ public class UpdateAttendanceCommand extends Command {
                 personToEdit.getStudentId(),
                 personToEdit.getTGroup(),
                 personToEdit.getTele(),
-                weekList
+                weekList,
+                personToEdit.getProgress()
         );
 
         model.setPerson(personToEdit, editedPerson);
