@@ -13,6 +13,7 @@ public class CliSyntax {
     public static final Prefix PREFIX_TGROUP = new Prefix("tg/");
     public static final Prefix PREFIX_TELE = new Prefix("tel/");
     public static final Prefix PREFIX_PROGRESS = new Prefix("p/");
-    public static final Prefix PREFIX_REMARK = new Prefix("r/");
+    public static final Prefix PREFIX_REMARK = new Prefix("txt/");
+    public static final Prefix PREFIX_UNREMARK = new Prefix("r/");
 
 }

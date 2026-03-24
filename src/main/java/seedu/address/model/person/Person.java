@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 
 /**
@@ -89,9 +90,13 @@ public class Person {
      *
      * @return true if the remark was found and removed
      */
-    public boolean deleteRemark(Remark remark) {
-        requireAllNonNull(remark);
-        return remarks.remove(remark);
+    public boolean deleteRemark(Index remarkIndex) {
+        requireAllNonNull(remarkIndex);
+        if (remarkIndex.getZeroBased() >= remarks.size()) {
+            return false;
+        }
+        remarks.remove(remarks.get(remarkIndex.getZeroBased()));
+        return true;
     }
     /**
      * Returns true if both persons have the same name.
