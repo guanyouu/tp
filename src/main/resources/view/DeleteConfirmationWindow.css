@@ -1,5 +1,5 @@
 #deleteConfirmationContainer {
-    -fx-background-color: #f5f5f5;
+    -fx-background-color: #E2F1FC;
 }
 
 #confirmationMessage {
@@ -7,14 +7,24 @@
     -fx-font-size: 14px;
 }
 
-#okButton, #cancelButton {
+#cancelButton {
     -fx-text-fill: #1a1a1a;
-    -fx-background-color: #e8e8e8;
+    -fx-background-color: white;
     -fx-border-color: #c8c8c8;
 }
 
-#okButton:hover, #cancelButton:hover {
+#cancelButton:hover {
     -fx-background-color: #d8d8d8;
+}
+
+#okButton {
+    -fx-text-fill: #1a1a1a;
+    -fx-background-color: #77B2EE;
+    -fx-border-color: #c8c8c8;
+}
+
+#okButton:hover {
+    -fx-background-color: #6AA7E6;
 }
 
 #okButton:armed, #cancelButton:armed {

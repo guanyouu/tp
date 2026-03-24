@@ -4,6 +4,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Region;
+import javafx.stage.Stage;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -120,7 +121,8 @@ public class CommandBox extends UiPart<Region> {
      * @return true if user clicks OK, false otherwise.
      */
     private boolean showDeleteConfirmationPopup() {
-        DeleteConfirmationWindow deleteConfirmationWindow = new DeleteConfirmationWindow();
+        Stage owner = (Stage) commandTextField.getScene().getWindow();
+        DeleteConfirmationWindow deleteConfirmationWindow = new DeleteConfirmationWindow(owner);
         deleteConfirmationWindow.setMessage("Are you sure you want to delete this student?");
         return deleteConfirmationWindow.showAndWait();
     }

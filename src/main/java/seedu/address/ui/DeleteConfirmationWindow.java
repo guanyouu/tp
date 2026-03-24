@@ -27,33 +27,39 @@ public class DeleteConfirmationWindow extends UiPart<Stage> {
      * Creates a new DeleteConfirmationWindow.
      *
      * @param root Stage to use as the root of the window.
+     * @param owner Owner stage of the popup.
      */
-    public DeleteConfirmationWindow(Stage root) {
+    public DeleteConfirmationWindow(Stage root, Stage owner) {
         super(FXML, root);
+        root.initOwner(owner);
     }
 
     /**
      * Creates a new DeleteConfirmationWindow.
+     *
+     * @param owner Owner stage of the popup.
      */
-    public DeleteConfirmationWindow() {
-        this(new Stage());
+    public DeleteConfirmationWindow(Stage owner) {
+        this(new Stage(), owner);
     }
 
     /**
-     * Sets the message shown in the popup.
+     * Sets the message displayed in the confirmation popup.
+     *
+     * @param message Message to display in the popup.
      */
     public void setMessage(String message) {
         confirmationMessage.setText(message);
     }
 
     /**
-     * Shows the popup and waits for user response.
+     * Shows the confirmation popup and waits for the user to respond.
      *
-     * @return true if user clicked OK, false otherwise.
+     * @return true if the user confirms the deletion, false otherwise.
      */
     public boolean showAndWait() {
-        getRoot().showAndWait();
         getRoot().centerOnScreen();
+        getRoot().showAndWait();
         return isConfirmed;
     }
 
