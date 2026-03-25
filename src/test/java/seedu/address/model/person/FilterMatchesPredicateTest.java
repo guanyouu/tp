@@ -256,7 +256,6 @@ public class FilterMatchesPredicateTest {
                 .build()));
     }
 
-
     @Test
     public void test_toString() {
         Optional<CourseId> courseId = Optional.of(new CourseId("CS2103T"));
