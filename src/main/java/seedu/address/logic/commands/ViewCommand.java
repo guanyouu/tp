@@ -7,6 +7,9 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.person.Person;
 
+/**
+ * Views details of a student in the address book.
+ */
 public class ViewCommand extends Command {
 
     public static final String COMMAND_WORD = "view";
@@ -19,6 +22,9 @@ public class ViewCommand extends Command {
 
     private final Index targetIndex;
 
+    /**
+     * Creates a ViewCommand to view the student at the specified {@code Index}.
+     */
     public ViewCommand(Index targetIndex) {
         this.targetIndex = targetIndex;
     }
@@ -34,7 +40,6 @@ public class ViewCommand extends Command {
         Person personToView = lastShownList.get(targetIndex.getZeroBased());
         return new CommandResult(
                 String.format(MESSAGE_VIEW_PERSON_SUCCESS, personToView),
-                personToView
-        );
+                personToView);
     }
 }
