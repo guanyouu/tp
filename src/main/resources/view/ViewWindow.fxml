@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="750.0"
+            prefHeight="500.0">
+
+    <top>
+        <VBox spacing="12" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="20" right="20" bottom="10" left="20"/>
+            </padding>
+
+            <Label text="Student Details"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+            <HBox spacing="20">
+                <Label text="Name:" style="-fx-font-weight: bold;"/>
+                <Label fx:id="nameLabel"/>
+
+                <Label text="Student ID:" style="-fx-font-weight: bold;"/>
+                <Label fx:id="studentIdLabel"/>
+
+                <Label text="Course:" style="-fx-font-weight: bold;"/>
+                <Label fx:id="courseIdLabel"/>
+
+                <Label text="Tutorial Group:" style="-fx-font-weight: bold;"/>
+                <Label fx:id="tGroupLabel"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true">
+            <content>
+                <GridPane fx:id="remarksGrid" hgap="20" vgap="10">
+                    <padding>
+                        <Insets top="10" right="20" bottom="20" left="20"/>
+                    </padding>
+
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="25"/>
+                        <ColumnConstraints percentWidth="75"/>
+                    </columnConstraints>
+
+                    <Label text="Date"
+                           style="-fx-font-weight: bold;"
+                           GridPane.rowIndex="0"
+                           GridPane.columnIndex="0"/>
+
+                    <Label text="Remark"
+                           style="-fx-font-weight: bold;"
+                           GridPane.rowIndex="0"
+                           GridPane.columnIndex="1"/>
+                </GridPane>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>
