@@ -65,7 +65,7 @@ public class NameContainsKeywordsPredicateTest {
     }
 
     @Test
-    public void test_multipleKeywords_oneMatches_returnsTrue() {
+    public void test_multipleKeywordsoneMatches_returnsTrue() {
         NameContainsKeywordsPredicate predicate =
                 new NameContainsKeywordsPredicate(Arrays.asList("Carol", "Ali"));
 
@@ -73,7 +73,7 @@ public class NameContainsKeywordsPredicateTest {
     }
 
     @Test
-    public void test_multipleKeywords_multipleMatch_returnsTrue() {
+    public void test_multipleKeywordsmultipleMatch_returnsTrue() {
         NameContainsKeywordsPredicate predicate =
                 new NameContainsKeywordsPredicate(Arrays.asList("Ali", "Bo"));
 
