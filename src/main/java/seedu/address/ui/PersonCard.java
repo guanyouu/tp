@@ -115,10 +115,13 @@ public class PersonCard extends UiPart<Region> {
 
             // Week number label
             Label weekLabel = new Label("W" + (i + 1));
-            weekLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: white;");
+            weekLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: black; -fx-font-weight: bold;");
+            weekLabel.setMaxWidth(Double.MAX_VALUE);
+            weekLabel.setAlignment(Pos.CENTER);
 
             // Colored square
             Label weekSquare = new Label();
+            weekSquare.setPrefSize(16, 16);
             weekSquare.setMinSize(16, 16);
             weekSquare.setMaxSize(16, 16);
 
@@ -130,10 +133,10 @@ public class PersonCard extends UiPart<Region> {
             }
 
             // Wrap in VBox
-            VBox weekVBox = new VBox(2); // spacing 2px
+            VBox weekVBox = new VBox(4);
             weekVBox.setAlignment(Pos.CENTER);
+            weekVBox.setPrefWidth(30);
             weekVBox.getChildren().addAll(weekLabel, weekSquare);
-
             // Add to FlowPane
             weekPane.getChildren().add(weekVBox);
         }
