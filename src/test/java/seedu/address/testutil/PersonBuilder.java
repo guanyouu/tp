@@ -18,7 +18,7 @@ import seedu.address.model.person.WeeklyAttendanceList;
 public class PersonBuilder {
 
     public static final String DEFAULT_NAME = "Amy Bee";
-    public static final String DEFAULT_EMAIL = "amy@gmail.com";
+    public static final String DEFAULT_EMAIL = "amy@u.nus.edu";
     public static final String DEFAULT_COURSE_ID = "CS2103T";
     public static final String DEFAULT_STUDENT_ID = "A1234567X";
     public static final String DEFAULT_TGROUP = "T01";

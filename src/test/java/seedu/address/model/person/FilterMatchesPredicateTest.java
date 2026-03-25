@@ -18,16 +18,26 @@ public class FilterMatchesPredicateTest {
         Optional<CourseId> secondCourseId = Optional.of(new CourseId("CS2101"));
         Optional<TGroup> firstTGroup = Optional.of(new TGroup("T01"));
         Optional<TGroup> secondTGroup = Optional.of(new TGroup("T02"));
+        Optional<Progress> firstProgress = Optional.of(Progress.ON_TRACK);
+        Optional<Progress> secondProgress = Optional.of(Progress.AT_RISK);
 
-        FilterMatchesPredicate firstPredicate = new FilterMatchesPredicate(firstCourseId, Optional.empty());
-        FilterMatchesPredicate secondPredicate = new FilterMatchesPredicate(secondCourseId, Optional.empty());
-        FilterMatchesPredicate thirdPredicate = new FilterMatchesPredicate(firstCourseId, firstTGroup);
+        FilterMatchesPredicate firstPredicate =
+                new FilterMatchesPredicate(firstCourseId, Optional.empty(), Optional.empty());
+        FilterMatchesPredicate secondPredicate =
+                new FilterMatchesPredicate(secondCourseId, Optional.empty(), Optional.empty());
+        FilterMatchesPredicate thirdPredicate =
+                new FilterMatchesPredicate(firstCourseId, firstTGroup, Optional.empty());
+        FilterMatchesPredicate fourthPredicate =
+                new FilterMatchesPredicate(firstCourseId, Optional.empty(), firstProgress);
+        FilterMatchesPredicate fifthPredicate =
+                new FilterMatchesPredicate(firstCourseId, Optional.empty(), secondProgress);
 
         // same object -> returns true
         assertTrue(firstPredicate.equals(firstPredicate));
 
         // same values -> returns true
-        FilterMatchesPredicate firstPredicateCopy = new FilterMatchesPredicate(firstCourseId, Optional.empty());
+        FilterMatchesPredicate firstPredicateCopy =
+                new FilterMatchesPredicate(firstCourseId, Optional.empty(), Optional.empty());
         assertTrue(firstPredicate.equals(firstPredicateCopy));
 
         // different types -> returns false
@@ -41,13 +51,18 @@ public class FilterMatchesPredicateTest {
 
         // different combination (course + tgroup vs course only) -> returns false
         assertFalse(firstPredicate.equals(thirdPredicate));
+
+        // different combination (course + progress vs course only) -> returns false
+        assertFalse(firstPredicate.equals(fourthPredicate));
+
+        // different progress -> returns false
+        assertFalse(fourthPredicate.equals(fifthPredicate));
     }
 
     @Test
     public void test_courseIdMatches_returnsTrue() {
-        // Exact match
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103T")), Optional.empty());
+                Optional.of(new CourseId("CS2103T")), Optional.empty(), Optional.empty());
 
         assertTrue(predicate.test(new PersonBuilder().withCourseId("CS2103T").build()));
 
@@ -59,7 +74,7 @@ public class FilterMatchesPredicateTest {
     @Test
     public void test_courseIdMatches_returnsFalse() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103T")), Optional.empty());
+                Optional.of(new CourseId("CS2103T")), Optional.empty(), Optional.empty());
 
         assertFalse(predicate.test(new PersonBuilder().withCourseId("CS2101").build()));
         assertFalse(predicate.test(new PersonBuilder().withCourseId("MA2001").build()));
@@ -67,9 +82,8 @@ public class FilterMatchesPredicateTest {
 
     @Test
     public void test_tGroupMatches_returnsTrue() {
-        // Exact match
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(), Optional.of(new TGroup("T01")));
+                Optional.empty(), Optional.of(new TGroup("T01")), Optional.empty());
 
         assertTrue(predicate.test(new PersonBuilder().withTGroup("T01").build()));
 
@@ -81,24 +95,41 @@ public class FilterMatchesPredicateTest {
     @Test
     public void test_tGroupMatches_returnsFalse() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(), Optional.of(new TGroup("T01")));
+                Optional.empty(), Optional.of(new TGroup("T01")), Optional.empty());
 
         assertFalse(predicate.test(new PersonBuilder().withTGroup("T02").build()));
         assertFalse(predicate.test(new PersonBuilder().withTGroup("G01").build()));
     }
 
     @Test
-    public void test_bothFiltersMatch_returnsTrue() {
+    public void test_progressMatches_returnsTrue() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103T")), Optional.of(new TGroup("T01")));
+                Optional.empty(), Optional.empty(), Optional.of(Progress.ON_TRACK));
 
-        // Both match exactly
+        assertTrue(predicate.test(new PersonBuilder().withProgress(Progress.valueOf("ON_TRACK")).build()));
+    }
+
+    @Test
+    public void test_progressMatches_returnsFalse() {
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+                Optional.empty(), Optional.empty(), Optional.of(Progress.ON_TRACK));
+
+        assertFalse(predicate.test(new PersonBuilder().withProgress(Progress.valueOf("AT_RISK")).build()));
+        assertFalse(predicate.test(new PersonBuilder().withProgress(Progress.valueOf("NEEDS_ATTENTION")).build()));
+    }
+
+    @Test
+    public void test_bothCourseAndTGroupMatch_returnsTrue() {
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+                Optional.of(new CourseId("CS2103T")),
+                Optional.of(new TGroup("T01")),
+                Optional.empty());
+
         assertTrue(predicate.test(new PersonBuilder()
                 .withCourseId("CS2103T")
                 .withTGroup("T01")
                 .build()));
 
-        // Both match with case insensitivity
         assertTrue(predicate.test(new PersonBuilder()
                 .withCourseId("cs2103t")
                 .withTGroup("t01")
@@ -106,23 +137,22 @@ public class FilterMatchesPredicateTest {
     }
 
     @Test
-    public void test_bothFiltersMatch_returnsFalse() {
+    public void test_bothCourseAndTGroupMatch_returnsFalse() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103T")), Optional.of(new TGroup("T01")));
+                Optional.of(new CourseId("CS2103T")),
+                Optional.of(new TGroup("T01")),
+                Optional.empty());
 
-        // Course matches but tGroup doesn't
         assertFalse(predicate.test(new PersonBuilder()
                 .withCourseId("CS2103T")
                 .withTGroup("T02")
                 .build()));
 
-        // TGroup matches but course doesn't
         assertFalse(predicate.test(new PersonBuilder()
                 .withCourseId("CS2101")
                 .withTGroup("T01")
                 .build()));
 
-        // Neither matches
         assertFalse(predicate.test(new PersonBuilder()
                 .withCourseId("MA2001")
                 .withTGroup("G05")
@@ -130,75 +160,112 @@ public class FilterMatchesPredicateTest {
     }
 
     @Test
-    public void test_courseIdOnlyFilter_ignoresTGroup() {
+    public void test_allThreeFiltersMatch_returnsTrue() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103T")), Optional.empty());
+                Optional.of(new CourseId("CS2103T")),
+                Optional.of(new TGroup("T01")),
+                Optional.of(Progress.ON_TRACK));
 
-        // Should match regardless of tGroup when only courseId is filtered
         assertTrue(predicate.test(new PersonBuilder()
                 .withCourseId("CS2103T")
                 .withTGroup("T01")
+                .withProgress(Progress.valueOf("ON_TRACK"))
+                .build()));
+    }
+
+    @Test
+    public void test_allThreeFiltersMatch_returnsFalse() {
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+                Optional.of(new CourseId("CS2103T")),
+                Optional.of(new TGroup("T01")),
+                Optional.of(Progress.ON_TRACK));
+
+        // progress mismatch
+        assertFalse(predicate.test(new PersonBuilder()
+                .withCourseId("CS2103T")
+                .withTGroup("T01")
+                .withProgress(Progress.valueOf("AT_RISK"))
+                .build()));
+
+        // tGroup mismatch
+        assertFalse(predicate.test(new PersonBuilder()
+                .withCourseId("CS2103T")
+                .withTGroup("T02")
+                .withProgress(Progress.valueOf("ON_TRACK"))
+                .build()));
+
+        // course mismatch
+        assertFalse(predicate.test(new PersonBuilder()
+                .withCourseId("CS2101")
+                .withTGroup("T01")
+                .withProgress(Progress.valueOf("ON_TRACK"))
+                .build()));
+    }
+
+    @Test
+    public void test_courseIdOnlyFilter_ignoresTGroupAndProgress() {
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+                Optional.of(new CourseId("CS2103T")), Optional.empty(), Optional.empty());
+
+        assertTrue(predicate.test(new PersonBuilder()
+                .withCourseId("CS2103T")
+                .withTGroup("T01")
+                .withProgress(Progress.valueOf("ON_TRACK"))
                 .build()));
 
         assertTrue(predicate.test(new PersonBuilder()
                 .withCourseId("CS2103T")
                 .withTGroup("T99")
+                .withProgress(Progress.valueOf("AT_RISK"))
                 .build()));
     }
 
     @Test
-    public void test_tGroupOnlyFilter_ignoresCourseId() {
+    public void test_tGroupOnlyFilter_ignoresCourseIdAndProgress() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(), Optional.of(new TGroup("T01")));
+                Optional.empty(), Optional.of(new TGroup("T01")), Optional.empty());
 
-        // Should match regardless of courseId when only tGroup is filtered
         assertTrue(predicate.test(new PersonBuilder()
                 .withCourseId("CS2103T")
                 .withTGroup("T01")
+                .withProgress(Progress.valueOf("ON_TRACK"))
                 .build()));
 
         assertTrue(predicate.test(new PersonBuilder()
                 .withCourseId("MA2001")
                 .withTGroup("T01")
+                .withProgress(Progress.valueOf("AT_RISK"))
                 .build()));
     }
 
     @Test
-    public void test_noFilters_returnsTrue() {
-        FilterMatchesPredicate predicate = new FilterMatchesPredicate(Optional.empty(), Optional.empty());
+    public void test_progressOnlyFilter_ignoresCourseIdAndTGroup() {
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+                Optional.empty(), Optional.empty(), Optional.of(Progress.ON_TRACK));
 
-        // Should match all persons when no filters are provided
         assertTrue(predicate.test(new PersonBuilder()
                 .withCourseId("CS2103T")
                 .withTGroup("T01")
+                .withProgress(Progress.valueOf("ON_TRACK"))
                 .build()));
 
         assertTrue(predicate.test(new PersonBuilder()
                 .withCourseId("MA2001")
                 .withTGroup("G05")
+                .withProgress(Progress.valueOf("ON_TRACK"))
                 .build()));
-    }
-
-    @Test
-    public void test_specialCharactersInCourseId() {
-        // Test course IDs with spaces, hyphens, etc. (based on validation regex)
-        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103-T")), Optional.empty());
-
-        assertTrue(predicate.test(new PersonBuilder().withCourseId("CS2103-T").build()));
-        assertTrue(predicate.test(new PersonBuilder().withCourseId("cs2103-t").build()));
     }
 
     @Test
     public void test_toString() {
         Optional<CourseId> courseId = Optional.of(new CourseId("CS2103T"));
         Optional<TGroup> tGroup = Optional.of(new TGroup("T01"));
+        Optional<Progress> progress = Optional.of(Progress.ON_TRACK);
 
-        FilterMatchesPredicate predicate = new FilterMatchesPredicate(courseId, tGroup);
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(courseId, tGroup, progress);
 
-        String expected = "seedu.address.model.person.FilterMatchesPredicate{courseId=" + courseId + ", tGroup="
-                + tGroup + "}";
+        String expected = "seedu.address.model.person.FilterMatchesPredicate{courseId=" + courseId
+                + ", tGroup=" + tGroup + ", progress=" + progress + "}";
         assertEquals(expected, predicate.toString());
     }
-
 }

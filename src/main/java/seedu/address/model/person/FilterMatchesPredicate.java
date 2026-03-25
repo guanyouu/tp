@@ -12,6 +12,7 @@ import seedu.address.commons.util.ToStringBuilder;
 public class FilterMatchesPredicate implements Predicate<Person> {
     private final Optional<CourseId> courseId;
     private final Optional<TGroup> tGroup;
+    private final Optional<Progress> progress;
 
     /**
      * Creates a {@code FilterMatchesPredicate} with the given course ID and tutorial group.
@@ -19,16 +20,18 @@ public class FilterMatchesPredicate implements Predicate<Person> {
      * @param courseId The course ID to match, or empty if not filtering by course.
      * @param tGroup The tutorial group to match, or empty if not filtering by group.
      */
-    public FilterMatchesPredicate(Optional<CourseId> courseId, Optional<TGroup> tGroup) {
+    public FilterMatchesPredicate(Optional<CourseId> courseId, Optional<TGroup> tGroup, Optional<Progress> progress) {
         this.courseId = courseId;
         this.tGroup = tGroup;
+        this.progress = progress;
     }
 
     @Override
     public boolean test(Person person) {
         boolean matchesCourse = courseId.isEmpty() || person.getCourseId().value.equalsIgnoreCase(courseId.get().value);
         boolean matchesTGroup = tGroup.isEmpty() || person.getTGroup().value.equalsIgnoreCase(tGroup.get().value);
-        return matchesCourse && matchesTGroup;
+        boolean matchesProgress = progress.isEmpty() || person.getProgress().equals(progress.get());
+        return matchesCourse && matchesTGroup && matchesProgress;
     }
 
     @Override
@@ -42,7 +45,9 @@ public class FilterMatchesPredicate implements Predicate<Person> {
         }
 
         FilterMatchesPredicate otherPredicate = (FilterMatchesPredicate) other;
-        return courseId.equals(otherPredicate.courseId) && tGroup.equals(otherPredicate.tGroup);
+        return courseId.equals(otherPredicate.courseId)
+                && tGroup.equals(otherPredicate.tGroup)
+                && progress.equals(otherPredicate.progress);
     }
 
     @Override
@@ -50,6 +55,7 @@ public class FilterMatchesPredicate implements Predicate<Person> {
         return new ToStringBuilder(this)
                 .add("courseId", courseId)
                 .add("tGroup", tGroup)
+                .add("progress", progress)
                 .toString();
     }
 }

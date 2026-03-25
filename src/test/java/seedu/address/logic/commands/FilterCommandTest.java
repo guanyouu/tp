@@ -22,6 +22,7 @@ import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.person.CourseId;
 import seedu.address.model.person.FilterMatchesPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Progress;
 import seedu.address.model.person.TGroup;
 import seedu.address.testutil.PersonBuilder;
 
@@ -34,7 +35,7 @@ public class FilterCommandTest {
 
         ModelStubWithPersons modelStub = new ModelStubWithPersons(personWithMatchingCourse, personWithDifferentCourse);
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103T")), Optional.empty());
+                Optional.of(new CourseId("CS2103T")), Optional.empty(), Optional.empty());
         FilterCommand filterCommand = new FilterCommand(predicate);
 
         CommandResult commandResult = filterCommand.execute(modelStub);
@@ -50,7 +51,7 @@ public class FilterCommandTest {
 
         ModelStubWithPersons modelStub = new ModelStubWithPersons(personWithMatchingTGroup, personWithDifferentTGroup);
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(), Optional.of(new TGroup("T01")));
+                Optional.empty(), Optional.of(new TGroup("T01")), Optional.empty());
         FilterCommand filterCommand = new FilterCommand(predicate);
 
         CommandResult commandResult = filterCommand.execute(modelStub);
@@ -60,7 +61,24 @@ public class FilterCommandTest {
     }
 
     @Test
-    public void execute_filterByBoth_success() throws Exception {
+    public void execute_filterByProgress_success() throws Exception {
+        Person personWithMatchingProgress = new PersonBuilder().withProgress(Progress.valueOf("ON_TRACK")).build();
+        Person personWithDifferentProgress = new PersonBuilder().withProgress(Progress.valueOf("AT_RISK")).build();
+
+        ModelStubWithPersons modelStub = new ModelStubWithPersons(personWithMatchingProgress,
+                personWithDifferentProgress);
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+                Optional.empty(), Optional.empty(), Optional.of(Progress.ON_TRACK));
+        FilterCommand filterCommand = new FilterCommand(predicate);
+
+        CommandResult commandResult = filterCommand.execute(modelStub);
+
+        assertEquals("There are 1 students matching this filter.", commandResult.getFeedbackToUser());
+        assertEquals(List.of(personWithMatchingProgress), modelStub.filteredPersons);
+    }
+
+    @Test
+    public void execute_filterByBothCourseAndTGroup_success() throws Exception {
         Person personMatchingBoth = new PersonBuilder().withCourseId("CS2103T").withTGroup("T01").build();
         Person personMatchingCourseOnly = new PersonBuilder().withCourseId("CS2103T").withTGroup("T02").build();
         Person personMatchingTGroupOnly = new PersonBuilder().withCourseId("CS2101").withTGroup("T01").build();
@@ -68,7 +86,7 @@ public class FilterCommandTest {
         ModelStubWithPersons modelStub = new ModelStubWithPersons(
                 personMatchingBoth, personMatchingCourseOnly, personMatchingTGroupOnly);
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103T")), Optional.of(new TGroup("T01")));
+                Optional.of(new CourseId("CS2103T")), Optional.of(new TGroup("T01")), Optional.empty());
         FilterCommand filterCommand = new FilterCommand(predicate);
 
         CommandResult commandResult = filterCommand.execute(modelStub);
@@ -78,12 +96,44 @@ public class FilterCommandTest {
     }
 
     @Test
+    public void execute_filterByAllThree_success() throws Exception {
+        Person personMatchingAll = new PersonBuilder()
+                .withCourseId("CS2103T")
+                .withTGroup("T01")
+                .withProgress(Progress.valueOf("ON_TRACK"))
+                .build();
+        Person personWrongProgress = new PersonBuilder()
+                .withCourseId("CS2103T")
+                .withTGroup("T01")
+                .withProgress(Progress.valueOf("AT_RISK"))
+                .build();
+        Person personWrongTGroup = new PersonBuilder()
+                .withCourseId("CS2103T")
+                .withTGroup("T02")
+                .withProgress(Progress.valueOf("ON_TRACK"))
+                .build();
+
+        ModelStubWithPersons modelStub = new ModelStubWithPersons(
+                personMatchingAll, personWrongProgress, personWrongTGroup);
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+                Optional.of(new CourseId("CS2103T")),
+                Optional.of(new TGroup("T01")),
+                Optional.of(Progress.ON_TRACK));
+        FilterCommand filterCommand = new FilterCommand(predicate);
+
+        CommandResult commandResult = filterCommand.execute(modelStub);
+
+        assertEquals("There are 1 students matching this filter.", commandResult.getFeedbackToUser());
+        assertEquals(List.of(personMatchingAll), modelStub.filteredPersons);
+    }
+
+    @Test
     public void execute_zeroMatches_success() throws Exception {
         Person personWithDifferentCourse = new PersonBuilder().withCourseId("CS2101").build();
 
         ModelStubWithPersons modelStub = new ModelStubWithPersons(personWithDifferentCourse);
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("NONEXISTENT")), Optional.empty());
+                Optional.of(new CourseId("NONEXISTENT")), Optional.empty(), Optional.empty());
         FilterCommand filterCommand = new FilterCommand(predicate);
 
         CommandResult commandResult = filterCommand.execute(modelStub);
@@ -95,34 +145,27 @@ public class FilterCommandTest {
     @Test
     public void equals() {
         FilterMatchesPredicate firstPredicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103T")), Optional.empty());
+                Optional.of(new CourseId("CS2103T")), Optional.empty(), Optional.empty());
         FilterMatchesPredicate secondPredicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2101")), Optional.empty());
+                Optional.of(new CourseId("CS2101")), Optional.empty(), Optional.empty());
 
         FilterCommand filterFirstCommand = new FilterCommand(firstPredicate);
         FilterCommand filterSecondCommand = new FilterCommand(secondPredicate);
 
-        // same object -> returns true
         assertTrue(filterFirstCommand.equals(filterFirstCommand));
 
-        // same values -> returns true
         FilterCommand filterFirstCommandCopy = new FilterCommand(firstPredicate);
         assertTrue(filterFirstCommand.equals(filterFirstCommandCopy));
 
-        // different types -> returns false
         assertFalse(filterFirstCommand.equals(1));
-
-        // null -> returns false
         assertFalse(filterFirstCommand.equals(null));
-
-        // different predicate -> returns false
         assertFalse(filterFirstCommand.equals(filterSecondCommand));
     }
 
     @Test
     public void toStringMethod() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103T")), Optional.empty());
+                Optional.of(new CourseId("CS2103T")), Optional.empty(), Optional.empty());
         FilterCommand filterCommand = new FilterCommand(predicate);
         String expected = FilterCommand.class.getCanonicalName() + "{predicate=" + predicate + "}";
         assertEquals(expected, filterCommand.toString());
@@ -222,7 +265,6 @@ public class FilterCommandTest {
 
         @Override
         public ObservableList<Person> getFilteredPersonList() {
-            // Return a simple ObservableList implementation for testing
             return javafx.collections.FXCollections.observableArrayList(filteredPersons);
         }
 

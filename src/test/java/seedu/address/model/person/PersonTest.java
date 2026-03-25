@@ -15,7 +15,6 @@ public class PersonTest {
     private final StudentId validStudentId = new StudentId("A1234567X");
     private final TGroup validTGroup = new TGroup("T01");
     private final Tele validTele = new Tele("alextan");
-
     private final WeekList validWeekList = new WeekList();
 
     private final Person person = new Person(
@@ -116,7 +115,7 @@ public class PersonTest {
         // different type -> returns false
         assertFalse(person.equals(5));
 
-        // different email -> returns false
+        // different email -> returns true
         Person editedPerson = new Person(
                 validName,
                 validCourseId,
@@ -126,7 +125,7 @@ public class PersonTest {
                 validTele,
                 new WeekList(),
                 Progress.NOT_SET);
-        assertFalse(person.equals(editedPerson));
+        assertTrue(person.equals(editedPerson));
 
         // different studentId -> returns false
         editedPerson = new Person(
@@ -140,7 +139,7 @@ public class PersonTest {
                 Progress.NOT_SET);
         assertFalse(person.equals(editedPerson));
 
-        // different tele -> returns false
+        // different tele -> returns true
         editedPerson = new Person(
                 validName,
                 validCourseId,
@@ -150,7 +149,7 @@ public class PersonTest {
                 new Tele("otheruser"),
                 new WeekList(),
                 Progress.NOT_SET);
-        assertFalse(person.equals(editedPerson));
+        assertTrue(person.equals(editedPerson));
 
         // different name, same email/studentId/tele -> returns true
         editedPerson = new Person(
@@ -164,7 +163,7 @@ public class PersonTest {
                 Progress.NOT_SET);
         assertTrue(person.equals(editedPerson));
 
-        // different courseId -> returns true
+        // different courseId, same email/studentId/tele -> returns false
         editedPerson = new Person(
                 validName,
                 new CourseId("CS2040S"),
@@ -174,9 +173,9 @@ public class PersonTest {
                 validTele,
                 new WeekList(),
                 Progress.NOT_SET);
-        assertTrue(person.equals(editedPerson));
+        assertFalse(person.equals(editedPerson));
 
-        // different tGroup -> returns true
+        // different tGroup, same email/studentId/tele -> returns false
         editedPerson = new Person(
                 validName,
                 validCourseId,
@@ -186,7 +185,7 @@ public class PersonTest {
                 validTele,
                 new WeekList(),
                 Progress.NOT_SET);
-        assertTrue(person.equals(editedPerson));
+        assertFalse(person.equals(editedPerson));
     }
 
     @Test

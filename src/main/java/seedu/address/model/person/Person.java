@@ -2,10 +2,13 @@ package seedu.address.model.person;
 
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import seedu.address.commons.util.ToStringBuilder;
-import seedu.address.model.person.exceptions.RemarksExceedLengthException;
+
 /**
  * Represents a Person in the address book.
  * Guarantees: details are present and not null, field values are validated, immutable.
@@ -20,7 +23,7 @@ public class Person {
     private final TGroup tGroup;
     private final Tele tele;
     private final Progress progress;
-    private String remarks;
+    private final List<Remark> remarks;
 
     private final WeeklyAttendanceList weeklyAttendanceList;
 
@@ -38,7 +41,7 @@ public class Person {
         this.tele = tele;
         this.weeklyAttendanceList = weeklyAttendanceList;
         this.progress = progress;
-        this.remarks = "";
+        this.remarks = new ArrayList<>();
     }
 
     public Name getName() {
@@ -76,24 +79,30 @@ public class Person {
         return progress;
     }
 
-    public String getRemarks() {
-        return remarks;
+    /**
+     * Returns an unmodifiable view of the remarks list.
+     */
+    public List<Remark> getRemarks() {
+        return Collections.unmodifiableList(remarks);
     }
 
-    public void setRemarks(String remarks) {
-        if (remarks == null) {
-            throw new IllegalArgumentException("Remarks cannot be null");
-        }
-        if (remarks.length() > 100) {
-            throw new RemarksExceedLengthException("Remarks cannot exceed 100 characters");
-        }
-        this.remarks = remarks;
+    /**
+     * Adds a remark to this person.
+     */
+    public void addRemark(Remark remark) {
+        requireAllNonNull(remark);
+        remarks.add(remark);
     }
 
-    public void deleteRemarks() {
-        this.remarks = "";
+    /**
+     * Deletes a remark from this person.
+     *
+     * @return true if the remark was found and removed
+     */
+    public boolean deleteRemark(Remark remark) {
+        requireAllNonNull(remark);
+        return remarks.remove(remark);
     }
-
     /**
      * Returns true if both persons have the same name.
      * This defines a weaker notion of equality between two persons.
@@ -124,15 +133,14 @@ public class Person {
 
         Person otherPerson = (Person) other;
         return studentId.equals(otherPerson.studentId)
-                && Objects.equals(otherPerson.getTele(), getTele())
-                && otherPerson.getEmail().equals(getEmail())
-                && otherPerson.getProgress().equals(getProgress());
+                && otherPerson.getCourseId().equals(getCourseId())
+                && otherPerson.getTGroup().equals(getTGroup());
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, courseId, email, studentId, tGroup, tele, progress);
+        return Objects.hash(name, courseId, email, studentId, tGroup, tele, progress, remarks);
     }
 
     @Override
