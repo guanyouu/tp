@@ -16,6 +16,7 @@ import seedu.address.logic.Logic;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.Person;
 
 /**
  * The Main Window. Provides the basic application layout containing
@@ -34,6 +35,7 @@ public class MainWindow extends UiPart<Stage> {
     private PersonListPanel personListPanel;
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
+    private ViewWindow viewWindow;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -66,8 +68,12 @@ public class MainWindow extends UiPart<Stage> {
         setAccelerators();
 
         helpWindow = new HelpWindow();
+        viewWindow = new ViewWindow();
     }
 
+    /**
+     * Returns the primary stage of the application.
+     */
     public Stage getPrimaryStage() {
         return primaryStage;
     }
@@ -78,6 +84,8 @@ public class MainWindow extends UiPart<Stage> {
 
     /**
      * Sets the accelerator of a MenuItem.
+     *
+     * @param menuItem       the menu item to configure
      * @param keyCombination the KeyCombination value of the accelerator
      */
     private void setAccelerator(MenuItem menuItem, KeyCombination keyCombination) {
@@ -147,6 +155,25 @@ public class MainWindow extends UiPart<Stage> {
         }
     }
 
+    /**
+     * Opens the view window with the specified person's details,
+     * or focuses on it if it is already opened.
+     *
+     * @param person the person to display
+     */
+    @FXML
+    public void handleView(Person person) {
+        viewWindow.setPerson(person);
+        if (!viewWindow.isShowing()) {
+            viewWindow.show();
+        } else {
+            viewWindow.focus();
+        }
+    }
+
+    /**
+     * Shows this main window.
+     */
     void show() {
         primaryStage.show();
     }
@@ -160,9 +187,13 @@ public class MainWindow extends UiPart<Stage> {
                 (int) primaryStage.getX(), (int) primaryStage.getY());
         logic.setGuiSettings(guiSettings);
         helpWindow.hide();
+        viewWindow.hide();
         primaryStage.hide();
     }
 
+    /**
+     * Returns the person list panel displayed in this window.
+     */
     public PersonListPanel getPersonListPanel() {
         return personListPanel;
     }
@@ -177,6 +208,10 @@ public class MainWindow extends UiPart<Stage> {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+
+            if (commandResult.isShowView()) {
+                handleView(commandResult.getPersonToView());
+            }
 
             if (commandResult.isShowHelp()) {
                 handleHelp();
