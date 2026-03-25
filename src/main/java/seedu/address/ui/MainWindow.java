@@ -71,6 +71,9 @@ public class MainWindow extends UiPart<Stage> {
         viewWindow = new ViewWindow();
     }
 
+    /**
+     * Returns the primary stage of the application.
+     */
     public Stage getPrimaryStage() {
         return primaryStage;
     }
@@ -81,6 +84,8 @@ public class MainWindow extends UiPart<Stage> {
 
     /**
      * Sets the accelerator of a MenuItem.
+     *
+     * @param menuItem       the menu item to configure
      * @param keyCombination the KeyCombination value of the accelerator
      */
     private void setAccelerator(MenuItem menuItem, KeyCombination keyCombination) {
@@ -150,6 +155,12 @@ public class MainWindow extends UiPart<Stage> {
         }
     }
 
+    /**
+     * Opens the view window with the specified person's details,
+     * or focuses on it if it is already opened.
+     *
+     * @param person the person to display
+     */
     @FXML
     public void handleView(Person person) {
         viewWindow.setPerson(person);
@@ -159,6 +170,10 @@ public class MainWindow extends UiPart<Stage> {
             viewWindow.focus();
         }
     }
+
+    /**
+     * Shows this main window.
+     */
     void show() {
         primaryStage.show();
     }
@@ -176,6 +191,9 @@ public class MainWindow extends UiPart<Stage> {
         primaryStage.hide();
     }
 
+    /**
+     * Returns the person list panel displayed in this window.
+     */
     public PersonListPanel getPersonListPanel() {
         return personListPanel;
     }

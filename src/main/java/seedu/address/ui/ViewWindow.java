@@ -60,6 +60,8 @@ public class ViewWindow extends UiPart<Region> {
 
     /**
      * Returns true if the view window is currently being shown.
+     *
+     * @return true if the window is showing, false otherwise
      */
     public boolean isShowing() {
         return stage.isShowing();
@@ -74,6 +76,8 @@ public class ViewWindow extends UiPart<Region> {
 
     /**
      * Sets the person details to be shown in the view window.
+     *
+     * @param person the person whose details are to be displayed
      */
     public void setPerson(Person person) {
         nameLabel.setText(person.getName().toString());
@@ -108,7 +112,11 @@ public class ViewWindow extends UiPart<Region> {
 
     /**
      * Extracts the date portion of a remark.
-     * Replace this implementation if your Remark class has a proper getDate() method.
+     * Replace this implementation if your Remark class has a proper getDate()
+     * method.
+     *
+     * @param remark the remark to extract date from
+     * @return the extracted date as a string
      */
     private String extractDate(Remark remark) {
         return remark.getDate().toString();
@@ -116,7 +124,11 @@ public class ViewWindow extends UiPart<Region> {
 
     /**
      * Extracts the remark text portion of a remark.
-     * Replace this implementation if your Remark class has a proper getter for the remark text.
+     * Replace this implementation if your Remark class has a proper getter for the
+     * remark text.
+     *
+     * @param remark the remark to extract text from
+     * @return the extracted remark text
      */
     private String extractRemarkText(Remark remark) {
         return remark.getText();
