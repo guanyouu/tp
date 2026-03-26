@@ -34,7 +34,7 @@ public class ViewCommandTest {
         // CommandResult for ViewCommand should contain the person object
         CommandResult expectedCommandResult = new CommandResult(expectedMessage, personToView);
 
-        assertCommandSuccess(viewCommand, model, expectedCommandResult, expectedModel);
+        assertCommandSuccess(viewCommand, model, expectedCommandResult.getFeedbackToUser(), expectedModel);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class ViewCommandTest {
 
         CommandResult expectedCommandResult = new CommandResult(expectedMessage, personToView);
 
-        assertCommandSuccess(viewCommand, model, expectedCommandResult, expectedModel);
+        assertCommandSuccess(viewCommand, model, expectedCommandResult.getFeedbackToUser(), expectedModel);
     }
 
     @Test

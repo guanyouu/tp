@@ -96,12 +96,12 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_invalidCourseId_failure() {
-        assertParseFailure(parser, " crs/!", "Invalid course ID: !\n" + CourseId.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " crs/!", CourseId.MESSAGE_CONSTRAINTS);
     }
 
     @Test
     public void parse_invalidTGroup_failure() {
-        assertParseFailure(parser, " tg/!", "Invalid tutorial ID: !\n" + TGroup.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " tg/!", TGroup.MESSAGE_CONSTRAINTS);
     }
 
     @Test
@@ -157,14 +157,12 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_invalidCourseIdWithValidTGroup_failure() {
-        assertParseFailure(parser, " crs/! tg/T01",
-                "Invalid course ID: !\n" + CourseId.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " crs/! tg/T01", CourseId.MESSAGE_CONSTRAINTS);
     }
 
     @Test
     public void parse_invalidTGroupWithValidCourseId_failure() {
-        assertParseFailure(parser, " crs/CS2103T tg/!",
-                "Invalid tutorial ID: !\n" + TGroup.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " crs/CS2103T tg/!", TGroup.MESSAGE_CONSTRAINTS);
     }
 
     @Test

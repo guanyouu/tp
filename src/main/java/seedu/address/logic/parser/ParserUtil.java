@@ -75,7 +75,7 @@ public class ParserUtil {
         requireNonNull(courseId);
         String trimmedCourseId = courseId.trim();
         if (!CourseId.isValidCourseId(trimmedCourseId)) {
-            throw new ParseException("Invalid course ID: " + trimmedCourseId + "\n" + CourseId.MESSAGE_CONSTRAINTS);
+            throw new ParseException(CourseId.MESSAGE_CONSTRAINTS);
         }
         return new CourseId(trimmedCourseId);
     }
@@ -105,7 +105,7 @@ public class ParserUtil {
         requireNonNull(tGroup);
         String trimmedTGroup = tGroup.trim();
         if (!TGroup.isValidTGroup(trimmedTGroup)) {
-            throw new ParseException("Invalid tutorial ID: " + trimmedTGroup + "\n" + TGroup.MESSAGE_CONSTRAINTS);
+            throw new ParseException(TGroup.MESSAGE_CONSTRAINTS);
         }
         return new TGroup(trimmedTGroup);
     }

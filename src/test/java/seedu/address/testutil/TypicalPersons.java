@@ -1,15 +1,17 @@
 package seedu.address.testutil;
 
-// import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_AMY;
-// import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_COURSE_ID_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_COURSE_ID_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_EMAIL_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_EMAIL_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_STUDENT_ID_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_STUDENT_ID_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TELE_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TELE_BOB;
-// import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_FRIEND;
-// import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_TGROUP_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_TGROUP_BOB;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,20 +92,23 @@ public class TypicalPersons {
             .build();
 
     // Manually added - Person's details found in {@code CommandTestUtil}
-    public static final Person AMY = new PersonBuilder().withName(VALID_NAME_AMY)
-            .withCourseId("CS2102")
-            .withStudentId("A1234567O")
-            .withTGroup("T10")
-            .withTele(VALID_TELE_AMY)
-            .withEmail(VALID_EMAIL_AMY)
-            .build();
-    public static final Person BOB = new PersonBuilder().withName(VALID_NAME_BOB)
-            .withCourseId("CS2102")
-            .withStudentId("A1234567P")
-            .withTGroup("T11")
-            .withTele(VALID_TELE_BOB)
-            .withEmail(VALID_EMAIL_BOB)
-            .build();
+    public static final Person AMY = new PersonBuilder()
+                    .withName(VALID_NAME_AMY)
+                    .withCourseId(VALID_COURSE_ID_AMY)
+                    .withStudentId(VALID_STUDENT_ID_AMY)
+                    .withTGroup(VALID_TGROUP_AMY)
+                    .withTele(VALID_TELE_AMY)
+                    .withEmail(VALID_EMAIL_AMY)
+                    .build();
+
+    public static final Person BOB = new PersonBuilder()
+                    .withName(VALID_NAME_BOB)
+                    .withCourseId(VALID_COURSE_ID_BOB)
+                    .withStudentId(VALID_STUDENT_ID_BOB)
+                    .withTGroup(VALID_TGROUP_BOB)
+                    .withTele(VALID_TELE_BOB)
+                    .withEmail(VALID_EMAIL_BOB)
+                    .build();
 
     public static final String KEYWORD_MATCHING_MEIER = "Meier"; // A keyword that matches MEIER
 

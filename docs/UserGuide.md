@@ -27,6 +27,8 @@ TeachAssist is a desktop app designed to help full-time teaching assistants mana
   - [Updating a student's progress: `updateprogress`]
   - [Marking a student's attendance: `markattendance`]
   - [Clearing list](#clear)
+  - [Adding a remark: `remark`]
+  - [Deleting a remark: `unremark`]
   - [Exiting the app](#exit)
 - [Command Summary](#command-summary)
 - [Parameter Summary](#parameter-summary)
@@ -69,6 +71,16 @@ TeachAssist is a desktop app designed to help full-time teaching assistants mana
 ---
 
 ## Features
+
+<a name="add"></a>
+### Add a student: `add`
+
+Adds a student to TeachAssist
+
+Format:
+```
+add n/NAME id/ID e/EMAIL crs/COURSE tg/TGROUP [tel/TELE]
+```
 
 <a name="help"></a>
 ### Viewing help : `help` 
@@ -205,6 +217,29 @@ Format:
 clear
 ```
 
+<a name='remark'></a>
+* Adds a remark to the student at a particular index
+
+Format:
+```
+remark INDEX txt/REMARK
+```
+
+**Examples**:
+`remark 1 txt/Needs help with recursion`
+* Adds remark "Needs help with recursion" to 1st student in the currently displayed student list.
+
+<a name='unremark'></a>
+* Removes the remark of a student at a particular index
+
+Format:
+```
+unremark INDEX r/REMARK_INDEX
+```
+**Examples**:
+`unremark 1 r/2`
+* Deletes 2nd remark associated to the 1st student in the currently displayed student list.
+
 <a name="exit"></a>
 ### Exiting the program : `exit`
 
@@ -225,13 +260,15 @@ TeachAssist data are saved in the hard disk automatically after any command that
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
+**Add**    | `add n/NAME id/ID e/EMAIL crs/COURSE tg/TGROUP [tel/TELE]​` <br> e.g., `add n/James Ho p/A1234567X e/jamesho@u.nus.edu crs/CS2103t tg/T01 tel/im_a_ho`
 **Clear**  | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`<br> or alternatively,  `delete id/STUDENT_ID crs/COURSE_ID tg/TUTORIAL_GROUP`<br> e.g., `delete id/A1234567X crs/CS2103T tg/T01`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **Help**   | `help`
+**Remark** | `remark INDEX txt/REMARK`
+**Unremark** | `unremark INDEX r/REMARK_INDEX`
 **Update Progress** | `updateprogress INDEX p/PROGRESS`<br> e.g., `progress 1 p/on_track`<br> or alternatively, `updateprogress id/STUDENT_ID crs/COURSE_ID tg/TUTORIAL_GROUP p/PROGRESS`<br> e.g., `progress id/A1234567X crs/CS2103T tg/T01 p/needs_attention`
 
 
@@ -244,4 +281,3 @@ No. For commands with prefixes such as add and filter, parameters can be entered
 
 **Q: Why did delete 1 remove a different student than I expected?**
 Because the index refers to the current displayed list. You may be referring to an outdated list.
-

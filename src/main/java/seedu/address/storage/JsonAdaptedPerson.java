@@ -13,7 +13,6 @@ import seedu.address.model.person.StudentId;
 import seedu.address.model.person.TGroup;
 import seedu.address.model.person.Tele;
 import seedu.address.model.person.WeekList;
-import seedu.address.model.person.WeeklyAttendanceList;
 
 /**
  * Jackson-friendly version of {@link Person}.
@@ -28,7 +27,7 @@ class JsonAdaptedPerson {
     private final String studentId;
     private final String tGroup;
     private final String tele;
-    private final String weeklyAttendanceList;
+    private final String weekList;
     private final String progress;
 
     /**
@@ -41,7 +40,7 @@ class JsonAdaptedPerson {
             @JsonProperty("studentId") String studentId,
             @JsonProperty("tGroup") String tGroup,
             @JsonProperty("tele") String tele,
-            @JsonProperty("weeklyAttendanceList") String weeklyAttendanceList,
+            @JsonProperty("weekList") String weekList,
             @JsonProperty("progress") String progress) {
         this.name = name;
         this.courseId = courseId;
@@ -49,7 +48,7 @@ class JsonAdaptedPerson {
         this.studentId = studentId;
         this.tGroup = tGroup;
         this.tele = tele;
-        this.weeklyAttendanceList = weeklyAttendanceList;
+        this.weekList = weekList;
         this.progress = progress;
     }
 
@@ -63,7 +62,7 @@ class JsonAdaptedPerson {
         studentId = source.getStudentId().value;
         tGroup = source.getTGroup().value;
         tele = source.getTele() == null ? null : source.getTele().value;
-        weeklyAttendanceList = source.getWeeklyAttendanceList().toString();
+        weekList = source.getWeekList().toString();
         progress = source.getProgress().name();
     }
 
@@ -125,13 +124,13 @@ class JsonAdaptedPerson {
             modelTele = new Tele(tele);
         }
 
-        if (weeklyAttendanceList == null) {
+        if (weekList == null) {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT,
-                    WeeklyAttendanceList.class.getSimpleName()));
+                    WeekList.class.getSimpleName()));
         }
-        WeeklyAttendanceList modelWeeklyAttendanceList;
+        WeekList modelWeekList;
         try {
-            modelWeeklyAttendanceList = WeekList.buildWeekListFromString(weeklyAttendanceList);
+            modelWeekList = WeekList.buildWeekListFromString(weekList);
         } catch (IllegalValueException e) {
             throw new IllegalValueException("Invalid weekly attendance data: " + e.getMessage());
         }
@@ -146,7 +145,7 @@ class JsonAdaptedPerson {
         }
 
         return new Person(modelName, modelCourseId, modelEmail,
-                modelStudentId, modelTGroup, modelTele, modelWeeklyAttendanceList, modelProgress);
+                modelStudentId, modelTGroup, modelTele, modelWeekList, modelProgress);
     }
 
 }

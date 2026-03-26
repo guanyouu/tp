@@ -21,7 +21,6 @@ import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Week;
 import seedu.address.model.person.WeekList;
-import seedu.address.model.person.WeeklyAttendanceList;
 import seedu.address.testutil.PersonBuilder;
 
 /**
@@ -123,7 +122,7 @@ public class MarkAttendanceCommandTest {
         command.execute(model);
 
         Person editedPerson = model.getFilteredPersonList().get(0);
-        WeeklyAttendanceList weekList = editedPerson.getWeeklyAttendanceList();
+        WeekList weekList = editedPerson.getWeekList();
         assertEquals("Y", ((WeekList) weekList).getWeeks()[0].getStatus());
     }
 
@@ -135,7 +134,7 @@ public class MarkAttendanceCommandTest {
         command.execute(model);
 
         Person editedPerson = model.getFilteredPersonList().get(0);
-        WeeklyAttendanceList weekList = editedPerson.getWeeklyAttendanceList();
+        WeekList weekList = editedPerson.getWeekList();
         assertEquals("A", ((WeekList) weekList).getWeeks()[1].getStatus());
     }
 
@@ -154,7 +153,7 @@ public class MarkAttendanceCommandTest {
         commandN.execute(model);
 
         Person editedPerson = model.getFilteredPersonList().get(0);
-        WeeklyAttendanceList weekList = editedPerson.getWeeklyAttendanceList();
+        WeekList weekList = editedPerson.getWeekList();
         assertEquals("N", ((WeekList) weekList).getWeeks()[2].getStatus());
     }
 

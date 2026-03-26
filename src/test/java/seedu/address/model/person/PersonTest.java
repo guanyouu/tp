@@ -115,7 +115,7 @@ public class PersonTest {
         // different type -> returns false
         assertFalse(person.equals(5));
 
-        // different email -> returns true
+        // different email -> returns false
         Person editedPerson = new Person(
                 validName,
                 validCourseId,
@@ -125,7 +125,7 @@ public class PersonTest {
                 validTele,
                 new WeekList(),
                 Progress.NOT_SET);
-        assertTrue(person.equals(editedPerson));
+        assertFalse(person.equals(editedPerson));
 
         // different studentId -> returns false
         editedPerson = new Person(
@@ -151,7 +151,7 @@ public class PersonTest {
                 Progress.NOT_SET);
         assertTrue(person.equals(editedPerson));
 
-        // different name, same email/studentId/tele -> returns true
+        // different name, same email/studentId/tele -> returns false
         editedPerson = new Person(
                 new Name("Bob Tan"),
                 validCourseId,
@@ -161,7 +161,7 @@ public class PersonTest {
                 validTele,
                 new WeekList(),
                 Progress.NOT_SET);
-        assertTrue(person.equals(editedPerson));
+        assertFalse(person.equals(editedPerson));
 
         // different courseId, same email/studentId/tele -> returns false
         editedPerson = new Person(
@@ -197,7 +197,7 @@ public class PersonTest {
                 + ", studentId=" + person.getStudentId()
                 + ", tGroup=" + person.getTGroup()
                 + ", tele=" + (person.getTele() == null ? "-" : person.getTele())
-                + ", weeklyAttendanceList=" + person.getWeeklyAttendanceList()
+                + ", weekList=" + person.getWeekList()
                 + ", progress=" + person.getProgress() + "}";
         assertEquals(expected, person.toString());
     }

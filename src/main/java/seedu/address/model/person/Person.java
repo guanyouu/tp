@@ -5,7 +5,6 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
@@ -26,21 +25,21 @@ public class Person {
     private final Progress progress;
     private final List<Remark> remarks;
 
-    private final WeeklyAttendanceList weeklyAttendanceList;
+    private final WeekList weekList;
 
     /**
      * Every field must be present and not null.
      */
     public Person(Name name, CourseId courseId, Email email, StudentId studentId,
-                  TGroup tGroup, Tele tele, WeeklyAttendanceList weeklyAttendanceList, Progress progress) {
-        requireAllNonNull(name, courseId, email, studentId, tGroup, weeklyAttendanceList, progress);
+                  TGroup tGroup, Tele tele, WeekList weekList, Progress progress) {
+        requireAllNonNull(name, courseId, email, studentId, tGroup, weekList, progress);
         this.name = name;
         this.courseId = courseId;
         this.email = email;
         this.studentId = studentId;
         this.tGroup = tGroup;
         this.tele = tele;
-        this.weeklyAttendanceList = weeklyAttendanceList;
+        this.weekList = weekList;
         this.progress = progress;
         this.remarks = new ArrayList<>();
     }
@@ -73,15 +72,15 @@ public class Person {
         return tele;
     }
 
-    public WeeklyAttendanceList getWeeklyAttendanceList() {
-        return weeklyAttendanceList;
+    public WeekList getWeekList() {
+        return weekList;
     }
     public Progress getProgress() {
         return progress;
     }
 
     public double getAbsenceCount() {
-        return weeklyAttendanceList.calculateWeekAbsence();
+        return weekList.calculateWeekAbsence();
     }
     /**
      * Returns an unmodifiable view of the remarks list.
@@ -133,22 +132,22 @@ public class Person {
         if (other == this) {
             return true;
         }
-
-        // instanceof handles nulls
         if (!(other instanceof Person)) {
             return false;
         }
 
         Person otherPerson = (Person) other;
-        return studentId.equals(otherPerson.studentId)
-                && otherPerson.getCourseId().equals(getCourseId())
-                && otherPerson.getTGroup().equals(getTGroup());
+        return name.equals(otherPerson.name)
+                && courseId.equals(otherPerson.courseId)
+                && studentId.equals(otherPerson.studentId)
+                && tGroup.equals(otherPerson.tGroup)
+                && email.equals(otherPerson.email);
     }
 
     @Override
     public int hashCode() {
-        // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, courseId, email, studentId, tGroup, tele, progress, remarks);
+        return java.util.Objects.hash(
+                name, courseId, email, studentId, tGroup, tele);
     }
 
     @Override
@@ -160,7 +159,7 @@ public class Person {
                 .add("studentId", studentId)
                 .add("tGroup", tGroup)
                 .add("tele", tele)
-                .add("weeklyAttendanceList", weeklyAttendanceList)
+                .add("weekList", weekList)
                 .add("progress", progress)
                 .toString();
     }

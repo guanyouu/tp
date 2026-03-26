@@ -64,7 +64,7 @@ public class PersonCard extends UiPart<Region> {
         email.setText(person.getEmail().value);
         tele.setText(person.getTele() == null ? "-" : person.getTele().value);
         renderProgress();
-        renderWeekAttendance(weekAttendance, (WeekList) person.getWeeklyAttendanceList());
+        renderWeekAttendance(weekAttendance, (WeekList) person.getWeekList());
     }
 
     /**
@@ -150,6 +150,6 @@ public class PersonCard extends UiPart<Region> {
      * Call this in the update method for the card:
      */
     public void updateWeekAttendance(Person person) {
-        renderWeekAttendance(weekAttendance, (WeekList) person.getWeeklyAttendanceList());
+        renderWeekAttendance(weekAttendance, (WeekList) person.getWeekList());
     }
 }
