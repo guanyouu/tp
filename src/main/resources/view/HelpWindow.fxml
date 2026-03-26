@@ -34,7 +34,6 @@
             </padding>
           </HBox>
         </top>
-
         <center>
           <ScrollPane fitToWidth="true" styleClass="scroll-pane">
             <content>
