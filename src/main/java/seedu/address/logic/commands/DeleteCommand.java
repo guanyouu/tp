@@ -3,15 +3,16 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
-import java.util.Objects;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
-import seedu.address.model.person.Name;
+import seedu.address.model.person.CourseId;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.StudentId;
+import seedu.address.model.person.TGroup;
 
 /**
  * Deletes a person identified using its displayed index and name from the address book.
@@ -21,18 +22,20 @@ public class DeleteCommand extends Command {
     public static final String COMMAND_WORD = "delete";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Deletes the person identified by the index number "
-            + "and exact name used in the displayed person list.\n"
-            + "Parameters: INDEX (must be a positive integer), PERSON_NAME (must be an exact match) \n"
-            + "Example: " + COMMAND_WORD + " 1" + " or " + COMMAND_WORD + " John Doe";
+            + ": Deletes a student identified either by the index number used in the displayed student list, "
+            + "or by exact student details.\n"
+            + "Parameters: (a) INDEX (must be a positive integer) "
+            + "or (b) id/STUDENT_ID crs/COURSE_ID tg/TGROUP\n"
+            + "Example: " + COMMAND_WORD + " 1\n"
+            + "Example: " + COMMAND_WORD + " id/A1234567X crs/CS2103T tg/T01";
 
     public static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted Person: %1$s";
 
-    public static final String MESSAGE_PERSON_NOT_FOUND_BY_NAME =
-            "No person with the name \"%1$s\" found on the list.";
+    public static final String MESSAGE_PERSON_NOT_FOUND_BY_DETAILS =
+            "No student matching the given student ID, course ID, and tutorial group was found.";
 
     public static final String MESSAGE_EMPTY_INPUT =
-            "No student specified. Please provide the index number or student name.";
+            "No student specified. Please provide the index number or student ID, course ID, and tutorial group.";
 
     public static final String MESSAGE_INVALID_INDEX =
             "Invalid index number";
@@ -41,31 +44,43 @@ public class DeleteCommand extends Command {
             "Unexpected text after index.";
 
     private final Index targetIndex;
-    private final Name targetName;
+    private final StudentId targetStudentId;
+    private final CourseId targetCourseId;
+    private final TGroup targetTGroup;
 
     /**
-     * Creates a DeleteCommand to delete a person by displayed index.
+     * Creates a DeleteCommand to delete a person by index.
      *
-     * @param targetIndex Index of the person in the displayed person list.
+     * @param targetIndex Index of the person in the filtered person list.
      */
     public DeleteCommand(Index targetIndex) {
+        requireNonNull(targetIndex);
         this.targetIndex = targetIndex;
-        this.targetName = null;
+        this.targetStudentId = null;
+        this.targetCourseId = null;
+        this.targetTGroup = null;
     }
 
     /**
-     * Creates a DeleteCommand to delete a person by person's name.
+     * Creates a DeleteCommand to delete a person by exact student details.
      *
-     * @param targetName Name of the person to delete.
+     * @param targetStudentId Student ID of the person to delete.
+     * @param targetCourseId Course ID of the person to delete.
+     * @param targetTGroup Tutorial group of the person to delete.
      */
-    public DeleteCommand(Name targetName) {
+    public DeleteCommand(StudentId targetStudentId, CourseId targetCourseId, TGroup targetTGroup) {
+        requireNonNull(targetStudentId);
+        requireNonNull(targetCourseId);
+        requireNonNull(targetTGroup);
         this.targetIndex = null;
-        this.targetName = targetName;
+        this.targetStudentId = targetStudentId;
+        this.targetCourseId = targetCourseId;
+        this.targetTGroup = targetTGroup;
     }
 
     /**
      * Deletes a person from the address book, identified either by the displayed list index
-     * or by an exact full name match in the currently displayed person list.
+     * or by an exact student detail match in the currently displayed list.
      */
     @Override
     public CommandResult execute(Model model) throws CommandException {
@@ -74,21 +89,28 @@ public class DeleteCommand extends Command {
 
         Person personToDelete;
 
-        if (targetIndex != null) { // select by index
+        if (targetIndex != null) {
             if (targetIndex.getZeroBased() >= lastShownList.size()) {
                 throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
             }
+
             personToDelete = lastShownList.get(targetIndex.getZeroBased());
-        } else { // select by name
-            if (targetName == null) {
-                throw new CommandException("Please provide a full person name.");
+        } else {
+            personToDelete = null;
+
+            for (Person person : lastShownList) {
+                boolean hasMatchingStudentId = person.getStudentId().equals(targetStudentId);
+                boolean hasMatchingCourseId = person.getCourseId().equals(targetCourseId);
+                boolean hasMatchingTGroup = person.getTGroup().equals(targetTGroup);
+
+                if (hasMatchingStudentId && hasMatchingCourseId && hasMatchingTGroup) {
+                    personToDelete = person;
+                    break;
+                }
             }
-            personToDelete = lastShownList.stream()
-                    .filter(p -> p.getName().equals(targetName))
-                    .findFirst()
-                    .orElse(null);
+
             if (personToDelete == null) {
-                throw new CommandException(String.format(MESSAGE_PERSON_NOT_FOUND_BY_NAME, targetName.toString()));
+                throw new CommandException(MESSAGE_PERSON_NOT_FOUND_BY_DETAILS);
             }
         }
 
@@ -102,21 +124,65 @@ public class DeleteCommand extends Command {
             return true;
         }
 
-        // instanceof handles nulls
         if (!(other instanceof DeleteCommand)) {
             return false;
         }
 
         DeleteCommand otherDeleteCommand = (DeleteCommand) other;
-        return Objects.equals(targetIndex, otherDeleteCommand.targetIndex)
-                && Objects.equals(targetName, otherDeleteCommand.targetName);
+
+        if (targetIndex != null && otherDeleteCommand.targetIndex != null) {
+            return targetIndex.equals(otherDeleteCommand.targetIndex);
+        }
+
+        return targetIndex == null
+                && otherDeleteCommand.targetIndex == null
+                && targetStudentId.equals(otherDeleteCommand.targetStudentId)
+                && targetCourseId.equals(otherDeleteCommand.targetCourseId)
+                && targetTGroup.equals(otherDeleteCommand.targetTGroup);
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
                 .add("targetIndex", targetIndex)
-                .add("targetName", targetName)
+                .add("targetStudentId", targetStudentId)
+                .add("targetCourseId", targetCourseId)
+                .add("targetTGroup", targetTGroup)
                 .toString();
+    }
+
+    /**
+     * Returns true if this delete command targets a person by index.
+     */
+    public boolean isDeleteByIndex() {
+        return targetIndex != null;
+    }
+
+    /**
+     * Returns the target index if this command deletes by index.
+     */
+    public Index getTargetIndex() {
+        return targetIndex;
+    }
+
+    /**
+     * Returns the target student ID for detail-based deletion.
+     */
+    public StudentId getTargetStudentId() {
+        return targetStudentId;
+    }
+
+    /**
+     * Returns the target course ID for detail-based deletion.
+     */
+    public CourseId getTargetCourseId() {
+        return targetCourseId;
+    }
+
+    /**
+     * Returns the target tutorial group for detail-based deletion.
+     */
+    public TGroup getTargetTGroup() {
+        return targetTGroup;
     }
 }
