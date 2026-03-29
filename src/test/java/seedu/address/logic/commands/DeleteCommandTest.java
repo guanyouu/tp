@@ -8,6 +8,7 @@ import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
+import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,10 @@ import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.CourseId;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.StudentId;
+import seedu.address.model.person.TGroup;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for
@@ -80,9 +84,43 @@ public class DeleteCommandTest {
     }
 
     @Test
+    public void execute_validDetailsUnfilteredList_success() {
+        DeleteCommand deleteCommand = new DeleteCommand(
+                new StudentId(ALICE.getStudentId().value),
+                new CourseId(ALICE.getCourseId().value),
+                new TGroup(ALICE.getTGroup().value));
+
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS,
+                Messages.format(ALICE));
+
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(ALICE);
+
+        assertCommandSuccess(deleteCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_invalidDetailsUnfilteredList_throwsCommandException() {
+        DeleteCommand deleteCommand = new DeleteCommand(
+                new StudentId("A0000000Z"),
+                new CourseId("CS9999"),
+                new TGroup("T99"));
+
+        assertCommandFailure(deleteCommand, model, DeleteCommand.MESSAGE_PERSON_NOT_FOUND_BY_DETAILS);
+    }
+
+    @Test
     public void equals() {
         DeleteCommand deleteFirstCommand = new DeleteCommand(INDEX_FIRST_PERSON);
         DeleteCommand deleteSecondCommand = new DeleteCommand(INDEX_SECOND_PERSON);
+        DeleteCommand deleteByDetails = new DeleteCommand(
+                new StudentId(ALICE.getStudentId().value),
+                new CourseId(ALICE.getCourseId().value),
+                new TGroup(ALICE.getTGroup().value));
+        DeleteCommand deleteBySameDetails = new DeleteCommand(
+                new StudentId(ALICE.getStudentId().value),
+                new CourseId(ALICE.getCourseId().value),
+                new TGroup(ALICE.getTGroup().value));
 
         // same object -> returns true
         assertTrue(deleteFirstCommand.equals(deleteFirstCommand));
@@ -91,14 +129,18 @@ public class DeleteCommandTest {
         DeleteCommand deleteFirstCommandCopy = new DeleteCommand(INDEX_FIRST_PERSON);
         assertTrue(deleteFirstCommand.equals(deleteFirstCommandCopy));
 
+        // same detail values -> returns true
+        assertTrue(deleteByDetails.equals(deleteBySameDetails));
+
         // different types -> returns false
         assertFalse(deleteFirstCommand.equals(1));
 
         // null -> returns false
         assertFalse(deleteFirstCommand.equals(null));
 
-        // different person -> returns false
+        // different targets -> returns false
         assertFalse(deleteFirstCommand.equals(deleteSecondCommand));
+        assertFalse(deleteFirstCommand.equals(deleteByDetails));
     }
 
     @Test
@@ -106,7 +148,8 @@ public class DeleteCommandTest {
         Index targetIndex = Index.fromOneBased(1);
         DeleteCommand deleteCommand = new DeleteCommand(targetIndex);
         String expected = DeleteCommand.class.getCanonicalName()
-                + "{targetIndex=" + targetIndex + ", targetName=null}";
+                + "{targetIndex=" + targetIndex
+                + ", targetStudentId=null, targetCourseId=null, targetTGroup=null}";
         assertEquals(expected, deleteCommand.toString());
     }
 

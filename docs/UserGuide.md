@@ -6,9 +6,9 @@
 
 # TeachAssist User Guide
 
-TeachAssist is a desktop app designed to help full-time teaching assistants manage student records efficiently. It is optimized for use via a Command Line Interface (CLI), while still offering the benefits of a Graphical User Interface (GUI). For teaching assistants who are comfortable typing, TeachAssist makes common administrative tasks such as adding, finding, filtering, and deleting student records faster and more convenient than traditional point-and-click apps.
+TeachAssist is a desktop app for full-time Teaching Assistants (TAs) at the National University of Singapore (NUS) who manage student records across multiple courses and tutorial groups. It helps TAs record attendance, track student progress, search for student details, and update or remove records. Users can type commands to complete tasks quickly, while the app also provides a clear visual interface for viewing and managing student information.
 
----
+This guide assumes that users are familiar with basic computer operations, such as opening a terminal or command window, running the application with a given command, and managing files such as copying or backing up data. Users do not need programming knowledge or an understanding of how the application is built.
 
 ## Table of contents
 - [Quick Start](#quick-start)
@@ -46,52 +46,54 @@ TeachAssist is a desktop app designed to help full-time teaching assistants mana
 >
 > **If Java is not installed, or the version number is below 17:**
 > - Download and install Java 17 by following the guide:
->   - [for Windows users](https://se-education.org/guides/tutorials/javaInstallationWindows.html) [for Mac users](https://se-education.org/guides/tutorials/javaInstallationMac.html) [for Linux users](https://se-education.org/guides/tutorials/javaInstallationLinux.html)
+    >   - [for Windows users](https://se-education.org/guides/tutorials/javaInstallationWindows.html) [for Mac users](https://se-education.org/guides/tutorials/javaInstallationMac.html) [for Linux users](https://se-education.org/guides/tutorials/javaInstallationLinux.html)
 > - After installation, restart your terminal and check that the correct version has been installed.
 
 2. Download the latest `TeachAssist.jar` file from [here](https://github.com/AY2526S2-CS2103T-F10-3/tp/releases/tag/v1.3)
 3. Copy the `TeachAssist.jar` file to the folder you want to use as the _home folder_ for your LambdaLab.
 4. Open the command terminal again and do the following:
-   - Type `cd name-of-your-home-folder` and press Enter.
-   - Type `java -jar TeachAssist.jar` and press Enter to run the application.
-   A GUI similar to the below should appear in a few seconds. Note how the app contains some sample data.<br>
-   ![Ui](images/Ui.png)
+    - Type `cd name-of-your-home-folder` and press Enter.
+    - Type `java -jar TeachAssist.jar` and press Enter to run the application.
+      A GUI similar to the below should appear in a few seconds. Note how the app contains some sample data.<br>
+      ![Ui](images/Ui.png)
 
 5. Type the command in the command box and press Enter to execute it. e.g. typing `help` and pressing Enter will open the help window.<br>
    Some example commands you can try:
-   - `help` : Shows the help window that explains the command usage.
-   - `list` : Lists all students.
-   - `delete 3`: Deletes the student at the current list's index 3.
-   - `add n/John Doe id/A0123456X e/johnd@u.nus.edu.com crs/CS2103T tg/T01 tel/@johndoe`: Adds a student named `John Doe`.
-   - `clear`: Deletes all students.
-   - `exit`: Exits the app.
-   
+    - `help` : Shows the help window that explains the command usage.
+    - `list` : Lists all students.
+    - `delete 3`: Deletes the student at the current list's index 3.
+    - `add n/John Doe id/A0123456X e/johnd@u.nus.edu.com crs/CS2103T tg/T01 tel/@johndoe`: Adds a student named `John Doe`.
+    - `clear`: Deletes all students.
+    - `exit`: Exits the app.
+
 6. Refer to the [Features](#features) below for details of each command.
 
 ---
 
 ## Features
 
-<a name="add"></a>
-### Add a student: `add`
-
-Adds a student to TeachAssist
-
-Format:
-```
-add n/NAME id/ID e/EMAIL crs/COURSE tg/TGROUP [tel/TELE]
-```
-
 <a name="help"></a>
-### Viewing help : `help` 
+### Viewing help : `help`
 
 Shows a message explaining how to access the help page.
 
 ![help message](images/helpMessage.png)
 
-Format: 
+Format:
 ```
 help
+```
+
+<a name="delete"></a>
+
+<a name="list"></a>
+### Listing all students `list`
+
+Shows all Persons stored sorted in Ascending order
+
+Format:
+```
+list
 ```
 
 <a name="delete"></a>
@@ -102,7 +104,7 @@ Removes a student from TeachAssist.
 <a name="deletebyindex"></a>
 **Delete by index**
 
-Format: 
+Format:
 ```
 delete INDEX
 ```
@@ -114,7 +116,7 @@ delete INDEX
 <a name="deletebydetails"></a>
 **Delete by student details**
 
-Format: 
+Format:
 ```
 delete id/STUDENT_ID crs/COURSE_ID tg/TUTORIAL_GROUP
 ```
@@ -157,98 +159,142 @@ Examples:
 * `find Jo` returns `John Doe`
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
 
-`delete 3` followed by `no`
-* No change is made.
+<a name="filter"></a>
+### Filtering students: `filter`
+
+Filters the stored student list (all students in the application) using one or more of the available filter fields. All provided filter fields must match (logical AND).
+
+Format: `filter [crs/COURSE_ID] [tg/TUTORIAL_GROUP] [p/PROGRESS] [abs/ABSENCE_COUNT]`
+
+Behaviour:
+* Course ID (`crs/`) and tutorial group (`tg/`) are matched case-insensitively.
+* Progress (`p/`) must be one of the supported tokens: `on_track`, `needs_attention`, `at_risk`, or `clear` (alias `not_set`). Parsing is case-insensitive (for example, `ON_TRACK` or `on_track` are accepted) but matching is by exact token mapping — partial or prefix matches are not supported.
+* Absence count (`abs/`) matches students whose absence count is greater than or equal to the provided number.
+* Multiple filters combine with AND semantics — a student must satisfy every provided filter to be included in the results.
+* At least one filter parameter must be provided; using no parameters will result in an error.
+* Note: the `filter` command applies to the entire stored student list and replaces any existing filter — it does not apply on top of a previously displayed (filtered) list.
+
+Examples:
+* `filter crs/CS2103T` — returns students enrolled in CS2103T.
+* `filter crs/CS2103T tg/T01` — returns students in CS2103T and tutorial group T01.
+* `filter p/on_track` — returns students whose progress is `on_track`.
+* `filter abs/2` — returns students with 2 or more absences.
+* `filter crs/CS2103T tg/T02 p/needs_attention abs/1` — returns students matching all four criteria.
+
+Expected output:
+`There are N students matching this filter.`
+
+Tip: if a filter returns no results, verify you used the correct course ID/tutor group format and valid progress values; run `help` or check the Update Progress section for exact progress tokens.
+
 
 <a name="progress"></a>
-### Updating a student's progress : `progress`
+### Updating a student's progress : `updateprogress`
 
-Updates a student's progress to either:
-1. `on_track`
-2. `needs_attention`
-3. `at_risk`
+Updates a student's progress. Valid progress tokens:
 
-<div markdown="span" class="alert alert-primary">
-:bulb: **Tip:**<br><br>
+- `on_track`
+- `needs_attention`
+- `at_risk`
+- `not_set` (alias: `clear`)
 
-To remove the progress tag of a student, use `not_set`
-</div>
+Parsing is case-insensitive (for example `ON_TRACK` and `on_track` are both accepted). Matching is by exact token mapping: the token must match one of the allowed values after normalization — partial or prefix matches (e.g., `on` or `ontrack`) are not supported. Underscores are required where shown.
+
+Tip: to remove a progress tag use `not_set` or `clear`.
 
 <a name="progressbyindex"></a>
 **Update Progress by index**
 
-Format: 
+Format:
 ```
 updateprogress INDEX p/PROGRESS
 ```
 
-* Updates the progress of student at the specified `INDEX` to `PROGRESS`.
+* Updates the progress of the student at the specified `INDEX` to `PROGRESS`.
 * The index refers to the index number shown in the currently displayed student list.
 * The index **must be a positive integer** 1, 2, 3, …
 
 <a name="progressbydetails"></a>
 **Update progress by student details**
 
-Format: 
+Format:
 ```
 updateprogress id/STUDENT_ID crs/COURSE_ID tg/TUTORIAL_GROUP p/PROGRESS
 ```
 
-* Updates the progress of student with the exact details match for `STUDENT_ID`, `COURSE_ID`, and `TUTORIAL_GROUP` to `PROGRESS`.
+* Updates the progress of the student with the exact details match for `STUDENT_ID`, `COURSE_ID`, and `TUTORIAL_GROUP` to `PROGRESS`.
 
 **Examples**:
-`progress 1 p/on_track`
-* Sets the progress of the 1st student in the currently displayed student list to on_track.
+`updateprogress 1 p/on_track`
+* Sets the progress of the 1st student in the currently displayed student list to `on_track`.
 
-`progress id/A1234567X crs/CS2103T tg/T01 p/needs_attention`
-* Sets the progress of the student with student ID A1234567X, course CS2103T, and tutorial group T01 to needs_attention.
+`updateprogress id/A1234567X crs/CS2103T tg/T01 p/needs_attention`
+* Sets the progress of the student with student ID A1234567X, course CS2103T, and tutorial group T01 to `needs_attention`.
 
-`progress 2 p/not_set`
+`updateprogress 2 p/not_set`
 * Clears the progress status of the 2nd student in the currently displayed student list.
 
 <a name="clear"></a>
-### Clearing all entries : `clear`
 
-Clears all entries from the address book.
+### Marking a student's attendance : `markattendance`
+Updates a student's Attendance Status to either:
+1. `y` --> Present  --> Green
+2. `a` --> Absent   --> Red
+3. `n` --> Undetermined   --> Grey
 
-Format: 
-```
-clear
-```
+<div markdown="span" class="alert alert-primary"></div>
+:bulb: **Tip:**<br><br>
 
 <a name='remark'></a>
 ### Adding a remark: `remark`
 
 * Adds a remark to the student at a particular index
 
+<a name="attendancebyindex"></a>
+**Update attendance by index, week, status**
+
 Format:
 ```
-remark INDEX txt/REMARK
+markattendance INDEX week/WEEK sta/STATUS
 ```
 
-**Examples**:
-`remark 1 txt/Needs help with recursion`
-* Adds remark "Needs help with recursion" to 1st student in the currently displayed student list.
+* Updates the attendance of student at the specified `INDEX` and `WEEK` to `STATUS`.
+* The index refers to the index number shown in the currently displayed student list.
+* The index **must be a positive integer** 1, 2, 3, …
+* The week referes to school weeks, which are visible to the right of teachassist
+
+**Examples**:  
+`markattendance 1 week/3 sta/y`
+* marks the attendance of the 1st student's attendance in week 3 as present -> Green.
+
+`markattendance 2 week/6 sta/a`
+* marks the attendance of the 2nd student's attendance in week 6 as absent -> Red.
+
+`markattendance 4 week/4 sta/n`
+* marks the attendance of the 4th student's attendance in week 4 as unmarked -> Grey.
+
+<a name="clear"></a>
+
+### Clearing all entries : `clear`
+
+Clears all entries from the address book.
+
+Format:
+```
+clear
+```
 
 <a name='unremark'></a>
 ### Deleting a remark: `unremark`
 
 * Removes the remark of a student at a particular index
 
-Format:
-```
-unremark INDEX r/REMARK_INDEX
-```
-**Examples**:
-`unremark 1 r/2`
-* Deletes 2nd remark associated to the 1st student in the currently displayed student list.
 
 <a name="exit"></a>
 ### Exiting the program : `exit`
 
 Exits the program.
 
-Format: 
+Format:
 ```
 exit
 ```
@@ -263,15 +309,13 @@ TeachAssist data are saved in the hard disk automatically after any command that
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add n/NAME id/ID e/EMAIL crs/COURSE tg/TGROUP [tel/TELE]​` <br> e.g., `add n/James Ho p/A1234567X e/jamesho@u.nus.edu crs/CS2103t tg/T01 tel/im_a_ho`
+**Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
 **Clear**  | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`<br> or alternatively,  `delete id/STUDENT_ID crs/COURSE_ID tg/TUTORIAL_GROUP`<br> e.g., `delete id/A1234567X crs/CS2103T tg/T01`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **Help**   | `help`
-**Remark** | `remark INDEX txt/REMARK`
-**Unremark** | `unremark INDEX r/REMARK_INDEX`
 **Update Progress** | `updateprogress INDEX p/PROGRESS`<br> e.g., `progress 1 p/on_track`<br> or alternatively, `updateprogress id/STUDENT_ID crs/COURSE_ID tg/TUTORIAL_GROUP p/PROGRESS`<br> e.g., `progress id/A1234567X crs/CS2103T tg/T01 p/needs_attention`
 
 
@@ -284,3 +328,4 @@ No. For commands with prefixes such as add and filter, parameters can be entered
 
 **Q: Why did delete 1 remove a different student than I expected?**
 Because the index refers to the current displayed list. You may be referring to an outdated list.
+
