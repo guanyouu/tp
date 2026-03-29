@@ -18,22 +18,22 @@ import seedu.address.model.person.WeekList;
 public class SampleDataUtil {
     public static Person[] getSamplePersons() {
         return new Person[] {
-            new Person(new Name("Alex Yeoh"), new CourseId("CS2103T"), new Email("alexyeoh@example.com"),
+            new Person(new Name("Alex Yeoh"), new CourseId("CS2103T"), new Email("alexyeoh@u.nus.edu"),
                 new StudentId("A1234567X"), new TGroup("T12"), new Tele("@alexyeoh"),
                     new WeekList(), Progress.ON_TRACK),
-            new Person(new Name("Bernice Yu"), new CourseId("CS2103T"), new Email("berniceyu@example.com"),
+            new Person(new Name("Bernice Yu"), new CourseId("CS2103T"), new Email("berniceyu@u.nus.edu"),
                 new StudentId("A7654321X"), new TGroup("T12"), new Tele("@berniceyu"),
                     new WeekList(), Progress.NEEDS_ATTENTION),
-            new Person(new Name("Charlotte Oliveiro"), new CourseId("CS2103T"), new Email("charlotte@example.com"),
+            new Person(new Name("Charlotte Oliveiro"), new CourseId("CS2103T"), new Email("charlotte@u.nus.edu"),
                 new StudentId("A1111111X"), new TGroup("T12"), new Tele("@charlotte"),
                     new WeekList(), Progress.NOT_SET),
-            new Person(new Name("David Li"), new CourseId("CS2103T"), new Email("lidavid@example.com"),
+            new Person(new Name("David Li"), new CourseId("CS2103T"), new Email("lidavid@u.nus.edu"),
                 new StudentId("A2222222X"), new TGroup("T12"), new Tele("@lidavid"),
                     new WeekList(), Progress.NOT_SET),
-            new Person(new Name("Irfan Ibrahim"), new CourseId("CS2103T"), new Email("irfan@example.com"),
+            new Person(new Name("Irfan Ibrahim"), new CourseId("CS2103T"), new Email("irfan@u.nus.edu"),
                 new StudentId("A3333333X"), new TGroup("T12"), new Tele("@irfan"),
                     new WeekList(), Progress.AT_RISK),
-            new Person(new Name("Roy Balakrishnan"), new CourseId("CS2103T"), new Email("royb@example.com"),
+            new Person(new Name("Roy Balakrishnan"), new CourseId("CS2103T"), new Email("royb@u.nus.edu"),
                 new StudentId("A4444444X"), new TGroup("T12"), new Tele("@royb"),
                     new WeekList(), Progress.NEEDS_ATTENTION)
         };
