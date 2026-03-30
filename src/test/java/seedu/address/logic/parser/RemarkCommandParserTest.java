@@ -75,21 +75,21 @@ public class RemarkCommandParserTest {
 
     @Test
     public void parse_validArguments_returnsSuccess() {
-        Remark remark = new Remark("Participates actively in class", LocalDate.of(2026, 3, 27));
+        Remark remark = new Remark("Participates actively in class", LocalDate.now());
         assertParseSuccess(parser, "1 txt/Participates actively in class",
             new RemarkCommand(Index.fromOneBased(1), remark));
     }
 
     @Test
     public void parse_argumentsWithExtraWhitespace_returnsSuccess() {
-        Remark remark = new Remark("Participates actively in class", LocalDate.of(2026, 3, 27));
+        Remark remark = new Remark("Participates actively in class", LocalDate.now());
         assertParseSuccess(parser, "   1   txt/   Participates actively in class   ",
             new RemarkCommand(Index.fromOneBased(1), remark));
     }
 
     @Test
     public void parse_remarkWithPunctuation_returnsSuccess() {
-        Remark remark = new Remark("Participates actively in class!", LocalDate.of(2026, 3, 27));
+        Remark remark = new Remark("Participates actively in class!", LocalDate.now());
         assertParseSuccess(parser, "1 txt/Participates actively in class!",
             new RemarkCommand(Index.fromOneBased(1), remark));
     }
