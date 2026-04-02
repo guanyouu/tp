@@ -4,7 +4,7 @@
     pageNav: 3
 ---
 
-# AB-3 Developer Guide
+# TeachAssist Developer Guide
 
 <!-- * Table of Contents -->
 <page-nav-print />
@@ -123,7 +123,7 @@ How the parsing works:
 
 The `Model` component,
 
-* stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
+* stores the TeachAssist data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
 * stores the currently 'selected' `Person` objects (e.g., results of a search query) as a separate _filtered_ list which is exposed to outsiders as an unmodifiable `ObservableList<Person>` that can be 'observed' e.g. the UI can be bound to this list so that the UI automatically updates when the data in the list change.
 * stores a `UserPref` object that represents the user’s preferences. This is exposed to the outside as a `ReadOnlyUserPref` objects.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
@@ -144,7 +144,7 @@ The `Model` component,
 <puml src="diagrams/StorageClassDiagram.puml" width="550" />
 
 The `Storage` component,
-* can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
+* can save both TeachAssist data and user preference data in JSON format, and read them back into corresponding objects.
 * inherits from both `AddressBookStorage` and `UserPrefStorage`, which means it can be treated as either one (if only the functionality of only one is needed).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
@@ -164,33 +164,33 @@ This section describes some noteworthy details on how certain features are imple
 
 The proposed undo/redo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with an undo/redo history, stored internally as an `addressBookStateList` and `currentStatePointer`. Additionally, it implements the following operations:
 
-* `VersionedAddressBook#commit()` — Saves the current address book state in its history.
-* `VersionedAddressBook#undo()` — Restores the previous address book state from its history.
-* `VersionedAddressBook#redo()` — Restores a previously undone address book state from its history.
+* `VersionedAddressBook#commit()` — Saves the current TeachAssist state in its history.
+* `VersionedAddressBook#undo()` — Restores the previous TeachAssist state from its history.
+* `VersionedAddressBook#redo()` — Restores a previously undone TeachAssist state from its history.
 
 These operations are exposed in the `Model` interface as `Model#commitAddressBook()`, `Model#undoAddressBook()` and `Model#redoAddressBook()` respectively.
 
 Given below is an example usage scenario and how the undo/redo mechanism behaves at each step.
 
-Step 1. The user launches the application for the first time. The `VersionedAddressBook` will be initialized with the initial address book state, and the `currentStatePointer` pointing to that single address book state.
+Step 1. The user launches the application for the first time. The `VersionedAddressBook` will be initialized with the initial TeachAssist state, and the `currentStatePointer` pointing to that single TeachAssist state.
 
 <puml src="diagrams/UndoRedoState0.puml" alt="UndoRedoState0" />
 
-Step 2. The user executes `delete 5` command to delete the 5th person in the address book. The `delete` command calls `Model#commitAddressBook()`, causing the modified state of the address book after the `delete 5` command executes to be saved in the `addressBookStateList`, and the `currentStatePointer` is shifted to the newly inserted address book state.
+Step 2. The user executes `delete 5` command to delete the 5th person in the TeachAssist. The `delete` command calls `Model#commitAddressBook()`, causing the modified state of the TeachAssist after the `delete 5` command executes to be saved in the `addressBookStateList`, and the `currentStatePointer` is shifted to the newly inserted TeachAssist state.
 
 <puml src="diagrams/UndoRedoState1.puml" alt="UndoRedoState1" />
 
-Step 3. The user executes `add n/David …​` to add a new person. The `add` command also calls `Model#commitAddressBook()`, causing another modified address book state to be saved into the `addressBookStateList`.
+Step 3. The user executes `add n/David …​` to add a new person. The `add` command also calls `Model#commitAddressBook()`, causing another modified TeachAssist state to be saved into the `addressBookStateList`.
 
 <puml src="diagrams/UndoRedoState2.puml" alt="UndoRedoState2" />
 
 <box type="info" seamless>
 
-**Note:** If a command fails its execution, it will not call `Model#commitAddressBook()`, so the address book state will not be saved into the `addressBookStateList`.
+**Note:** If a command fails its execution, it will not call `Model#commitAddressBook()`, so the TeachAssist state will not be saved into the `addressBookStateList`.
 
 </box>
 
-Step 4. The user now decides that adding the person was a mistake, and decides to undo that action by executing the `undo` command. The `undo` command will call `Model#undoAddressBook()`, which will shift the `currentStatePointer` once to the left, pointing it to the previous address book state, and restores the address book to that state.
+Step 4. The user now decides that adding the person was a mistake, and decides to undo that action by executing the `undo` command. The `undo` command will call `Model#undoAddressBook()`, which will shift the `currentStatePointer` once to the left, pointing it to the previous TeachAssist state, and restores TeachAssist to that state.
 
 <puml src="diagrams/UndoRedoState3.puml" alt="UndoRedoState3" />
 
@@ -216,19 +216,19 @@ Similarly, how an undo operation goes through the `Model` component is shown bel
 
 <puml src="diagrams/UndoSequenceDiagram-Model.puml" alt="UndoSequenceDiagram-Model" />
 
-The `redo` command does the opposite — it calls `Model#redoAddressBook()`, which shifts the `currentStatePointer` once to the right, pointing to the previously undone state, and restores the address book to that state.
+The `redo` command does the opposite — it calls `Model#redoAddressBook()`, which shifts the `currentStatePointer` once to the right, pointing to the previously undone state, and restores TeachAssist to that state.
 
 <box type="info" seamless>
 
-**Note:** If the `currentStatePointer` is at index `addressBookStateList.size() - 1`, pointing to the latest address book state, then there are no undone AddressBook states to restore. The `redo` command uses `Model#canRedoAddressBook()` to check if this is the case. If so, it will return an error to the user rather than attempting to perform the redo.
+**Note:** If the `currentStatePointer` is at index `addressBookStateList.size() - 1`, pointing to the latest TeachAssist state, then there are no undone AddressBook states to restore. The `redo` command uses `Model#canRedoAddressBook()` to check if this is the case. If so, it will return an error to the user rather than attempting to perform the redo.
 
 </box>
 
-Step 5. The user then decides to execute the command `list`. Commands that do not modify the address book, such as `list`, will usually not call `Model#commitAddressBook()`, `Model#undoAddressBook()` or `Model#redoAddressBook()`. Thus, the `addressBookStateList` remains unchanged.
+Step 5. The user then decides to execute the command `list`. Commands that do not modify the TeachAssist, such as `list`, will usually not call `Model#commitAddressBook()`, `Model#undoAddressBook()` or `Model#redoAddressBook()`. Thus, the `addressBookStateList` remains unchanged.
 
 <puml src="diagrams/UndoRedoState4.puml" alt="UndoRedoState4" />
 
-Step 6. The user executes `clear`, which calls `Model#commitAddressBook()`. Since the `currentStatePointer` is not pointing at the end of the `addressBookStateList`, all address book states after the `currentStatePointer` will be purged. Reason: It no longer makes sense to redo the `add n/David …​` command. This is the behavior that most modern desktop applications follow.
+Step 6. The user executes `clear`, which calls `Model#commitAddressBook()`. Since the `currentStatePointer` is not pointing at the end of the `addressBookStateList`, all TeachAssist states after the `currentStatePointer` will be purged. Reason: It no longer makes sense to redo the `add n/David …​` command. This is the behavior that most modern desktop applications follow.
 
 <puml src="diagrams/UndoRedoState5.puml" alt="UndoRedoState5" />
 
@@ -240,7 +240,7 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 **Aspect: How undo & redo executes:**
 
-* **Alternative 1 (current choice):** Saves the entire address book.
+* **Alternative 1 (current choice):** Saves the entire TeachAssist.
     * Pros: Easy to implement.
     * Cons: May have performance issues in terms of memory usage.
 
@@ -299,41 +299,21 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Use cases
 
-**Use case: Delete a person**<br>
-**Actor:** User<br>
-**MSS**
-
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
-5. Use case ends.
-
-**Extensions**
-
-* 2a. The list is empty.
-    * 2a1. Use case ends.
-
-* 3a. The given index is invalid.
-
-    * 3a1. AddressBook shows an error message.
-    * Use case ends.
-    
 **Use Case: UC01 - Purge Sample Data**<br>
 **Actor:** User<br>
 **MSS:**
 1. User enters the purge command.
-2. TCMS detects sample data present.
-3. TCMS asks for confirmation.
+2. TeachAssist detects sample data present.
+3. TeachAssist asks for confirmation.
 4. User confirms the purge.
-5. TCMS deletes all sample records.
-6. TCMS confirms that sample data has been removed.
+5. TeachAssist deletes all sample records.
+6. TeachAssist confirms that sample data has been removed.
 7. Use case ends.
 
 **Extensions:** 
 
 * 3a. User cancels the purge.
-    * 3a1. TCMS aborts the purge operation.
+    * 3a1. TeachAssist aborts the purge operation.
     * Use case ends.
 
 **Use Case: UC02 – Add Student**<br>
@@ -341,20 +321,20 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 **MSS:**
 1. User enters the command to add a student.
 2. User provides the student’s name, student ID, course, tutorial group, and optionally a Telegram username.
-3. TCMS validates the input.
-4. TCMS creates the student record.
-5. TCMS adds the student to the student list.
-6. TCMS confirms that the student has been added.
+3. TeachAssist validates the input.
+4. TeachAssist creates the student record.
+5. TeachAssist adds the student to the student list.
+6. TeachAssist confirms that the student has been added.
 7. Use case ends.
 
 **Extensions:**
 
 * 3a. The input format is invalid.
-    * 3a1. TCMS displays an error message and the correct command format.
+    * 3a1. TeachAssist displays an error message and the correct command format.
     * Use case ends.
 * 3b. A student with the same student ID already exists.
-    * 3b1. TCMS rejects the command.
-    * 3b2. TCMS informs the user that the student already exists.
+    * 3b1. TeachAssist rejects the command.
+    * 3b2. TeachAssist informs the user that the student already exists.
     * Use case ends.
 
 **Use Case: UC05 – Mark Attendance**<br>
@@ -386,23 +366,32 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 1. User selects a student.
 2. User enters the participation recording command.
-3. TCMS requests participation details.
+3. TeachAssist requests participation details.
 4. User enters the participation score or description.
-5. TCMS records the participation entry.
-6. TCMS confirms the update.
+5. TeachAssist records the participation entry.
+6. TeachAssist confirms the update.
 7. Use case ends
 
 **Use Case: UC08 – Update Student Progress Status**<br>
 **Actor:** User<br>
 **MSS:**
 
-1. User selects a student.
-2. User enters the progress status update command.
-3. TCMS requests the new status (Red, Yellow, Green).
-4. User enters the status.
-5. TCMS updates the student progress status.
-6. TCMS confirms the update.
-7. Use case ends.
+1. User enters a command to update a student’s progress status to a specific status.
+3. TeachAssist updates the student progress status.
+4. TeachAssist confirms the update.
+5. Use case ends.
+
+**Extensions**
+
+* 1a. The command format is invalid.
+    * 1a1. TeachAssist displays an error message and the correct command format.
+    * Use case ends.
+* 1b. The specified student does not exist.
+    * 1b1. TeachAssist informs the user that the student record cannot be found.
+    * Use case ends.
+* 1c. The specified progress status is invalid.
+    * 1c1. TeachAssist informs the user of the valid progress statuses.
+    * Use case ends.
 
 **Use Case: UC09 – View Student History**<br>
 **Actor:** User<br>
@@ -440,19 +429,26 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 **Actor:** User <br>
 **MSS:**
 
-1. User enters the command to delete a student.
-2. TeachAssist identifies the student record to be deleted.
-3. TeachAssist removes the student record from the system.
-4. TeachAssist confirms that the student has been deleted.
-5. Use case ends.
+1. User enters a command to delete a student.
+2. TeachAssist validates the command and identifies the student record to be deleted.
+3. TeachAssist displays the student details and asks the user to confirm the deletion.
+4. User enters a confirmation response.
+5. TeachAssist deletes the student record from the system.
+6. Use case ends.
 
 **Extensions**
 
-* 1a. The command format is invalid
+* 1a. The command format is invalid.
     * 1a1. TeachAssist displays an error message and the correct command format.
     * Use case ends.
 * 2a. The specified student does not exist.
     * 2a1. TeachAssist informs the user that the student record cannot be found.
+    * Use case ends.
+* 4a. The user declines the deletion.
+    * 4a1. TeachAssist cancels the deletion.
+    * Use case ends.
+* 4b. The confirmation response is invalid.
+    * 4b1. TeachAssist informs the user to enter a valid confirmation response.
     * Use case ends.
  
 **Use Case: UC12 – View Student List** <br>
@@ -490,8 +486,6 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 ### Glossary
 
 * **Mainstream OS**: Windows, Linux, Unix, MacOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
-
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Appendix: Instructions for manual testing**
