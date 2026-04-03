@@ -19,21 +19,25 @@ import seedu.address.model.person.TGroup;
  */
 public class FilterCommandParser implements Parser<FilterCommand> {
 
-    private static final String MESSAGE_INVALID_PREFIX =
+    static final String MESSAGE_INVALID_PREFIX =
             "Invalid prefix in filter command. Allowed prefixes are: crs/, tg/, p/, and abs/.\n"
                     + FilterCommand.MESSAGE_USAGE;
-    private static final String MESSAGE_UNEXPECTED_PREAMBLE =
+    static final String MESSAGE_UNEXPECTED_PREAMBLE =
             "Unexpected text before prefixes.\n" + FilterCommand.MESSAGE_USAGE;
-    private static final String MESSAGE_EMPTY_COURSE_ID =
+    static final String MESSAGE_EMPTY_COURSE_ID =
             "Missing value for prefix: crs/\nCourse ID cannot be empty.\n" + FilterCommand.MESSAGE_USAGE;
-    private static final String MESSAGE_EMPTY_TGROUP =
+    static final String MESSAGE_EMPTY_TGROUP =
             "Missing value for prefix: tg/\nTutorial group cannot be empty.\n" + FilterCommand.MESSAGE_USAGE;
-    private static final String MESSAGE_EMPTY_PROGRESS =
+    static final String MESSAGE_EMPTY_PROGRESS =
             "Missing value for prefix: p/\nProgress cannot be empty.\n" + FilterCommand.MESSAGE_USAGE;
-    private static final String MESSAGE_EMPTY_ABSENCE =
+    static final String MESSAGE_EMPTY_ABSENCE =
             "Missing value for prefix: abs/\nAbsence count cannot be empty.\n" + FilterCommand.MESSAGE_USAGE;
-    private static final String MESSAGE_NO_FILTERS =
+    static final String MESSAGE_NO_FILTERS =
             "At least one filter must be provided.\n" + FilterCommand.MESSAGE_USAGE;
+    static final String MESSAGE_POSSIBLE_PREFIX_MISSING_SLASH =
+            "It looks like you used a prefix without the trailing '/' or value. "
+                    + "Make sure to use the form: <prefix>/<value> (e.g., abs/2).\n"
+                    + FilterCommand.MESSAGE_USAGE;
 
     /**
      * Parses the given {@code String} of arguments in the context of the FilterCommand
@@ -53,8 +57,6 @@ public class FilterCommandParser implements Parser<FilterCommand> {
         Optional<Progress> progress = parseProgress(argMultimap);
         Optional<Integer> absenceCount = parseAbsenceCount(argMultimap);
 
-        ensureAtLeastOneFilter(courseId, tGroup, progress, absenceCount);
-
         return new FilterCommand(new FilterMatchesPredicate(courseId, tGroup, progress, absenceCount));
     }
 
@@ -62,16 +64,21 @@ public class FilterCommandParser implements Parser<FilterCommand> {
      * Validates the overall structure of the filter command input.
      */
     private void validateInput(String args, ArgumentMultimap argMultimap) throws ParseException {
-        checkForInvalidPrefixes(args, argMultimap);
+
+        checkForBarePrefixes(argMultimap);
+        checkForUnknownPrefixTokens(args);
+        checkForUnexpectedPreamble(argMultimap);
+        ensureAtLeastOneFilterPresent(argMultimap);
         argMultimap.verifyNoDuplicatePrefixesFor(
                 PREFIX_COURSEID, PREFIX_TGROUP, PREFIX_PROGRESS, PREFIX_ABSENCE);
         checkForMissingValues(argMultimap);
+
     }
 
     /**
      * Checks for invalid prefixes and unexpected text before valid prefixes.
      */
-    private void checkForInvalidPrefixes(String args, ArgumentMultimap argMultimap) throws ParseException {
+    private void checkForUnknownPrefixTokens(String args) throws ParseException {
         String trimmedArgs = args.trim();
         if (trimmedArgs.isEmpty()) {
             return;
@@ -86,10 +93,52 @@ public class FilterCommandParser implements Parser<FilterCommand> {
                 throw new ParseException(MESSAGE_INVALID_PREFIX);
             }
         }
+    }
 
+    /**
+     * Checks for unexpected preamble text before valid prefixes.
+     */
+    private void checkForUnexpectedPreamble(ArgumentMultimap argMultimap) throws ParseException {
         String preamble = argMultimap.getPreamble().trim();
-        if (!preamble.isEmpty()) {
-            throw new ParseException(MESSAGE_UNEXPECTED_PREAMBLE);
+        if (preamble.isEmpty()) {
+            return;
+        }
+
+        // Any remaining unexpected preamble text is treated as an unexpected preamble.
+        throw new ParseException(MESSAGE_UNEXPECTED_PREAMBLE);
+    }
+
+    /**
+     * Checks for bare prefix tokens in the preamble (prefix name without '/') and
+     * throws a helpful message suggesting the correct '<prefix>/<value>' form.
+     */
+    private void checkForBarePrefixes(ArgumentMultimap argMultimap) throws ParseException {
+        String preamble = argMultimap.getPreamble().trim();
+        if (preamble.isEmpty()) {
+            return;
+        }
+
+        String[] barePrefixes = new String[] {
+                PREFIX_COURSEID.getPrefix().endsWith("/")
+                        ? PREFIX_COURSEID.getPrefix().substring(0, PREFIX_COURSEID.getPrefix().length() - 1)
+                        : PREFIX_COURSEID.getPrefix(),
+                PREFIX_TGROUP.getPrefix().endsWith("/")
+                        ? PREFIX_TGROUP.getPrefix().substring(0, PREFIX_TGROUP.getPrefix().length() - 1)
+                        : PREFIX_TGROUP.getPrefix(),
+                PREFIX_PROGRESS.getPrefix().endsWith("/")
+                        ? PREFIX_PROGRESS.getPrefix().substring(0, PREFIX_PROGRESS.getPrefix().length() - 1)
+                        : PREFIX_PROGRESS.getPrefix(),
+                PREFIX_ABSENCE.getPrefix().endsWith("/")
+                        ? PREFIX_ABSENCE.getPrefix().substring(0, PREFIX_ABSENCE.getPrefix().length() - 1)
+                        : PREFIX_ABSENCE.getPrefix()
+        };
+
+        for (String token : preamble.split("\\s+")) {
+            for (String bare : barePrefixes) {
+                if (token.equalsIgnoreCase(bare)) {
+                    throw new ParseException(MESSAGE_POSSIBLE_PREFIX_MISSING_SLASH);
+                }
+            }
         }
     }
 
@@ -115,12 +164,15 @@ public class FilterCommandParser implements Parser<FilterCommand> {
     }
 
     /**
-     * Ensures that at least one filter field is present.
+     * Ensures that at least one filter field is present in the argument multimap.
      */
-    private void ensureAtLeastOneFilter(Optional<CourseId> courseId, Optional<TGroup> tGroup,
-                                        Optional<Progress> progress, Optional<Integer> absenceCount)
-            throws ParseException {
-        if (courseId.isEmpty() && tGroup.isEmpty() && progress.isEmpty() && absenceCount.isEmpty()) {
+    private void ensureAtLeastOneFilterPresent(ArgumentMultimap argMultimap) throws ParseException {
+        boolean anyPresent = argMultimap.getValue(PREFIX_COURSEID).isPresent()
+                || argMultimap.getValue(PREFIX_TGROUP).isPresent()
+                || argMultimap.getValue(PREFIX_PROGRESS).isPresent()
+                || argMultimap.getValue(PREFIX_ABSENCE).isPresent();
+
+        if (!anyPresent) {
             throw new ParseException(MESSAGE_NO_FILTERS);
         }
     }
@@ -129,47 +181,49 @@ public class FilterCommandParser implements Parser<FilterCommand> {
      * Returns the parsed course ID if present.
      */
     private Optional<CourseId> parseCourseId(ArgumentMultimap argMultimap) throws ParseException {
-        Optional<String> value = argMultimap.getValue(PREFIX_COURSEID);
-        return value.isPresent()
-                ? Optional.of(ParserUtil.parseCourseId(value.get()))
-                : Optional.empty();
+        return parseOptional(argMultimap, PREFIX_COURSEID, ParserUtil::parseCourseId);
     }
 
     /**
      * Returns the parsed tutorial group if present.
      */
     private Optional<TGroup> parseTGroup(ArgumentMultimap argMultimap) throws ParseException {
-        Optional<String> value = argMultimap.getValue(PREFIX_TGROUP);
-        return value.isPresent()
-                ? Optional.of(ParserUtil.parseTGroup(value.get()))
-                : Optional.empty();
+        return parseOptional(argMultimap, PREFIX_TGROUP, ParserUtil::parseTGroup);
     }
 
     /**
      * Returns the parsed progress value if present.
      */
     private Optional<Progress> parseProgress(ArgumentMultimap argMultimap) throws ParseException {
-        Optional<String> value = argMultimap.getValue(PREFIX_PROGRESS);
-        return value.isPresent()
-                ? Optional.of(ParserUtil.parseProgress(value.get()))
-                : Optional.empty();
+        return parseOptional(argMultimap, PREFIX_PROGRESS, ParserUtil::parseProgress);
     }
 
     /**
      * Returns the parsed absence count if present.
      */
     private Optional<Integer> parseAbsenceCount(ArgumentMultimap argMultimap) throws ParseException {
-        Optional<String> value = argMultimap.getValue(PREFIX_ABSENCE);
-        return value.isPresent()
-                ? Optional.of(ParserUtil.parseAbsenceCount(value.get()))
-                : Optional.empty();
+        return parseOptional(argMultimap, PREFIX_ABSENCE, ParserUtil::parseAbsenceCount);
+    }
+
+    /**
+     * Generic helper to parse an optional value using a parser that may throw ParseException.
+     */
+    private interface ThrowingParser<R> {
+        R parse(String s) throws ParseException;
+    }
+
+    private <R> Optional<R> parseOptional(ArgumentMultimap argMultimap, Prefix prefix,
+                                          ThrowingParser<R> parser) throws ParseException {
+        Optional<String> value = argMultimap.getValue(prefix);
+        return value.isPresent() ? Optional.of(parser.parse(value.get())) : Optional.empty();
     }
 
     /**
      * Returns true if the given prefix is present but its value is blank.
      */
     private boolean hasBlankValue(ArgumentMultimap argMultimap, Prefix prefix) {
-        return argMultimap.getValue(prefix).isPresent()
-                && argMultimap.getValue(prefix).get().trim().isEmpty();
+        return argMultimap.getValue(prefix)
+                .map(v -> v.trim().isEmpty())
+                .orElse(false);
     }
 }

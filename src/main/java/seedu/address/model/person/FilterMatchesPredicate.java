@@ -2,6 +2,7 @@ package seedu.address.model.person;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -9,13 +10,19 @@ import seedu.address.commons.util.ToStringBuilder;
 
 /**
  * Tests that a {@code Person} matches the given filter criteria.
- * A person matches if all present filter fields match:
+ *
+ * <p>Matching rules:
  * <ul>
- *     <li>course ID matches case-insensitively</li>
- *     <li>tutorial group matches case-insensitively</li>
- *     <li>progress matches exactly</li>
- *     <li>absence count is greater than or equal to the given threshold</li>
+ *     <li>course ID and tutorial group are compared using their normalized values. {@code CourseId}
+ *     and {@code TGroup} store uppercase values, hence the comparison is effectively
+ *     case-insensitive.</li>
+ *     <li>progress is compared by equality.</li>
+ *     <li>absence count matches when the person's absence count is greater than or equal to
+ *     the provided threshold.</li>
  * </ul>
+ *
+ * <p>The predicate treats each filter field as optional; a missing field does not affect
+ * the overall conjunction of tests.
  */
 public class FilterMatchesPredicate implements Predicate<Person> {
     private final Optional<CourseId> courseId;
@@ -47,11 +54,10 @@ public class FilterMatchesPredicate implements Predicate<Person> {
     @Override
     public boolean test(Person person) {
         requireNonNull(person);
-
         boolean matchesCourse =
-                courseId.isEmpty() || person.getCourseId().value.equalsIgnoreCase(courseId.get().value);
+                courseId.isEmpty() || person.getCourseId().value.equals(courseId.get().value);
         boolean matchesTGroup =
-                tGroup.isEmpty() || person.getTGroup().value.equalsIgnoreCase(tGroup.get().value);
+                tGroup.isEmpty() || person.getTGroup().value.equals(tGroup.get().value);
         boolean matchesProgress =
                 progress.isEmpty() || person.getProgress().equals(progress.get());
         boolean matchesAbsenceCount =
@@ -75,6 +81,16 @@ public class FilterMatchesPredicate implements Predicate<Person> {
                 && tGroup.equals(otherPredicate.tGroup)
                 && progress.equals(otherPredicate.progress)
                 && absenceCount.equals(otherPredicate.absenceCount);
+    }
+
+    /**
+     * Returns a hash code value for this predicate. This is required because {@link #equals(Object)}
+     * is overridden. The hash code is computed from all filter fields so that equal predicates
+     * produce the same hash code.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(courseId, tGroup, progress, absenceCount);
     }
 
     @Override
