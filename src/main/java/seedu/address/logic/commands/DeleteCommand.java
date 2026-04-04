@@ -6,6 +6,7 @@ import java.util.List;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.logic.ConfirmationManager;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -15,7 +16,9 @@ import seedu.address.model.person.StudentId;
 import seedu.address.model.person.TGroup;
 
 /**
- * Deletes a person identified using its displayed index and name from the address book.
+ * Deletes a person identified using its displayed index
+ * or exact student details from the address book,
+ * after user confirmation is given.
  */
 public class DeleteCommand extends Command {
 
@@ -43,22 +46,43 @@ public class DeleteCommand extends Command {
     public static final String MESSAGE_UNEXPECTED_TEXT_AFTER_INDEX =
             "Unexpected text after index.";
 
+    public static final String MESSAGE_CONFIRM_DELETE =
+            "Are you sure you want to delete %s? Type 'yes' to confirm or 'no' to cancel.";
+
     private final Index targetIndex;
     private final StudentId targetStudentId;
     private final CourseId targetCourseId;
     private final TGroup targetTGroup;
+    private final ConfirmationManager confirmationManager;
+
+    /**
+     * Compatibility constructor for tests or standalone usage.
+     */
+    public DeleteCommand(Index targetIndex) {
+        this(targetIndex, new ConfirmationManager());
+    }
+
+    /**
+     * Compatibility constructor for tests or standalone usage.
+     */
+    public DeleteCommand(StudentId targetStudentId, CourseId targetCourseId, TGroup targetTGroup) {
+        this(targetStudentId, targetCourseId, targetTGroup, new ConfirmationManager());
+    }
 
     /**
      * Creates a DeleteCommand to delete a person by index.
      *
      * @param targetIndex Index of the person in the filtered person list.
+     * @param confirmationManager Manager storing pending confirmation commands.
      */
-    public DeleteCommand(Index targetIndex) {
+    public DeleteCommand(Index targetIndex, ConfirmationManager confirmationManager) {
         requireNonNull(targetIndex);
+        requireNonNull(confirmationManager);
         this.targetIndex = targetIndex;
         this.targetStudentId = null;
         this.targetCourseId = null;
         this.targetTGroup = null;
+        this.confirmationManager = confirmationManager;
     }
 
     /**
@@ -67,23 +91,25 @@ public class DeleteCommand extends Command {
      * @param targetStudentId Student ID of the person to delete.
      * @param targetCourseId Course ID of the person to delete.
      * @param targetTGroup Tutorial group of the person to delete.
+     * @param confirmationManager Manager storing pending confirmation commands.
      */
-    public DeleteCommand(StudentId targetStudentId, CourseId targetCourseId, TGroup targetTGroup) {
+    public DeleteCommand(StudentId targetStudentId, CourseId targetCourseId, TGroup targetTGroup,
+                         ConfirmationManager confirmationManager) {
         requireNonNull(targetStudentId);
         requireNonNull(targetCourseId);
         requireNonNull(targetTGroup);
+        requireNonNull(confirmationManager);
         this.targetIndex = null;
         this.targetStudentId = targetStudentId;
         this.targetCourseId = targetCourseId;
         this.targetTGroup = targetTGroup;
+        this.confirmationManager = confirmationManager;
     }
 
     /**
-     * Deletes a person from the address book, identified either by the displayed list index
-     * or by an exact student detail match in the currently displayed list.
+     * Resolves and returns the person to delete from the currently filtered list.
      */
-    @Override
-    public CommandResult execute(Model model) throws CommandException {
+    private Person resolvePersonToDelete(Model model) throws CommandException {
         requireNonNull(model);
         List<Person> lastShownList = model.getFilteredPersonList();
 
@@ -93,7 +119,6 @@ public class DeleteCommand extends Command {
             if (targetIndex.getZeroBased() >= lastShownList.size()) {
                 throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
             }
-
             personToDelete = lastShownList.get(targetIndex.getZeroBased());
         } else {
             personToDelete = null;
@@ -114,8 +139,20 @@ public class DeleteCommand extends Command {
             }
         }
 
-        model.deletePerson(personToDelete);
-        return new CommandResult(String.format(MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)));
+        return personToDelete;
+    }
+
+    /**
+     * Requests confirmation before deletion.
+     */
+    @Override
+    public CommandResult execute(Model model) throws CommandException {
+        requireNonNull(model);
+
+        Person personToDelete = resolvePersonToDelete(model);
+        confirmationManager.setPendingCommand(new ConfirmedDeleteCommand(personToDelete));
+
+        return new CommandResult(String.format(MESSAGE_CONFIRM_DELETE, personToDelete.getName()));
     }
 
     @Override

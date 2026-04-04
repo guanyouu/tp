@@ -4,7 +4,7 @@ skinparam arrowThickness 1.1
 skinparam arrowColor MODEL_COLOR
 skinparam classBackgroundColor MODEL_COLOR
 
-Package Model as ModelPackage <<Rectangle>>{
+Package Model as ModelPackage <<Rectangle>> {
 Class "<<interface>>\nReadOnlyAddressBook" as ReadOnlyAddressBook
 Class "<<interface>>\nReadOnlyUserPrefs" as ReadOnlyUserPrefs
 Class "<<interface>>\nModel" as Model
@@ -14,11 +14,15 @@ Class UserPrefs
 
 Class UniquePersonList
 Class Person
-Class Address
-Class Email
 Class Name
-Class Phone
-Class Tag
+Class CourseId
+Class Email
+Class StudentId
+Class TGroup
+Class Tele
+Class WeekList
+Class Progress
+Class Remark
 
 Class I #FFFFFF
 }
@@ -37,18 +41,27 @@ UserPrefs .up.|> ReadOnlyUserPrefs
 
 AddressBook *--> "1" UniquePersonList
 UniquePersonList --> "~* all" Person
-Person *--> Name
-Person *--> Phone
-Person *--> Email
-Person *--> Address
-Person *--> "*" Tag
+
+Person *--> "1" Name
+Person *--> "1" CourseId
+Person *--> "1" Email
+Person *--> "1" StudentId
+Person *--> "1" TGroup
+Person *--> "1" Tele
+Person *--> "1" WeekList
+Person *--> "1" Progress
+Person *--> "*" Remark
 
 Person -[hidden]up--> I
 UniquePersonList -[hidden]right-> I
 
-Name -[hidden]right-> Phone
-Phone -[hidden]right-> Address
-Address -[hidden]right-> Email
+Name -[hidden]right-> CourseId
+CourseId -[hidden]right-> Email
+Email -[hidden]right-> StudentId
+StudentId -[hidden]right-> TGroup
+TGroup -[hidden]right-> Tele
+Tele -[hidden]right-> WeekList
+WeekList -[hidden]right-> Progress
 
 ModelManager --> "~* filtered" Person
 @enduml
