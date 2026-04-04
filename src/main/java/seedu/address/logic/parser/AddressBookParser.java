@@ -8,10 +8,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.logic.ConfirmationManager;
 import seedu.address.logic.commands.AddCommand;
+import seedu.address.logic.commands.CancelCommand;
 import seedu.address.logic.commands.CancelWeekCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.Command;
+import seedu.address.logic.commands.ConfirmCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
@@ -38,6 +41,16 @@ public class AddressBookParser {
     private static final Pattern BASIC_COMMAND_FORMAT = Pattern.compile("(?<commandWord>\\S+)(?<arguments>.*)");
     private static final Logger logger = LogsCenter.getLogger(AddressBookParser.class);
 
+    private final ConfirmationManager confirmationManager;
+
+    public AddressBookParser() {
+        this(new ConfirmationManager());
+    }
+
+    public AddressBookParser(ConfirmationManager confirmationManager) {
+        this.confirmationManager = confirmationManager;
+    }
+
     /**
      * Parses user input into command for execution.
      *
@@ -46,7 +59,21 @@ public class AddressBookParser {
      * @throws ParseException if the user input does not conform the expected format
      */
     public Command parseCommand(String userInput) throws ParseException {
-        final Matcher matcher = BASIC_COMMAND_FORMAT.matcher(userInput.trim());
+        String trimmedInput = userInput.trim();
+
+        if (confirmationManager.hasPendingCommand()) {
+            if (trimmedInput.equalsIgnoreCase(ConfirmCommand.COMMAND_WORD)) {
+                return new ConfirmCommand(confirmationManager);
+            }
+
+            if (trimmedInput.equalsIgnoreCase(CancelCommand.COMMAND_WORD)) {
+                return new CancelCommand(confirmationManager);
+            }
+
+            throw new ParseException("Please type 'yes' to confirm deletion or 'no' to cancel.");
+        }
+
+        final Matcher matcher = BASIC_COMMAND_FORMAT.matcher(trimmedInput);
         if (!matcher.matches()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, HelpCommand.MESSAGE_USAGE));
         }
@@ -54,9 +81,6 @@ public class AddressBookParser {
         final String commandWord = matcher.group("commandWord");
         final String arguments = matcher.group("arguments");
 
-        // Note to developers: Change the log level in config.json to enable lower level (i.e., FINE, FINER and lower)
-        // log messages such as the one below.
-        // Lower level log messages are used sparingly to minimize noise in the code.
         logger.fine("Command word: " + commandWord + "; Arguments: " + arguments);
 
         switch (commandWord) {
@@ -68,7 +92,7 @@ public class AddressBookParser {
             return new EditCommandParser().parse(arguments);
 
         case DeleteCommand.COMMAND_WORD:
-            return new DeleteCommandParser().parse(arguments);
+            return new DeleteCommandParser(confirmationManager).parse(arguments);
 
         case ClearCommand.COMMAND_WORD:
             return new ClearCommand();
@@ -102,15 +126,16 @@ public class AddressBookParser {
 
         case UnCancelWeekCommand.COMMAND_WORD:
             return new UnCancelWeekCommandParser().parse(arguments);
+
         case CancelWeekCommand.COMMAND_WORD:
             return new CancelWeekCommandParser().parse(arguments);
 
         case ViewCommand.COMMAND_WORD:
             return new ViewCommandParser().parse(arguments);
+
         default:
             logger.finer("This user input caused a ParseException: " + userInput);
             throw new ParseException(MESSAGE_UNKNOWN_COMMAND);
         }
     }
-
 }
