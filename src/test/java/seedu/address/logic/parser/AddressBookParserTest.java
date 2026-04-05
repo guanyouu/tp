@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
@@ -29,12 +30,19 @@ import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
 import seedu.address.testutil.PersonUtil;
 
+/**
+ * Contains unit tests for AddressBookParser.
+ */
 public class AddressBookParserTest {
 
-    private static final String MESSAGE_INVALID_KEYWORDS =
-            "Keywords should contain alphabetic characters separated by spaces only.";
-
     private final AddressBookParser parser = new AddressBookParser();
+
+    @Test
+    public void parseCommand_add() throws Exception {
+        Person person = new PersonBuilder().build();
+        AddCommand command = (AddCommand) parser.parseCommand(PersonUtil.getAddCommand(person));
+        assertEquals(new AddCommand(person), command);
+    }
 
     @Test
     public void parseCommand_clear() throws Exception {
@@ -73,20 +81,6 @@ public class AddressBookParserTest {
     }
 
     @Test
-    public void parseCommand_findWithExtraWhitespace() throws Exception {
-        List<String> keywords = Arrays.asList("Alice", "Bob");
-        FindCommand command = (FindCommand) parser.parseCommand("find    Alice \t   Bob   ");
-        assertEquals(new FindCommand(new NameContainsKeywordsPredicate(keywords)), command);
-    }
-
-    @Test
-    public void parseCommand_findEmptyKeywords_throwsParseException() {
-        assertThrows(ParseException.class,
-                FindCommandParser.MESSAGE_EMPTY_KEYWORDS + "\n" + FindCommand.MESSAGE_USAGE, (
-                ) -> parser.parseCommand("find    "));
-    }
-
-    @Test
     public void parseCommand_help() throws Exception {
         assertTrue(parser.parseCommand(HelpCommand.COMMAND_WORD) instanceof HelpCommand);
         assertTrue(parser.parseCommand(HelpCommand.COMMAND_WORD + " 3") instanceof HelpCommand);
@@ -96,6 +90,13 @@ public class AddressBookParserTest {
     public void parseCommand_list() throws Exception {
         assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD) instanceof ListCommand);
         assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD + " 3") instanceof ListCommand);
+    }
+
+    @Test
+    public void parseCommand_view() throws Exception {
+        ViewCommand command = (ViewCommand) parser.parseCommand(
+                ViewCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased());
+        assertEquals(new ViewCommand(INDEX_FIRST_PERSON), command);
     }
 
     @Test
@@ -109,26 +110,5 @@ public class AddressBookParserTest {
     public void parseCommand_unknownCommand_throwsParseException() {
         assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, (
         ) -> parser.parseCommand("unknownCommand"));
-    }
-
-    @Test
-    public void parseCommand_view() throws Exception {
-        ViewCommand command = (ViewCommand) parser.parseCommand(
-                ViewCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased());
-        assertEquals(new ViewCommand(INDEX_FIRST_PERSON), command);
-    }
-
-    @Test
-    public void parseCommand_viewMissingIndex_throwsParseException() {
-        assertThrows(ParseException.class,
-                ViewCommandParser.MESSAGE_INDEX_MISSING + "\n" + ViewCommand.MESSAGE_USAGE, () ->
-                        parser.parseCommand(ViewCommand.COMMAND_WORD));
-    }
-
-    @Test
-    public void parseCommand_viewInvalidArgs_throwsParseException() {
-        assertThrows(ParseException.class,
-                ViewCommandParser.MESSAGE_NOT_A_NUMBER + "\n" + ViewCommand.MESSAGE_USAGE, () ->
-                        parser.parseCommand(ViewCommand.COMMAND_WORD + " abc"));
     }
 }

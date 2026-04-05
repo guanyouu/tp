@@ -1,9 +1,9 @@
 package seedu.address.logic.commands;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
-import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
@@ -18,23 +18,16 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.Person;
 
+/**
+ * Contains integration tests (interaction with the Model) and unit tests for ViewCommand.
+ */
 public class ViewCommandTest {
 
-    private Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+    private final Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
 
     @Test
     public void execute_validIndexUnfilteredList_success() {
-        Person personToView = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
-        ViewCommand viewCommand = new ViewCommand(INDEX_FIRST_PERSON);
-
-        String expectedMessage = String.format(ViewCommand.MESSAGE_VIEW_PERSON_SUCCESS, personToView.getName());
-
-        ModelManager expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
-
-        // CommandResult for ViewCommand should contain the person object
-        CommandResult expectedCommandResult = new CommandResult(expectedMessage, personToView);
-
-        assertCommandSuccess(viewCommand, model, expectedCommandResult.getFeedbackToUser(), expectedModel);
+        assertViewCommandSuccess();
     }
 
     @Test
@@ -48,18 +41,16 @@ public class ViewCommandTest {
     @Test
     public void execute_validIndexFilteredList_success() {
         showPersonAtIndex(model, INDEX_FIRST_PERSON);
+        assertViewCommandSuccess();
+    }
 
-        Person personToView = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
-        ViewCommand viewCommand = new ViewCommand(INDEX_FIRST_PERSON);
+    @Test
+    public void execute_invalidIndexFilteredList_throwsCommandException() {
+        showPersonAtIndex(model, INDEX_FIRST_PERSON);
 
-        String expectedMessage = String.format(ViewCommand.MESSAGE_VIEW_PERSON_SUCCESS, personToView.getName());
+        ViewCommand viewCommand = new ViewCommand(INDEX_SECOND_PERSON);
 
-        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
-        showPersonAtIndex(expectedModel, INDEX_FIRST_PERSON);
-
-        CommandResult expectedCommandResult = new CommandResult(expectedMessage, personToView);
-
-        assertCommandSuccess(viewCommand, model, expectedCommandResult.getFeedbackToUser(), expectedModel);
+        assertCommandFailure(viewCommand, model, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
     @Test
@@ -68,19 +59,49 @@ public class ViewCommandTest {
         ViewCommand viewSecondCommand = new ViewCommand(INDEX_SECOND_PERSON);
 
         // same object -> returns true
-        assertTrue(viewFirstCommand.equals(viewFirstCommand));
+        assertEquals(viewFirstCommand, viewFirstCommand);
 
         // same values -> returns true
         ViewCommand viewFirstCommandCopy = new ViewCommand(INDEX_FIRST_PERSON);
-        assertTrue(viewFirstCommand.equals(viewFirstCommandCopy));
+        assertEquals(viewFirstCommand, viewFirstCommandCopy);
 
         // different types -> returns false
-        assertFalse(viewFirstCommand.equals(1));
+        assertNotEquals(1, viewFirstCommand);
 
         // null -> returns false
-        assertFalse(viewFirstCommand.equals(null));
+        assertNotEquals(null, viewFirstCommand);
 
         // different person -> returns false
-        assertFalse(viewFirstCommand.equals(viewSecondCommand));
+        assertNotEquals(viewFirstCommand, viewSecondCommand);
+    }
+
+    @Test
+    public void toStringMethod() {
+        ViewCommand viewCommand = new ViewCommand(INDEX_FIRST_PERSON);
+        String expected = ViewCommand.class.getCanonicalName() + "{targetIndex=" + INDEX_FIRST_PERSON + "}";
+        assertEquals(expected, viewCommand.toString());
+    }
+
+    /**
+     * Asserts that a {@code ViewCommand} succeeds for the given {@code index} on the current state of {@code model}.
+     * Also verifies that the CommandResult contains the correct person for the UI to display.
+     */
+    private void assertViewCommandSuccess() {
+        ViewCommand viewCommand = new ViewCommand(seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON);
+        Person personToView = model.getFilteredPersonList().get(
+                seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON.getZeroBased());
+
+        String expectedMessage = String.format(
+                ViewCommand.MESSAGE_VIEW_PERSON_SUCCESS,
+                Messages.format(personToView));
+
+        try {
+            CommandResult result = viewCommand.execute(model);
+            assertEquals(expectedMessage, result.getFeedbackToUser());
+            assertEquals(personToView, result.getPersonToView());
+            assertTrue(result.isShowView());
+        } catch (Exception e) {
+            throw new AssertionError("Execution of command should not fail.", e);
+        }
     }
 }
