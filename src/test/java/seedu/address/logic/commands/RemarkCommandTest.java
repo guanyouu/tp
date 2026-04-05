@@ -63,8 +63,8 @@ public class RemarkCommandTest {
 
         CommandResult commandResult = command.execute(modelStub);
 
-        assertEquals(String.format(RemarkCommand.MESSAGE_ADD_REMARKS_SUCCESS, person),
-                commandResult.getFeedbackToUser());
+        assertEquals(String.format(RemarkCommand.MESSAGE_ADD_REMARKS_SUCCESS, Messages.format(person) + "\n"
+                + "Remark: " + remark.getText()), commandResult.getFeedbackToUser());
         assertEquals(1, person.getRemarks().size());
         assertEquals(remark, person.getRemarks().get(0));
     }
