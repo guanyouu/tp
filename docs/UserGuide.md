@@ -1,7 +1,7 @@
 ---
-  layout: default.md
-  title: "User Guide"
-  pageNav: 3
+layout: default.md
+title: "User Guide"
+pageNav: 3
 ---
 
 # TeachAssist User Guide
@@ -277,6 +277,7 @@ Examples:
 ```
 markattendance 1 week/1 sta/y
 ```
+
 
 
 

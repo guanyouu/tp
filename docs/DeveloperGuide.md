@@ -191,6 +191,7 @@ Explain how `AddCommandParser` parses the user input, validates each field, cons
 
 Explain how TeachAssist checks whether a student record already exists before adding it, and describe which fields are used to determine duplicates in the current implementation.
 
+
 ### Feature: Delete Student
 
 #### Overview
@@ -205,7 +206,7 @@ Second, TeachAssist introduces a confirmation workflow before the deletion is ca
 
 TeachAssist supports two modes of deletion.
 
-The first mode is **deletion by displayed index**, where the user deletes a student using the index shown in the current filtered student list.
+The first mode is **deletion by displayed index**, where the user deletes a student using the index shown in the current displayed student list.
 
 Example: `delete 1`
 
@@ -228,14 +229,6 @@ If the student cannot be resolved, the command fails and no confirmation is requ
 
 If the user enters `yes`, the pending deletion is executed and the student is removed from the model. If the user enters `no`, the pending deletion is discarded and no changes are made.
 
-<box type="info" seamless>
-
-**Relevant diagram:** Activity diagram showing the branching delete flow, including deletion by index, deletion by student details, and confirmation handling.
-
-<@Isha place the activity diagram here!>
-
-</box>
-
 #### Implementation
 
 The `delete` feature is implemented using `AddressBookParser`, `DeleteCommandParser`, `DeleteCommand`, `ConfirmedDeleteCommand`, `ConfirmCommand`, `CancelCommand`, and `ConfirmationManager`.
@@ -253,7 +246,7 @@ It performs format-level validation, such as:
 - rejecting duplicate prefixes
 - rejecting malformed index input or unexpected trailing text after an index
 
-After successful parsing, a `DeleteCommand` object is created. However, some validation is intentionally deferred to command execution. In particular, whether the target index is within the bounds of the current filtered list, and whether the given student details actually match a student in the current filtered list, can only be determined during execution because they depend on the current model state.
+After successful parsing, a `DeleteCommand` object is created. However, some validation is intentionally deferred to command execution. For example, although the parser can verify that an index is written in a valid format, it cannot determine whether that index is within the bounds of the current filtered student list. Similarly, although the parser can verify that `StudentId`, `CourseId`, and `TGroup` are provided in the correct format, it cannot determine whether those values actually match a student in the current filtered list. These checks depend on the current model state, and are therefore performed during execution instead of parsing.
 
 During execution, `DeleteCommand` resolves the student to be deleted. Once the student is identified, it does not delete the student immediately. Instead, it creates a `ConfirmedDeleteCommand` containing the resolved `Person` object and stores it in `ConfirmationManager` as the pending command. A confirmation message is then returned to the user.
 
@@ -275,7 +268,7 @@ This separation keeps the responsibilities of the classes clear. `DeleteCommand`
 
 **Relevant diagram:** Successful confirmation flow after the user enters `yes`.
 
-<puml src="diagrams/ConfirmedDeleteSequenceDiagram.puml" width="700" />
+<@isha to put sequence diagram here>
 
 </box>
 
