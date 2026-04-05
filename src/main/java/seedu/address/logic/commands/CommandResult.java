@@ -20,8 +20,16 @@ public class CommandResult {
     /** The application should exit. */
     private final boolean exit;
 
-    /** The person to show in the view window. Null if no person should be shown. */
+    /** The person to show in the view window. {@code null} if no person should be shown. */
     private final Person personToView;
+
+    /**
+     * Constructs a {@code CommandResult} with the specified {@code feedbackToUser},
+     * and other fields set to their default values.
+     */
+    public CommandResult(String feedbackToUser) {
+        this(feedbackToUser, null, false, false);
+    }
 
     /**
      * Constructs a {@code CommandResult} with the specified fields.
@@ -45,14 +53,8 @@ public class CommandResult {
         this.personToView = personToView;
         this.showHelp = showHelp;
         this.exit = exit;
-    }
 
-    /**
-     * Constructs a {@code CommandResult} with the specified {@code feedbackToUser},
-     * and other fields set to their default value.
-     */
-    public CommandResult(String feedbackToUser) {
-        this(feedbackToUser, null, false, false);
+        assert !(showHelp && exit) : "CommandResult cannot show help and exit at the same time";
     }
 
     public String getFeedbackToUser() {
@@ -67,6 +69,9 @@ public class CommandResult {
         return personToView != null;
     }
 
+    /**
+     * Returns the person to show in the view window, or {@code null} if no person should be shown.
+     */
     public Person getPersonToView() {
         return personToView;
     }
@@ -81,11 +86,10 @@ public class CommandResult {
             return true;
         }
 
-        if (!(other instanceof CommandResult)) {
+        if (!(other instanceof CommandResult otherCommandResult)) {
             return false;
         }
 
-        CommandResult otherCommandResult = (CommandResult) other;
         return feedbackToUser.equals(otherCommandResult.feedbackToUser)
                 && showHelp == otherCommandResult.showHelp
                 && exit == otherCommandResult.exit
@@ -102,7 +106,6 @@ public class CommandResult {
         return new ToStringBuilder(this)
                 .add("feedbackToUser", feedbackToUser)
                 .add("showHelp", showHelp)
-                .add("showView", isShowView())
                 .add("personToView", personToView)
                 .add("exit", exit)
                 .toString();

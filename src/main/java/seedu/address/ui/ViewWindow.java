@@ -1,5 +1,7 @@
 package seedu.address.ui;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.logging.Logger;
 
 import javafx.fxml.FXML;
@@ -18,6 +20,9 @@ import seedu.address.model.person.Remark;
 public class ViewWindow extends UiPart<Region> {
 
     private static final String FXML = "ViewWindow.fxml";
+    private static final int HEADER_ROW_INDEX = 0;
+    private static final int FIRST_REMARK_ROW_INDEX = 1;
+
     private final Logger logger = LogsCenter.getLogger(getClass());
 
     private final Stage stage;
@@ -50,6 +55,7 @@ public class ViewWindow extends UiPart<Region> {
      * @param person The student to display.
      */
     public void setPerson(Person person) {
+        requireNonNull(person);
         this.person = person;
         updateDisplay();
     }
@@ -66,14 +72,11 @@ public class ViewWindow extends UiPart<Region> {
     }
 
     /**
-     * Orchestrates the update of all UI components with the data from the current person.
+     * Updates all UI components with the data from the current person.
      */
     private void updateDisplay() {
-        if (person == null) {
-            return;
-        }
         updateMetadata();
-        resetAndPopulateGrid();
+        refreshRemarksGrid();
     }
 
     /**
@@ -87,31 +90,21 @@ public class ViewWindow extends UiPart<Region> {
     }
 
     /**
-     * Clears existing remarks and re-populates the grid with headers and current remarks.
+     * Clears existing remark rows and repopulates the grid with the current remarks.
+     * The header row is defined in FXML and preserved.
      */
-    private void resetAndPopulateGrid() {
-        remarksGrid.getChildren().clear();
-        addHeaderRow();
-        int rowIndex = 1;
+    private void refreshRemarksGrid() {
+        remarksGrid.getChildren().removeIf(node -> {
+            Integer rowIndex = GridPane.getRowIndex(node);
+            int effectiveRowIndex = rowIndex == null ? HEADER_ROW_INDEX : rowIndex;
+            return effectiveRowIndex >= FIRST_REMARK_ROW_INDEX;
+        });
+
+        int rowIndex = FIRST_REMARK_ROW_INDEX;
         for (Remark remark : person.getRemarks()) {
-            addRemarkRow(remark, rowIndex++);
+            addRemarkRow(remark, rowIndex);
+            rowIndex++;
         }
-    }
-
-    /**
-     * Adds the "Date" and "Remark" header labels to the first row of the grid.
-     */
-    private void addHeaderRow() {
-        Label dateHeader = new Label("Date");
-        dateHeader.getStyleClass().add("column-header");
-        dateHeader.setMaxWidth(Double.MAX_VALUE);
-
-        Label remarkHeader = new Label("Remark");
-        remarkHeader.getStyleClass().add("column-header");
-        remarkHeader.setMaxWidth(Double.MAX_VALUE);
-
-        remarksGrid.add(dateHeader, 0, 0);
-        remarksGrid.add(remarkHeader, 1, 0);
     }
 
     /**
@@ -121,6 +114,11 @@ public class ViewWindow extends UiPart<Region> {
      * @param rowIndex The index of the row where the remark should be placed.
      */
     private void addRemarkRow(Remark remark, int rowIndex) {
+        int displayIndex = rowIndex - FIRST_REMARK_ROW_INDEX + 1;
+        Label indexLabel = new Label(String.valueOf(displayIndex));
+        indexLabel.getStyleClass().add("index-cell");
+        indexLabel.setMaxWidth(Double.MAX_VALUE);
+
         Label dateLabel = new Label(remark.getDate().toString());
         dateLabel.getStyleClass().add("date-cell");
         dateLabel.setMaxWidth(Double.MAX_VALUE);
@@ -129,9 +127,9 @@ public class ViewWindow extends UiPart<Region> {
         remarkLabel.getStyleClass().add("remark-cell");
         remarkLabel.setWrapText(true);
         remarkLabel.setMaxWidth(Double.MAX_VALUE);
-
-        remarksGrid.add(dateLabel, 0, rowIndex);
-        remarksGrid.add(remarkLabel, 1, rowIndex);
+        remarksGrid.add(indexLabel, 0, rowIndex);
+        remarksGrid.add(dateLabel, 1, rowIndex);
+        remarksGrid.add(remarkLabel, 2, rowIndex);
     }
 
     /**

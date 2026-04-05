@@ -12,6 +12,9 @@ Class MainWindow
 Class HelpWindow
 Class ResultDisplay
 Class PersonListPanel
+Class ViewWindow {
+    - person : Person
+}
 Class PersonCard {
     - person : Person
     - weekAttendance : FlowPane
@@ -27,6 +30,8 @@ Class CommandBox
 package Model <<Rectangle>> {
 Class HiddenModel #FFFFFF
 Class WeekList
+Class Person
+Class Remark
 }
 
 package Logic <<Rectangle>> {
@@ -43,6 +48,7 @@ MainWindow *-down-> "1" ResultDisplay
 MainWindow *-down-> "1" PersonListPanel
 MainWindow *-down-> "1" StatusBarFooter
 MainWindow --> "0..1" HelpWindow
+MainWindow --> "0..1" ViewWindow
 
 PersonListPanel -down-> "*" PersonCard
 
@@ -54,6 +60,10 @@ PersonListPanel --|> UiPart
 PersonCard --|> UiPart
 StatusBarFooter --|> UiPart
 HelpWindow --|> UiPart
+
+ViewWindow --|> UiPart
+ViewWindow -down-> Person
+ViewWindow ..down-> Remark
 
 PersonCard ..> Model
 UiManager -right-> Logic
