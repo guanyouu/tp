@@ -14,26 +14,67 @@ import seedu.address.model.person.TGroup;
 import seedu.address.model.person.Tele;
 import seedu.address.model.person.Week;
 
-
 /**
  * Contains utility methods used for parsing strings in the various *Parser classes.
  */
 public class ParserUtil {
 
-    public static final String MESSAGE_INVALID_INDEX = "Index is not a non-zero unsigned integer.";
+
+    public static final String MESSAGE_INVALID_INDEX = "Index must be a non-zero unsigned integer.";
+    public static final String MESSAGE_MISSING_INDEX = "Missing student index.";
+    public static final String MESSAGE_TOO_MANY_ARGUMENTS = "Only one student index is allowed.";
 
     /**
-     * Parses {@code oneBasedIndex} into an {@code Index} and returns it. Leading and trailing whitespaces will be
-     * trimmed.
+     * Parses {@code oneBasedIndex} into an {@code Index} and returns it.
+     * Leading and trailing whitespaces will be trimmed.
+     *
      * @throws ParseException if the specified index is invalid (not non-zero unsigned integer).
      */
     public static Index parseIndex(String oneBasedIndex) throws ParseException {
+        requireNonNull(oneBasedIndex);
         String trimmedIndex = oneBasedIndex.trim();
+
         if (!StringUtil.isNonZeroUnsignedInteger(trimmedIndex)) {
             throw new ParseException(MESSAGE_INVALID_INDEX);
         }
-        return Index.fromOneBased(Integer.parseInt(trimmedIndex));
+
+        try {
+            return Index.fromOneBased(Integer.parseInt(trimmedIndex));
+        } catch (NumberFormatException e) {
+            throw new ParseException(MESSAGE_INVALID_INDEX, e);
+        }
     }
+
+    /**
+     * Parses arguments containing exactly one index and returns the parsed {@code Index}.
+     *
+     * @param args Raw argument string.
+     * @param messageUsage Usage message of the calling command.
+     * @return Parsed index.
+     * @throws ParseException if the index is missing, duplicated, or invalid.
+     */
+    public static Index parseIndex(String args, String messageUsage) throws ParseException {
+        requireNonNull(args);
+        requireNonNull(messageUsage);
+
+        String trimmedArgs = args.trim();
+
+        if (trimmedArgs.isEmpty()) {
+            throw new ParseException(MESSAGE_MISSING_INDEX + "\n" + messageUsage);
+        }
+
+        String[] tokens = trimmedArgs.split("\\s+");
+        if (tokens.length > 1) {
+            throw new ParseException(MESSAGE_TOO_MANY_ARGUMENTS + "\n" + messageUsage);
+        }
+
+        try {
+            return parseIndex(tokens[0]);
+        } catch (ParseException pe) {
+            throw new ParseException(pe.getMessage() + "\n" + messageUsage);
+        }
+    }
+
 
     /**
      * Parses a {@code String name} into a {@code Name}.
@@ -111,7 +152,7 @@ public class ParserUtil {
     }
 
     /**
-     * Parses {@code Collection<String> tags} into a {@code Set<Tag>}.
+     * Parses {@code tele} into a {@code Tele}.
      */
     public static Tele parseTele(String tele) throws ParseException {
         requireNonNull(tele);
@@ -123,12 +164,11 @@ public class ParserUtil {
     }
 
     /**
-     * Parses a {@code String} into an {@code Week.Status}.
+     * Parses a {@code String} into a {@code Week.Status}.
      *
      * @throws ParseException if the input is invalid
      */
-    public static Week.Status parseAttendanceStatus(String status)
-            throws ParseException {
+    public static Week.Status parseAttendanceStatus(String status) throws ParseException {
         requireNonNull(status);
         String trimmed = status.trim().toUpperCase();
 
@@ -161,7 +201,6 @@ public class ParserUtil {
 
     /**
      * Parses a {@code String} into a {@code Week.Status}.
-     *
      * Accepts "y" = attended, "a" = absent, "n" = not marked.
      *
      * @param input The input string representing attendance status.
@@ -183,6 +222,7 @@ public class ParserUtil {
             throw new ParseException("Week status must be 'Y' (attended), 'A' (absent), or 'N' (not marked).");
         }
     }
+
     /**
      * Parses a {@code String progress} into a {@code Progress}.
      * Leading and trailing whitespaces will be trimmed.
@@ -208,6 +248,7 @@ public class ParserUtil {
                     "Invalid progress value. Allowed values are: on_track, needs_attention, at_risk, clear.");
         }
     }
+
     /**
      * Parses {@code stringAbsenceCount} into an {@code Integer} absence count threshold.
      *

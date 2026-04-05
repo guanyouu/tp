@@ -12,10 +12,10 @@ import java.util.Objects;
  */
 public class Remark {
 
-    public static final String MESSAGE_TEXT_CONSTRAINTS =
-            "Remark text must not be null and must not exceed 100 characters.";
-
     public static final int MAX_LENGTH = 100;
+
+    public static final String MESSAGE_TEXT_CONSTRAINTS =
+            "Remark text must not exceed " + MAX_LENGTH + " characters and must not be blank.";
 
     private final String text;
     private final LocalDate date;
@@ -46,7 +46,7 @@ public class Remark {
      * Returns true if the remark text is valid.
      */
     public static boolean isValidText(String text) {
-        return text != null && text.length() <= MAX_LENGTH;
+        return text != null && !text.isBlank() && text.length() <= MAX_LENGTH;
     }
 
     @Override
@@ -60,11 +60,10 @@ public class Remark {
             return true;
         }
 
-        if (!(other instanceof Remark)) {
+        if (!(other instanceof Remark otherRemark)) {
             return false;
         }
 
-        Remark otherRemark = (Remark) other;
         return text.equals(otherRemark.text)
                 && date.equals(otherRemark.date);
     }

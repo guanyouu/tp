@@ -29,10 +29,13 @@ public class ViewCommand extends Command {
     public static final String MESSAGE_VIEW_PERSON_SUCCESS = "Viewing student: %1$s";
 
     private static final Logger logger = LogsCenter.getLogger(ViewCommand.class);
+
     private final Index targetIndex;
 
     /**
-     * @param targetIndex of the person in the filtered person list to view
+     * Creates a ViewCommand to view the person at the specified {@code targetIndex}.
+     *
+     * @param targetIndex index of the person in the filtered person list to view
      */
     public ViewCommand(Index targetIndex) {
         requireNonNull(targetIndex);
@@ -42,23 +45,26 @@ public class ViewCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        List<Person> lastShownList = model.getFilteredPersonList();
 
-        if (targetIndex.getZeroBased() >= lastShownList.size()) {
-            logger.warning("ViewCommand failed: Index " + targetIndex.getOneBased() + " is out of bounds.");
+        List<Person> lastShownList = model.getFilteredPersonList();
+        int zeroBasedIndex = targetIndex.getZeroBased();
+
+        if (zeroBasedIndex >= lastShownList.size()) {
+            logger.warning(() -> String.format(
+                    "ViewCommand failed: index %d is out of bounds. Filtered list size: %d",
+                    targetIndex.getOneBased(), lastShownList.size()));
             throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
         }
 
-        Person personToView = lastShownList.get(targetIndex.getZeroBased());
-
-        // Assertion to ensure the personToView is not null before passing to UI
+        Person personToView = lastShownList.get(zeroBasedIndex);
         assert personToView != null : "The person to view should not be null";
 
-        logger.info("ViewCommand executing: viewing " + personToView.getName());
+        logger.fine(() -> String.format(
+                "Viewing student at index %d: %s",
+                targetIndex.getOneBased(), personToView.getName()));
 
-        // We pass personToView to the CommandResult so the UI can use its data
         return new CommandResult(
-                String.format(MESSAGE_VIEW_PERSON_SUCCESS, personToView.getName()),
+                String.format(MESSAGE_VIEW_PERSON_SUCCESS, Messages.format(personToView)),
                 personToView);
     }
 
@@ -68,12 +74,10 @@ public class ViewCommand extends Command {
             return true;
         }
 
-        // instanceof handles nulls
-        if (!(other instanceof ViewCommand)) {
+        if (!(other instanceof ViewCommand otherViewCommand)) {
             return false;
         }
 
-        ViewCommand otherViewCommand = (ViewCommand) other;
         return targetIndex.equals(otherViewCommand.targetIndex);
     }
 
@@ -84,4 +88,3 @@ public class ViewCommand extends Command {
                 .toString();
     }
 }
-
