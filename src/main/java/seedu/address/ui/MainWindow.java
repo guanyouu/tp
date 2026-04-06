@@ -67,9 +67,6 @@ public class MainWindow extends UiPart<Stage> {
     private StackPane personListPanelPlaceholder;
 
     @FXML
-    private StackPane viewWindowPlaceholder;
-
-    @FXML
     private StackPane resultDisplayPlaceholder;
 
     @FXML
@@ -196,10 +193,10 @@ public class MainWindow extends UiPart<Stage> {
     @FXML
     public void handleView(Person person) {
         viewWindow.setPerson(person);
-        // Insert the view into the right-hand placeholder if not present
-        if (viewWindowPlaceholder.getChildren().isEmpty()
-                || !viewWindowPlaceholder.getChildren().contains(viewWindow.getRoot())) {
-            viewWindowPlaceholder.getChildren().setAll(viewWindow.getRoot());
+        if (!viewWindow.isShowing()) {
+            viewWindow.show();
+        } else {
+            viewWindow.focus();
         }
     }
 
@@ -219,10 +216,7 @@ public class MainWindow extends UiPart<Stage> {
                 (int) primaryStage.getX(), (int) primaryStage.getY());
         logic.setGuiSettings(guiSettings);
         helpWindow.hide();
-        // viewWindow is embedded; remove its content from the placeholder if present
-        if (viewWindowPlaceholder != null) {
-            viewWindowPlaceholder.getChildren().clear();
-        }
+        viewWindow.hide();
         primaryStage.hide();
     }
 
@@ -257,8 +251,8 @@ public class MainWindow extends UiPart<Stage> {
                 handleExit();
             }
 
-            // If the view region is currently displayed, refresh or clear it
-            if (viewWindowPlaceholder != null && viewWindowPlaceholder.getChildren().contains(viewWindow.getRoot())) {
+            if (viewWindow.isShowing()) {
+                // Refresh view if person exists; hide if deleted.
                 boolean stillViewing = logic.getFilteredPersonList().stream()
                         .filter(p -> viewWindow.isViewing(p))
                         .findFirst()
@@ -269,7 +263,7 @@ public class MainWindow extends UiPart<Stage> {
                         .orElse(false);
 
                 if (!stillViewing) {
-                    viewWindowPlaceholder.getChildren().clear();
+                    viewWindow.hide();
                 }
             }
 
