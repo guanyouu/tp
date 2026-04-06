@@ -148,6 +148,13 @@ public class MainWindow extends UiPart<Stage> {
     void fillInnerParts() {
         personListPanel = new PersonListPanel(logic.getFilteredPersonList());
         personListPanelPlaceholder.getChildren().add(personListPanel.getRoot());
+        // Open detail view when a student row is clicked
+        personListPanel.getPersonListView().setOnMouseClicked(event -> {
+            Person selected = personListPanel.getPersonListView().getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                handleView(selected);
+            }
+        });
 
         resultDisplay = new ResultDisplay();
         resultDisplayPlaceholder.getChildren().add(resultDisplay.getRoot());
