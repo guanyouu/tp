@@ -5,9 +5,11 @@ import static java.util.Objects.requireNonNull;
 import java.util.logging.Logger;
 
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
+import javafx.stage.Stage;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Remark;
@@ -23,6 +25,7 @@ public class ViewWindow extends UiPart<Region> {
 
     private final Logger logger = LogsCenter.getLogger(getClass());
 
+    private final Stage stage;
     private Person person;
 
     @FXML
@@ -41,6 +44,9 @@ public class ViewWindow extends UiPart<Region> {
      */
     public ViewWindow() {
         super(FXML);
+        stage = new Stage();
+        stage.setTitle("View - Student Details");
+        stage.setScene(new Scene(getRoot()));
     }
 
     /**
@@ -126,5 +132,35 @@ public class ViewWindow extends UiPart<Region> {
         remarksGrid.add(remarkLabel, 2, rowIndex);
     }
 
+    /**
+     * Shows the view window and centers it on the screen.
+     */
+    public void show() {
+        logger.fine("Showing view window.");
+        stage.show();
+        stage.centerOnScreen();
+    }
 
+    /**
+     * Hides the view window.
+     */
+    public void hide() {
+        stage.hide();
+    }
+
+    /**
+     * Returns true if the view window is currently being shown.
+     *
+     * @return True if the window is showing, false otherwise.
+     */
+    public boolean isShowing() {
+        return stage.isShowing();
+    }
+
+    /**
+     * Focuses on the view window to bring it to the foreground.
+     */
+    public void focus() {
+        stage.requestFocus();
+    }
 }
