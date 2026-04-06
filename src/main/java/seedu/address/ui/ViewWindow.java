@@ -63,7 +63,7 @@ public class ViewWindow extends UiPart<Region> {
      * @return True if the current person being viewed matches the other person.
      */
     public boolean isViewing(Person other) {
-        return person != null && person.isSamePerson(other);
+        return person != null && person.equals(other);
     }
 
     /**
