@@ -17,13 +17,15 @@
 
 .meta-label {
     -fx-text-fill: #b3b3b3;
-    -fx-font-size: 11px;
+    -fx-font-size: 10px;
     -fx-font-weight: bold;
 }
 
 .meta-value {
     -fx-text-fill: #ffffff;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-text-alignment: LEFT;
 }
 
 .white-body-wrapper {

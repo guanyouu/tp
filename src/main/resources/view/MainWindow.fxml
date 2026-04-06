@@ -46,12 +46,24 @@
           </padding>
         </StackPane>
 
-        <VBox fx:id="personList" styleClass="pane-with-border" minWidth="340" prefWidth="340" VBox.vgrow="ALWAYS">
-          <padding>
-            <Insets top="10" right="10" bottom="10" left="10" />
-          </padding>
-          <StackPane fx:id="personListPanelPlaceholder" VBox.vgrow="ALWAYS"/>
-        </VBox>
+        <!-- Make the right (view) pane wider by default so detailed content has more space -->
+        <SplitPane dividerPositions="0.25" VBox.vgrow="ALWAYS">
+          <items>
+            <VBox fx:id="personList" styleClass="pane-with-border" minWidth="260" prefWidth="260" VBox.vgrow="ALWAYS">
+              <padding>
+                <Insets top="10" right="10" bottom="10" left="10" />
+              </padding>
+              <StackPane fx:id="personListPanelPlaceholder" VBox.vgrow="ALWAYS"/>
+            </VBox>
+
+            <StackPane fx:id="viewWindowPlaceholder" styleClass="pane-with-border" VBox.vgrow="ALWAYS">
+              <padding>
+                <Insets top="10" right="10" bottom="10" left="10" />
+              </padding>
+              <!-- Initially empty - shows selected student's detailed view when requested -->
+            </StackPane>
+          </items>
+        </SplitPane>
 
         <StackPane fx:id="statusbarPlaceholder" VBox.vgrow="NEVER" />
       </VBox>

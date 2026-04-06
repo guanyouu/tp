@@ -13,23 +13,30 @@
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1">
     <top>
-        <VBox spacing="15" styleClass="header-section" alignment="CENTER">
+        <VBox spacing="15" styleClass="header-section" >
             <padding>
                 <Insets top="25" right="25" bottom="25" left="25"/>
             </padding>
 
-            <GridPane hgap="30" vgap="10" alignment="CENTER">
+            <GridPane hgap="12" vgap="8" alignment="CENTER_LEFT">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="20" />
+                    <ColumnConstraints percentWidth="30" />
+                    <ColumnConstraints percentWidth="15" />
+                    <ColumnConstraints percentWidth="35" />
+                </columnConstraints>
+
                 <Label text="NAME:" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="meta-label"/>
-                <Label fx:id="nameLabel" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="meta-value"/>
+                <Label fx:id="nameLabel" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="meta-value" wrapText="true" maxWidth="Infinity"/>
 
                 <Label text="STUDENT ID:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="meta-label"/>
-                <Label fx:id="studentIdLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="meta-value"/>
+                <Label fx:id="studentIdLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="meta-value" wrapText="true" maxWidth="Infinity"/>
 
                 <Label text="COURSE:" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="meta-label"/>
-                <Label fx:id="courseIdLabel" GridPane.columnIndex="3" GridPane.rowIndex="0" styleClass="meta-value"/>
+                <Label fx:id="courseIdLabel" GridPane.columnIndex="3" GridPane.rowIndex="0" styleClass="meta-value" wrapText="true" maxWidth="Infinity"/>
 
                 <Label text="TUTORIAL:" GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="meta-label"/>
-                <Label fx:id="tGroupLabel" GridPane.columnIndex="3" GridPane.rowIndex="1" styleClass="meta-value"/>
+                <Label fx:id="tGroupLabel" GridPane.columnIndex="3" GridPane.rowIndex="1" styleClass="meta-value" wrapText="true" maxWidth="Infinity"/>
             </GridPane>
         </VBox>
     </top>
@@ -48,7 +55,7 @@
                         <ColumnConstraints percentWidth="60"/>
                     </columnConstraints>
 
-                    <Label text="No." maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                    <Label maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="0"
                            styleClass="column-header, header-left-pad"/>
                     <Label text="Date" maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1"
                            styleClass="column-header"/>
