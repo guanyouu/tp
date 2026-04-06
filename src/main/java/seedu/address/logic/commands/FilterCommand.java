@@ -20,7 +20,7 @@ public class FilterCommand extends Command {
             + ": Filters students by course, tutorial group, progress, and/or absence count.\n"
             + "Parameters: [crs/COURSE_ID] [tg/TUTORIAL_GROUP] [p/PROGRESS] [abs/ABSENCE_COUNT]\n"
             + "At least one parameter must be provided.\n"
-            + "Example: " + COMMAND_WORD + " crs/CS2103T tg/T01 p/ON_TRACK abs/2";
+            + "Example: " + COMMAND_WORD + " crs/CS2103T tg/T01 p/on_track abs/2";
 
     public static final String MESSAGE_SUCCESS = "There are %d students matching this filter.";
 

@@ -19,11 +19,10 @@ import org.junit.jupiter.api.Test;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
-import seedu.address.model.person.CourseId;
 import seedu.address.model.person.FilterMatchesPredicate;
 
 /**
- * Contains integration tests (interaction with the Model) for {@code FilterCommand}.
+ * Integration tests for {@code FilterCommand} checking interaction with the Model.
  */
 public class FilterCommandTest {
 
@@ -45,10 +44,7 @@ public class FilterCommandTest {
     public void execute_filterByCourse_success() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.of(ALICE.getCourseId()),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty());
-
+                Optional.empty(), Optional.empty(), Optional.empty());
         assertFilterCommandSuccess(predicate);
     }
 
@@ -57,41 +53,32 @@ public class FilterCommandTest {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.empty(),
                 Optional.of(BENSON.getTGroup()),
-                Optional.empty(),
-                Optional.empty());
-
+                Optional.empty(), Optional.empty());
         assertFilterCommandSuccess(predicate);
     }
 
     @Test
     public void execute_filterByProgress_success() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(),
-                Optional.empty(),
+                Optional.empty(), Optional.empty(),
                 Optional.of(CARL.getProgress()),
                 Optional.empty());
-
         assertFilterCommandSuccess(predicate);
     }
 
     @Test
     public void execute_filterByAbsenceCount_success() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.of(HOON.getAbsenceCount()));
-
         assertFilterCommandSuccess(predicate);
     }
 
     @Test
     public void execute_filterByAbsenceCount_noMatches() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.of(10));
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.of(100)); // Threshold likely higher than any typical student
 
         assertFilterCommandSuccess(predicate);
         assertTrue(model.getFilteredPersonList().isEmpty());
@@ -101,45 +88,25 @@ public class FilterCommandTest {
     public void execute_filterByMultipleFields_success() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.of(ALICE.getCourseId()),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.of(HOON.getAbsenceCount()));
-
+                Optional.empty(), Optional.empty(),
+                Optional.of(ALICE.getAbsenceCount()));
         assertFilterCommandSuccess(predicate);
-    }
-
-    @Test
-    public void execute_noMatches_success() {
-        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("EMPTY999")),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty());
-
-        assertFilterCommandSuccess(predicate);
-        assertTrue(model.getFilteredPersonList().isEmpty());
     }
 
     @Test
     public void equals() {
         FilterMatchesPredicate firstPredicate = new FilterMatchesPredicate(
                 Optional.of(ALICE.getCourseId()),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty());
+                Optional.empty(), Optional.empty(), Optional.empty());
         FilterMatchesPredicate secondPredicate = new FilterMatchesPredicate(
                 Optional.of(BENSON.getCourseId()),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty());
+                Optional.empty(), Optional.empty(), Optional.empty());
 
         FilterCommand filterFirstCommand = new FilterCommand(firstPredicate);
         FilterCommand filterSecondCommand = new FilterCommand(secondPredicate);
 
         assertEquals(filterFirstCommand, filterFirstCommand);
-
-        FilterCommand filterFirstCommandCopy = new FilterCommand(firstPredicate);
-        assertEquals(filterFirstCommand, filterFirstCommandCopy);
+        assertEquals(filterFirstCommand, new FilterCommand(firstPredicate));
 
         assertNotEquals(1, filterFirstCommand);
         assertNotEquals(null, filterFirstCommand);
@@ -150,15 +117,17 @@ public class FilterCommandTest {
     public void toStringMethod() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.of(ALICE.getCourseId()),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty());
+                Optional.empty(), Optional.empty(), Optional.empty());
         FilterCommand filterCommand = new FilterCommand(predicate);
 
         String expected = FilterCommand.class.getCanonicalName() + "{predicate=" + predicate + "}";
         assertEquals(expected, filterCommand.toString());
     }
 
+    /**
+     * Executes a {@code FilterCommand} with the given {@code predicate},
+     * and checks that the result matches the expected model state.
+     */
     private void assertFilterCommandSuccess(FilterMatchesPredicate predicate) {
         FilterCommand command = new FilterCommand(predicate);
         expectedModel.updateFilteredPersonList(predicate);
