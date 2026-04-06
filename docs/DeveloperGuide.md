@@ -343,24 +343,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Use cases
 
-**Use Case: UC01 - Purge Sample Data**<br>
-**Actor:** User<br>
-**MSS:**
-1. User enters the purge command.
-2. TeachAssist detects sample data present.
-3. TeachAssist asks for confirmation.
-4. User confirms the purge.
-5. TeachAssist deletes all sample records.
-6. TeachAssist confirms that sample data has been removed.
-7. Use case ends.
-
-**Extensions:** 
-
-* 3a. User cancels the purge.
-    * 3a1. TeachAssist aborts the purge operation.
-    * Use case ends.
-
-**Use Case: UC02 – Add Student**<br>
+**Use Case: UC01 – Add Student**<br>
 **Actor:** User<br>
 **MSS:**
 1. User enters the command to add a student.
@@ -381,16 +364,41 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 3b2. TeachAssist informs the user that the student already exists.
     * Use case ends.
 
+**Use Case: UC02 – Edit Student**<br>
+**Actor:** User<br>
+**MSS:**
+1. User issues the `edit` command specifying a target student and the fields to update.
+2. TeachAssist validates the input and the existence of the target student.
+3. TeachAssist updates the student record with the provided changes.
+4. TeachAssist confirms that the student has been updated.
+5. Use case ends.
+
+**Extensions:**
+
+* 2a. The input format is invalid.
+    * 2a1. TeachAssist displays an error message and the correct command format.
+    * Use case ends.
+* 2b. The specified student does not exist.
+    * 2b1. TeachAssist informs the user that the specified student could not be found.
+    * Use case ends.
+
 **Use Case: UC05 – Mark Attendance**<br>
 **Actor:** User<br>
 **MSS:**
 
-1. User selects a tutorial session.
-2. TeachAssist displays the list of students in the tutorial group.
-3. User marks each student as present or absent.
-4. TeachAssist records the attendance for the session.
-5. TeachAssist confirms the attendance record.
-6. Use case ends.
+1. User issues a command to mark attendance for a specific student and tutorial week.
+2. TeachAssist updates the attendance record for the specified student and week.
+3. TeachAssist confirms the updated attendance status.
+4. Use case ends.
+
+**Extensions:**
+
+* 2a. The specified student does not exist.
+    * 2a1. TeachAssist informs the user and aborts the operation.
+    * Use case ends.
+* 2b. The specified week is invalid (out of range or cancelled).
+    * 2b1. TeachAssist informs the user and aborts the operation.
+    * Use case ends.
 
 **Use Case: UC06 – Add Academic Notes**<br>
 **Actor:** User<br>
@@ -404,17 +412,6 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 6. TeachAssist confirms the addition.
 7. Use case ends.
 
-**Use Case: UC07 – Record Participation**<br>
-**Actor:** User<br>
-**MSS:**
-
-1. User selects a student.
-2. User enters the participation recording command.
-3. TeachAssist requests participation details.
-4. User enters the participation score or description.
-5. TeachAssist records the participation entry.
-6. TeachAssist confirms the update.
-7. Use case ends
 
 **Use Case: UC08 – Update Student Progress Status**<br>
 **Actor:** User<br>
@@ -437,26 +434,18 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 1c1. TeachAssist informs the user of the valid progress statuses.
     * Use case ends.
 
-**Use Case: UC09 – View Student History**<br>
+**Use Case: UC09 – View Student Details**<br>
 **Actor:** User<br>
 **MSS:**
 
-1. User selects a student.
-2. User requests to view the student’s history.
-3. TeachAssist retrieves the student’s notes (UC06), attendance (UC5), and participation records (UC07), progress status (UC08).
-4. TeachAssist displays the historical information.
-5. User reviews the data.
-6. Use case ends
+1. User issues the `view` command with a student index.
+2. TeachAssist displays the selected student's detailed information and remark entries in the UI.
+3. Use case ends.
 
 **Extensions**
 
-* 5a. User deletes a particular student history
-    * 5a1. User selects a student to delete.
-    * 5a2. User enters the delete command.
-    * 5a3. TeachAssist requests confirmation.
-    * 5a4. User confirms the deletion.
-    * 5a5. TeachAssist removes the student record.
-    * 5a6. TeachAssist displays confirmation.
+* 1a. The specified index is out of range.
+    * 1a1. TeachAssist informs the user that the specified student does not exist and aborts the operation.
     * Use case ends.
 
 **Use Case: UC10 – View Help Command** <br>
@@ -504,14 +493,65 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 3. TeachAssist displays the list of students.
 4. Use case ends.
 
-**Use Case: UC13 – Clear Student Filters** <br>
+**Use Case: UC13 – List Students (reset view / clear filters)** <br>
 **Actor:** User <br>
 **MSS:**
 
-1.User enters the command to clear the current filter.
-2. TeachAssist removes the applied filtering criteria.
-3. TeachAssist displays the full student list.
+1. User enters the `list` command.
+2. TeachAssist displays the full student list (any active filters are cleared for the displayed view).
+3. Use case ends.
+
+**Use Case: UC14 – Filter Student List** <br>
+**Actor:** User <br>
+**MSS:**
+
+1. User enters a `filter` command with one or more criteria (e.g., course, tutorial group, progress state, attendance threshold).
+2. TeachAssist applies the filter and updates the displayed student list to show only students matching all provided criteria.
+3. TeachAssist displays feedback summarising the active filter and the number of matching students.
 4. Use case ends.
+
+
+**Extensions :**
+
+* 2a. A required parameter value is missing for one of the criteria (e.g., `crs/` with no course id).
+    * 2a1. TeachAssist informs the user of the missing value and shows correct usage.
+    * Use case ends.
+* 2b. A provided criterion has an invalid format (e.g., malformed tutorial group `tg/@@@`).
+    * 2b1. TeachAssist informs the user about the invalid format for that criterion.
+    * Use case ends.
+* 2c. A provided progress value is not one of the supported statuses.
+    * 2c1. TeachAssist informs the user of valid progress values and rejects the filter.
+    * Use case ends.
+* 2d. The absence count (`abs/`) is not a non-negative integer.
+    * 2d1. TeachAssist informs the user that absence must be a non-negative integer.
+    * Use case ends.
+* 2e. The combination of criteria is valid but yields no matches.
+    * 2e1. TeachAssist displays an empty list and a message indicating that no students match the filter.
+    * Use case ends.
+* 2f. Multiple criteria are supplied.
+    * 2f1. TeachAssist combines criteria using logical AND semantics and updates the list accordingly.
+    * Use case ends.
+* 2g. The user issues `filter` while another view or filter is active.
+    * 2g1. TeachAssist replaces the currently displayed view with the new filtered results.
+    * Use case ends.
+
+**Use Case: UC15 – Find Students** <br>
+**Actor:** User <br>
+**MSS:**
+
+1. User enters a `find` command with one or more keywords (e.g., parts of a name or student id).
+2. TeachAssist searches the student records for matches and updates the displayed list to show matching students.
+3. TeachAssist displays feedback indicating the number of students found and the search terms used.
+4. Use case ends.
+
+**Extensions:**
+
+* 2a. The `find` command contains illegal characters or is an empty query.
+    * 2a1. TeachAssist informs the user of the correct syntax for the `find` command.
+    * Use case ends.
+* 2b. No students match the query.
+    * 2b1. TeachAssist displays an empty list and a message such as "No students found for: <query>".
+    * Use case ends.
 
 ### Non-Functional Requirements
 1. Performance
