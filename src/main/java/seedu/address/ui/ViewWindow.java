@@ -5,10 +5,10 @@ import static java.util.Objects.requireNonNull;
 import java.util.logging.Logger;
 
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-// No longer creates its own Stage; this UI part will be embedded in MainWindow
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Remark;
