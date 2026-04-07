@@ -149,15 +149,11 @@ add n/JOHN DOE id/A0123456X e/johnd@u.nus.edu crs/CS2103T tg/T01 tel/@JOHNDOE
 
 When done successfully, it should look like this:
 
-![successful edit](images/successfulEdit.png)
+![successful add](images/successfulAdd.png)
 
 If any required fields are missing or the index is wrong, an error will be shown:
 
-![edit error index 0](images/errorEditIndexZero.png)
-
-![edit error index out](images/errorEditIndexOut.png)
-
-![edit error no field](images/errorEditNoField.png)
+![add error](images/errorAdd.png)
 
 <find>
 
@@ -180,12 +176,15 @@ edit 1 n/JOHN HOE
 
 When done successfully, it should look like this:
 
-![successful add](images/successfulAdd.png)
+![successful edit](images/successfulEdit.png)
 
 If any required fields are missing or wrong, an error will be shown:
 
-![add error](images/errorAdd.png)
+![edit error index 0](images/errorEditIndexZero.png)
 
+![edit error index out](images/errorEditIndexOut.png)
+
+![edit error no field](images/errorEditNoField.png)
 
 <markattendance>
 
