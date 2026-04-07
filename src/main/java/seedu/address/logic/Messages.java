@@ -15,9 +15,9 @@ public class Messages {
     public static final String MESSAGE_UNKNOWN_COMMAND = "Unknown command";
     public static final String MESSAGE_INVALID_COMMAND_FORMAT = "Invalid command format! \n%1$s";
     public static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX = "The student index provided is invalid";
-    public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d stuents listed!";
+    public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d students listed!";
     public static final String MESSAGE_DUPLICATE_FIELDS =
-                "Multiple values specified for the following single-valued field(s): ";
+            "Multiple values specified for the following single-valued field(s): %s";
 
     /**
      * Returns an error message indicating the duplicate prefixes.
@@ -28,27 +28,25 @@ public class Messages {
         Set<String> duplicateFields =
                 Stream.of(duplicatePrefixes).map(Prefix::toString).collect(Collectors.toSet());
 
-        return MESSAGE_DUPLICATE_FIELDS + String.join(" ", duplicateFields);
+        return String.format(MESSAGE_DUPLICATE_FIELDS, String.join(" ", duplicateFields));
     }
 
     /**
      * Formats the {@code person} for display to the user.
      */
     public static String format(Person person) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(person.getName())
-                .append("; Student ID: ")
-                .append(person.getStudentId())
-                .append("; Email: ")
-                .append(person.getEmail())
-                .append("; Course ID: ")
-                .append(person.getCourseId())
-                .append("; TGroup: ")
-                .append(person.getTGroup())
-                .append("; Tele: ")
-                .append(person.getTele() == null ? "-" : person.getTele());
 
-        return builder.toString();
+        return person.getName()
+                + "; Student ID: "
+                + person.getStudentId()
+                + "; Email: "
+                + person.getEmail()
+                + "; Course ID: "
+                + person.getCourseId()
+                + "; TGroup: "
+                + person.getTGroup()
+                + "; Tele: "
+                + (person.getTele() == null ? "-" : person.getTele());
     }
 
 }

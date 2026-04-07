@@ -28,7 +28,7 @@ public class RemarkCommand extends Command {
             + PREFIX_REMARK + "Excellent student who always submits assignments on time. \n";
 
     //replace Person with toString of person
-    public static final String MESSAGE_ADD_REMARKS_SUCCESS = "Added remark to Person: %1$s";
+    public static final String MESSAGE_ADD_REMARKS_SUCCESS = "Added remark to Person: \n%1$s";
 
     //replace Person with toString of person
     public static final String MESSAGE_ADD_REMARKS_FAILURE = "Failed to add remark to Person: %1$s";
@@ -62,7 +62,8 @@ public class RemarkCommand extends Command {
         Person personToEdit = lastShownList.get(targetIndex.getZeroBased());
 
         personToEdit.addRemark(remark);
-        return new CommandResult(String.format(MESSAGE_ADD_REMARKS_SUCCESS, personToEdit));
+        return new CommandResult(String.format(MESSAGE_ADD_REMARKS_SUCCESS, Messages.format(personToEdit) + "\n"
+                + "Remark: " + this.remark.getText()));
     }
 
     @Override

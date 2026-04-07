@@ -12,66 +12,87 @@ import org.junit.jupiter.api.Test;
 
 public class RemarkTest {
 
+    private static final String VALID_TEXT = "Good progress";
+    private static final LocalDate VALID_DATE = LocalDate.of(2025, 10, 1);
+
     @Test
-    public void constructor_nullText_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new Remark(null, LocalDate.of(2025, 10, 1)));
+    public void constructor_nullFields_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new Remark(null, VALID_DATE));
+        assertThrows(NullPointerException.class, () -> new Remark(VALID_TEXT, null));
     }
 
     @Test
-    public void constructor_nullDate_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new Remark("Needs follow-up", null));
-    }
+    public void constructor_invalidText_throwsIllegalArgumentException() {
+        // Text too long
+        String longText = "a".repeat(Remark.MAX_LENGTH + 1);
+        assertThrows(IllegalArgumentException.class, () -> new Remark(longText, VALID_DATE));
 
-    @Test
-    public void constructor_textTooLong_throwsIllegalArgumentException() {
-        String longText = "a".repeat(101);
-        assertThrows(IllegalArgumentException.class, () -> new Remark(longText, LocalDate.of(2025, 10, 1)));
+        // Blank text
+        assertThrows(IllegalArgumentException.class, () -> new Remark("   ", VALID_DATE));
     }
 
     @Test
     public void isValidText() {
+        // null text
         assertFalse(Remark.isValidText(null));
-        assertTrue(Remark.isValidText(""));
+
+        // invalid text
+        assertFalse(Remark.isValidText("")); // empty string (is blank)
+        assertFalse(Remark.isValidText("  ")); // spaces only (is blank)
+        assertFalse(Remark.isValidText("a".repeat(Remark.MAX_LENGTH + 1))); // too long
+
+        // valid text
         assertTrue(Remark.isValidText("Good progress"));
-        assertTrue(Remark.isValidText("a".repeat(100)));
-        assertFalse(Remark.isValidText("a".repeat(101)));
-    }
+        assertTrue(Remark.isValidText("A")); // minimal valid length
+        assertTrue(Remark.isValidText("a".repeat(Remark.MAX_LENGTH))); // maximum valid length
 
-    @Test
-    public void constructor_validRemark_success() {
-        LocalDate date = LocalDate.of(2025, 10, 1);
-        Remark remark = new Remark("Consulted student about milestone", date);
+        // text with emojis (Unicode)
+        assertTrue(Remark.isValidText("Needs follow-up ⚠️"));
+        assertTrue(Remark.isValidText("Progress: 100% ✅"));
 
-        assertEquals("Consulted student about milestone", remark.getText());
-        assertEquals(date, remark.getDate());
+        // text with leading and trailing whitespace (should be valid as long as length <= 100)
+        assertTrue(Remark.isValidText("  Good progress  "));
+
+        // text with special symbols/punctuation
+        assertTrue(Remark.isValidText("Wait... what?! (Ref: #123)"));
+
+        // boundary case: whitespace only (handled by isBlank() in your Remark class)
+        assertFalse(Remark.isValidText("   "));
     }
 
     @Test
     public void equals() {
-        Remark first = new Remark("Good participation", LocalDate.of(2025, 10, 1));
-        Remark same = new Remark("Good participation", LocalDate.of(2025, 10, 1));
-        Remark differentText = new Remark("Needs follow-up", LocalDate.of(2025, 10, 1));
-        Remark differentDate = new Remark("Good participation", LocalDate.of(2025, 10, 2));
+        Remark remark = new Remark(VALID_TEXT, VALID_DATE);
 
-        assertEquals(first, first);
-        assertEquals(first, same);
-        assertNotEquals(first, differentText);
-        assertNotEquals(first, differentDate);
-        assertNotEquals(first, null);
-        assertNotEquals(first, 1);
+        // same values -> returns true
+        assertEquals(new Remark(VALID_TEXT, VALID_DATE), remark);
+
+        // same object -> returns true
+        assertEquals(remark, remark);
+
+        // null -> returns false
+        assertNotEquals(null, remark);
+
+        // different types -> returns false
+        assertNotEquals(5.0f, remark);
+
+        // different text -> returns false
+        assertNotEquals(new Remark("Other text", VALID_DATE), remark);
+
+        // different date -> returns false
+        assertNotEquals(remark, new Remark(VALID_TEXT, VALID_DATE.plusDays(1)));
     }
 
     @Test
-    public void hashCode_sameValues_sameHashCode() {
-        Remark first = new Remark("Good participation", LocalDate.of(2025, 10, 1));
-        Remark same = new Remark("Good participation", LocalDate.of(2025, 10, 1));
-
-        assertEquals(first.hashCode(), same.hashCode());
+    public void hashCode_test() {
+        Remark remark = new Remark(VALID_TEXT, VALID_DATE);
+        assertEquals(remark.hashCode(), new Remark(VALID_TEXT, VALID_DATE).hashCode());
+        assertNotEquals(remark.hashCode(), new Remark("Other", VALID_DATE).hashCode());
     }
 
     @Test
     public void toString_validRemark_returnsFormattedString() {
-        Remark remark = new Remark("Met during consultation", LocalDate.of(2025, 10, 1));
-        assertEquals("[2025-10-01] Met during consultation", remark.toString());
+        Remark remark = new Remark("Met student", VALID_DATE);
+        assertEquals("[2025-10-01] Met student", remark.toString());
     }
 }
