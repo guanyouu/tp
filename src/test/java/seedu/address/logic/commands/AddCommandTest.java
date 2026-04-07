@@ -172,11 +172,6 @@ public class AddCommandTest {
         }
 
         @Override
-        public boolean isCancelled(CourseId courseId, TGroup tGroup, int weekIndex) {
-            return false;
-        }
-
-        @Override
         public void updateSortedPersonList(Comparator<Person> comparator, Predicate<Person> predicate) {
             throw new AssertionError("This method should not be called.");
         }
