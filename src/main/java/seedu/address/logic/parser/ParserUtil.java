@@ -249,7 +249,7 @@ public class ParserUtil {
         case "N":
             return Week.Status.N;
         default:
-            throw new ParseException("Week status must be 'Y' (attended), 'A' (absent), or 'N' (not marked).");
+            throw new ParseException(Week.MESSAGE_CONSTRAINTS);
         }
     }
     /**
