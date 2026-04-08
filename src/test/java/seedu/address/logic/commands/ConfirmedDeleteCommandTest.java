@@ -13,9 +13,11 @@ import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.Person;
 
 /**
- * Contains integration tests and unit tests for {@code ConfirmedDeleteCommand}.
+ * Contains integration tests (interaction with the Model) and unit tests for
+ * {@code ConfirmedDeleteCommand}.
  */
 public class ConfirmedDeleteCommandTest {
 
@@ -23,13 +25,14 @@ public class ConfirmedDeleteCommandTest {
 
     @Test
     public void execute_validPerson_success() {
-        ConfirmedDeleteCommand confirmedDeleteCommand = new ConfirmedDeleteCommand(ALICE);
+        Person personToDelete = ALICE;
+        ConfirmedDeleteCommand confirmedDeleteCommand = new ConfirmedDeleteCommand(personToDelete);
+
+        Model expectedModel = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(personToDelete);
 
         String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS,
-                Messages.format(ALICE));
-
-        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
-        expectedModel.deletePerson(ALICE);
+                Messages.format(personToDelete));
 
         assertCommandSuccess(confirmedDeleteCommand, model, expectedMessage, expectedModel);
     }
@@ -52,7 +55,7 @@ public class ConfirmedDeleteCommandTest {
         // null -> returns false
         assertFalse(deleteAliceCommand.equals(null));
 
-        // different person -> returns false
+        // different persons -> returns false
         assertFalse(deleteAliceCommand.equals(deleteBensonCommand));
     }
 }

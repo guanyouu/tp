@@ -1,0 +1,65 @@
+@startuml
+
+class MarkAttendanceCommand {
+  - Index index
+  - Index weekNumber
+  - Week.Status status
+  + execute(model: Model): CommandResult
+}
+
+class MarkAttendanceCommandParser {
+  + parse(args: String): MarkAttendanceCommand
+}
+
+class Model {
+  + getFilteredPersonList(): List<Person>
+  + setPerson(old: Person, new: Person)
+}
+
+class Person {
+  - WeekList weekList
+  + getWeekList(): WeekList
+}
+
+class WeekList {
+  + copy(): WeekList
+  + markWeekAsAttended(index: int)
+  + markWeekAsAbsent(index: int)
+  + markWeekAsDefault(index: int)
+  + getWeek(index: int): WeeklyAttendance
+}
+
+class Week {
+  - int weekNo
+  - Status status
+  - Status prevStatus
+  + markAsAttended()
+  + markAsAbsent()
+  + markAsDefault()
+  + isCancelled(): boolean
+}
+
+enum Status {
+  Y
+  A
+  N
+  C
+}
+
+'================ Relationships =================
+
+MarkAttendanceCommandParser --> MarkAttendanceCommand : creates
+
+MarkAttendanceCommand --> Model : uses
+MarkAttendanceCommand --> Person : updates
+MarkAttendanceCommand --> WeekList : modifies
+
+Model --> Person : manages
+
+Person --> WeekList : owns
+
+WeekList --> Week : contains
+
+Week --> Status : uses
+
+@enduml

@@ -6,7 +6,6 @@ import java.util.List;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
-import seedu.address.logic.ConfirmationManager;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -53,36 +52,18 @@ public class DeleteCommand extends Command {
     private final StudentId targetStudentId;
     private final CourseId targetCourseId;
     private final TGroup targetTGroup;
-    private final ConfirmationManager confirmationManager;
-
-    /**
-     * Compatibility constructor for tests or standalone usage.
-     */
-    public DeleteCommand(Index targetIndex) {
-        this(targetIndex, new ConfirmationManager());
-    }
-
-    /**
-     * Compatibility constructor for tests or standalone usage.
-     */
-    public DeleteCommand(StudentId targetStudentId, CourseId targetCourseId, TGroup targetTGroup) {
-        this(targetStudentId, targetCourseId, targetTGroup, new ConfirmationManager());
-    }
 
     /**
      * Creates a DeleteCommand to delete a person by index.
      *
      * @param targetIndex Index of the person in the filtered person list.
-     * @param confirmationManager Manager storing pending confirmation commands.
      */
-    public DeleteCommand(Index targetIndex, ConfirmationManager confirmationManager) {
+    public DeleteCommand(Index targetIndex) {
         requireNonNull(targetIndex);
-        requireNonNull(confirmationManager);
         this.targetIndex = targetIndex;
         this.targetStudentId = null;
         this.targetCourseId = null;
         this.targetTGroup = null;
-        this.confirmationManager = confirmationManager;
     }
 
     /**
@@ -91,39 +72,39 @@ public class DeleteCommand extends Command {
      * @param targetStudentId Student ID of the person to delete.
      * @param targetCourseId Course ID of the person to delete.
      * @param targetTGroup Tutorial group of the person to delete.
-     * @param confirmationManager Manager storing pending confirmation commands.
      */
-    public DeleteCommand(StudentId targetStudentId, CourseId targetCourseId, TGroup targetTGroup,
-                         ConfirmationManager confirmationManager) {
+    public DeleteCommand(StudentId targetStudentId, CourseId targetCourseId, TGroup targetTGroup) {
         requireNonNull(targetStudentId);
         requireNonNull(targetCourseId);
         requireNonNull(targetTGroup);
-        requireNonNull(confirmationManager);
         this.targetIndex = null;
         this.targetStudentId = targetStudentId;
         this.targetCourseId = targetCourseId;
         this.targetTGroup = targetTGroup;
-        this.confirmationManager = confirmationManager;
     }
 
     /**
-     * Resolves and returns the person to delete from the currently filtered list.
+     * Resolves and returns the person to delete.
+     * Index-based deletion uses the currently filtered list.
+     * Details-based deletion searches the full address book.
      */
-    private Person resolvePersonToDelete(Model model) throws CommandException {
+    public Person getPersonToDelete(Model model) throws CommandException {
         requireNonNull(model);
-        List<Person> lastShownList = model.getFilteredPersonList();
 
         Person personToDelete;
 
         if (targetIndex != null) {
+            List<Person> lastShownList = model.getFilteredPersonList();
+
             if (targetIndex.getZeroBased() >= lastShownList.size()) {
                 throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
             }
             personToDelete = lastShownList.get(targetIndex.getZeroBased());
         } else {
+            List<Person> fullPersonList = model.getFullPersonList();
             personToDelete = null;
 
-            for (Person person : lastShownList) {
+            for (Person person : fullPersonList) {
                 boolean hasMatchingStudentId = person.getStudentId().equals(targetStudentId);
                 boolean hasMatchingCourseId = person.getCourseId().equals(targetCourseId);
                 boolean hasMatchingTGroup = person.getTGroup().equals(targetTGroup);
@@ -143,16 +124,27 @@ public class DeleteCommand extends Command {
     }
 
     /**
-     * Requests confirmation before deletion.
+     * Creates and returns the command to execute after delete confirmation is given.
+     */
+    public Command getConfirmedCommand(Model model) throws CommandException {
+        Person personToDelete = getPersonToDelete(model);
+        return new ConfirmedDeleteCommand(personToDelete);
+    }
+
+    /**
+     * Returns the delete confirmation message for the resolved target person.
+     */
+    public String getConfirmationMessage(Model model) throws CommandException {
+        Person personToDelete = getPersonToDelete(model);
+        return String.format(MESSAGE_CONFIRM_DELETE, personToDelete.getName());
+    }
+
+    /**
+     * DeleteCommand should be intercepted by LogicManager to handle confirmation first.
      */
     @Override
     public CommandResult execute(Model model) throws CommandException {
-        requireNonNull(model);
-
-        Person personToDelete = resolvePersonToDelete(model);
-        confirmationManager.setPendingCommand(new ConfirmedDeleteCommand(personToDelete));
-
-        return new CommandResult(String.format(MESSAGE_CONFIRM_DELETE, personToDelete.getName()));
+        throw new CommandException("Delete command should be handled through confirmation flow.");
     }
 
     @Override

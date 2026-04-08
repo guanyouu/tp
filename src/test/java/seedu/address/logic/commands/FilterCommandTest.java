@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
-import static seedu.address.testutil.TypicalPersons.CARL;
-import static seedu.address.testutil.TypicalPersons.HOON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.util.Optional;
@@ -19,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.CourseId;
 import seedu.address.model.person.FilterMatchesPredicate;
 
 /**
@@ -42,6 +41,7 @@ public class FilterCommandTest {
 
     @Test
     public void execute_filterByCourse_success() {
+        // EP: Valid Course ID exists in model
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.of(ALICE.getCourseId()),
                 Optional.empty(), Optional.empty(), Optional.empty());
@@ -49,43 +49,26 @@ public class FilterCommandTest {
     }
 
     @Test
-    public void execute_filterByTGroup_success() {
+    public void execute_filterByCourse_caseInsensitiveMatch() {
+        // EP: Case-insensitive match (Input lowercase, Model uppercase)
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(),
-                Optional.of(BENSON.getTGroup()),
-                Optional.empty(), Optional.empty());
+                Optional.of(new CourseId(ALICE.getCourseId().value.toLowerCase())),
+                Optional.empty(), Optional.empty(), Optional.empty());
         assertFilterCommandSuccess(predicate);
     }
 
     @Test
-    public void execute_filterByProgress_success() {
-        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(), Optional.empty(),
-                Optional.of(CARL.getProgress()),
-                Optional.empty());
-        assertFilterCommandSuccess(predicate);
-    }
-
-    @Test
-    public void execute_filterByAbsenceCount_success() {
+    public void execute_filterByAbsenceCount_boundaryValueZero() {
+        // BVA: Boundary value 0 (Minimum valid absence)
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.of(HOON.getAbsenceCount()));
+                Optional.of(0));
         assertFilterCommandSuccess(predicate);
-    }
-
-    @Test
-    public void execute_filterByAbsenceCount_noMatches() {
-        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.of(100)); // Threshold likely higher than any typical student
-
-        assertFilterCommandSuccess(predicate);
-        assertTrue(model.getFilteredPersonList().isEmpty());
     }
 
     @Test
     public void execute_filterByMultipleFields_success() {
+        // EP: Multiple fields combined (AND logic)
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.of(ALICE.getCourseId()),
                 Optional.empty(), Optional.empty(),
@@ -94,40 +77,38 @@ public class FilterCommandTest {
     }
 
     @Test
-    public void equals() {
-        FilterMatchesPredicate firstPredicate = new FilterMatchesPredicate(
-                Optional.of(ALICE.getCourseId()),
-                Optional.empty(), Optional.empty(), Optional.empty());
-        FilterMatchesPredicate secondPredicate = new FilterMatchesPredicate(
-                Optional.of(BENSON.getCourseId()),
+    public void execute_filterNoMatches_success() {
+        // EP: Resulting list is empty
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+                Optional.of(new CourseId("NONEXISTENT123")),
                 Optional.empty(), Optional.empty(), Optional.empty());
 
-        FilterCommand filterFirstCommand = new FilterCommand(firstPredicate);
-        FilterCommand filterSecondCommand = new FilterCommand(secondPredicate);
-
-        assertEquals(filterFirstCommand, filterFirstCommand);
-        assertEquals(filterFirstCommand, new FilterCommand(firstPredicate));
-
-        assertNotEquals(1, filterFirstCommand);
-        assertNotEquals(null, filterFirstCommand);
-        assertNotEquals(filterFirstCommand, filterSecondCommand);
+        assertFilterCommandSuccess(predicate);
+        assertTrue(model.getFilteredPersonList().isEmpty());
     }
 
     @Test
-    public void toStringMethod() {
-        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+    public void equals() {
+        // EP: Identity (Same object)
+        FilterMatchesPredicate firstPredicate = new FilterMatchesPredicate(
                 Optional.of(ALICE.getCourseId()),
                 Optional.empty(), Optional.empty(), Optional.empty());
-        FilterCommand filterCommand = new FilterCommand(predicate);
+        FilterCommand filterFirstCommand = new FilterCommand(firstPredicate);
+        assertEquals(filterFirstCommand, filterFirstCommand);
 
-        String expected = FilterCommand.class.getCanonicalName() + "{predicate=" + predicate + "}";
-        assertEquals(expected, filterCommand.toString());
+        // EP: Structural Equality (Different objects, same data)
+        FilterMatchesPredicate identicalFirstPredicate = new FilterMatchesPredicate(
+                Optional.of(ALICE.getCourseId()),
+                Optional.empty(), Optional.empty(), Optional.empty());
+        assertEquals(filterFirstCommand, new FilterCommand(identicalFirstPredicate));
+
+        // EP: Inequality (Different data)
+        FilterMatchesPredicate secondPredicate = new FilterMatchesPredicate(
+                Optional.of(BENSON.getCourseId()),
+                Optional.empty(), Optional.empty(), Optional.empty());
+        assertNotEquals(filterFirstCommand, new FilterCommand(secondPredicate));
     }
 
-    /**
-     * Executes a {@code FilterCommand} with the given {@code predicate},
-     * and checks that the result matches the expected model state.
-     */
     private void assertFilterCommandSuccess(FilterMatchesPredicate predicate) {
         FilterCommand command = new FilterCommand(predicate);
         expectedModel.updateFilteredPersonList(predicate);

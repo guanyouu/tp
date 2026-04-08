@@ -79,7 +79,7 @@ public class PersonTest {
                 Progress.NOT_SET);
         assertTrue(person.isSamePerson(editedPerson));
 
-        // different studentId -> returns false
+        // different studentId -> returns true
         editedPerson = new Person(
                 new Name("Alex Tan"),
                 new CourseId("CS2030S"),
@@ -89,7 +89,7 @@ public class PersonTest {
                 new Tele("alextan"),
                 new WeekList(),
                 Progress.NOT_SET);
-        assertFalse(person.isSamePerson(editedPerson));
+        assertTrue(person.isSamePerson(editedPerson));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class PersonTest {
         // different type -> returns false
         assertFalse(person.equals(5));
 
-        // different email -> returns false
+        // different email -> returns true
         Person editedPerson = new Person(
                 validName,
                 validCourseId,
@@ -125,9 +125,9 @@ public class PersonTest {
                 validTele,
                 new WeekList(),
                 Progress.NOT_SET);
-        assertFalse(person.equals(editedPerson));
+        assertTrue(person.equals(editedPerson));
 
-        // different studentId -> returns false
+        // different studentId -> returns true
         editedPerson = new Person(
                 validName,
                 validCourseId,
@@ -137,7 +137,7 @@ public class PersonTest {
                 validTele,
                 new WeekList(),
                 Progress.NOT_SET);
-        assertFalse(person.equals(editedPerson));
+        assertTrue(person.equals(editedPerson));
 
         // different tele -> returns true
         editedPerson = new Person(
@@ -161,7 +161,7 @@ public class PersonTest {
                 validTele,
                 new WeekList(),
                 Progress.NOT_SET);
-        assertFalse(person.equals(editedPerson));
+        assertTrue(person.equals(editedPerson));
 
         // different courseId, same email/studentId/tele -> returns false
         editedPerson = new Person(

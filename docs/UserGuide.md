@@ -1,7 +1,7 @@
 ---
-  layout: default.md
-  title: "User Guide"
-  pageNav: 3
+layout: default.md
+title: "User Guide"
+pageNav: 3
 ---
 
 # TeachAssist User Guide
@@ -142,6 +142,7 @@ This is especially useful after using commands such as [`find`](#find) or [`filt
 ```
 list
 ```
+
 
 
 <a name="add"></a>
@@ -589,7 +590,6 @@ TeachAssist data are saved in the hard disk automatically after any command that
 ### Known issues
 
 1. Cancelled-week recovery is transient: When a week is cancelled, the app stores previous per-student attendance statuses in memory to allow in-session recovery. However, this transient state is not persisted to disk. As a result, after the application is closed and restarted, recovering the pre-cancellation Y/A/N statuses may not be possible. Consider this when cancelling weeks; if you need to retain historical statuses across restarts, avoid relying on the transient recovery mechanism.
-
 
 
 --------------------------------------------------------------------------------------------------------------------

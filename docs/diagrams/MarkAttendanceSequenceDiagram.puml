@@ -1,0 +1,19 @@
+@startuml
+participant "MarkAttendanceCommand" as Command
+participant "WeekList"
+participant "Week"
+
+Command -> WeekList : markWeekAsAttended(index)
+WeekList -> WeekList : validate index
+WeekList -> Week : markAsAttended()
+
+alt Already marked as Y
+    Week --> WeekList : throw IllegalStateException
+    WeekList --> Command : propagate exception
+else Valid update
+    Week -> Week : update status = Y
+    Week --> WeekList : success
+end
+
+WeekList --> Command : return
+@enduml

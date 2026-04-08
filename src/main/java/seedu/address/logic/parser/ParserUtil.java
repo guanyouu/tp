@@ -36,6 +36,7 @@ public class ParserUtil {
             "Keywords should contain alphabetic characters separated by spaces only.";
     public static final String MESSAGE_EMPTY_KEYWORDS =
             "Find command requires at least one keyword.";
+
     /**
      * Parses {@code oneBasedIndex} into an {@code Index} and returns it.
      * Leading and trailing whitespaces will be trimmed.
@@ -59,6 +60,7 @@ public class ParserUtil {
 
     /**
      * Parses arguments containing exactly one index and returns the parsed {@code Index}.
+     * This high-level method ensures no extra arguments are present and appends usage info.
      *
      * @param args Raw argument string.
      * @param messageUsage Usage message of the calling command.
@@ -218,6 +220,12 @@ public class ParserUtil {
      * @throws ParseException if the input is not a positive integer.
      */
     public static Index parseWeekIndex(String oneBasedWeek) throws ParseException {
+        requireNonNull(oneBasedWeek);
+        String trimmedIndex = oneBasedWeek.trim();
+        if (!StringUtil.isNonZeroUnsignedInteger(trimmedIndex)) {
+            throw new ParseException(WeekList.MESSAGE_INVALID_WEEK);
+        }
+
         Index index = parseIndex(oneBasedWeek);
 
         if (index.getOneBased() > 13) {
@@ -250,6 +258,7 @@ public class ParserUtil {
             throw new ParseException(Week.MESSAGE_CONSTRAINTS);
         }
     }
+
     /**
      * Parses a {@code String progress} into a {@code Progress}.
      * Leading and trailing whitespaces will be trimmed.
@@ -288,6 +297,10 @@ public class ParserUtil {
             throw new ParseException(MESSAGE_INVALID_ABSENCE_COUNT);
         }
 
-        return Integer.parseInt(trimmed);
+        try {
+            return Integer.parseInt(trimmed);
+        } catch (NumberFormatException e) {
+            throw new ParseException("Absence count is too large.", e);
+        }
     }
 }

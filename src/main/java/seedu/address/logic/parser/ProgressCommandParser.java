@@ -24,7 +24,6 @@ public class ProgressCommandParser implements Parser<ProgressCommand> {
 
         Prefix[] allowedPrefixes = {PREFIX_PROGRESS};
 
-        ParserValidators.checkForBarePrefixes(argMultimap, allowedPrefixes, ProgressCommand.MESSAGE_USAGE);
         ParserValidators.checkForUnknownPrefixTokens(args, allowedPrefixes,
                 "p/", ProgressCommand.MESSAGE_USAGE);
 

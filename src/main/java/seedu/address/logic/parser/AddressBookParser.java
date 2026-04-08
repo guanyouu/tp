@@ -8,13 +8,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import seedu.address.commons.core.LogsCenter;
-import seedu.address.logic.ConfirmationManager;
 import seedu.address.logic.commands.AddCommand;
-import seedu.address.logic.commands.CancelCommand;
 import seedu.address.logic.commands.CancelWeekCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.Command;
-import seedu.address.logic.commands.ConfirmCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
@@ -41,16 +38,6 @@ public class AddressBookParser {
     private static final Pattern BASIC_COMMAND_FORMAT = Pattern.compile("(?<commandWord>\\S+)(?<arguments>.*)");
     private static final Logger logger = LogsCenter.getLogger(AddressBookParser.class);
 
-    private final ConfirmationManager confirmationManager;
-
-    public AddressBookParser() {
-        this(new ConfirmationManager());
-    }
-
-    public AddressBookParser(ConfirmationManager confirmationManager) {
-        this.confirmationManager = confirmationManager;
-    }
-
     /**
      * Parses user input into command for execution.
      *
@@ -60,18 +47,6 @@ public class AddressBookParser {
      */
     public Command parseCommand(String userInput) throws ParseException {
         String trimmedInput = userInput.trim();
-
-        if (confirmationManager.hasPendingCommand()) {
-            if (trimmedInput.equalsIgnoreCase(ConfirmCommand.COMMAND_WORD)) {
-                return new ConfirmCommand(confirmationManager);
-            }
-
-            if (trimmedInput.equalsIgnoreCase(CancelCommand.COMMAND_WORD)) {
-                return new CancelCommand(confirmationManager);
-            }
-
-            throw new ParseException("Please type 'yes' to confirm deletion or 'no' to cancel.");
-        }
 
         final Matcher matcher = BASIC_COMMAND_FORMAT.matcher(trimmedInput);
         if (!matcher.matches()) {
@@ -92,7 +67,7 @@ public class AddressBookParser {
             return new EditCommandParser().parse(arguments);
 
         case DeleteCommand.COMMAND_WORD:
-            return new DeleteCommandParser(confirmationManager).parse(arguments);
+            return new DeleteCommandParser().parse(arguments);
 
         case ClearCommand.COMMAND_WORD:
             return new ClearCommand();
@@ -138,4 +113,5 @@ public class AddressBookParser {
             throw new ParseException(MESSAGE_UNKNOWN_COMMAND);
         }
     }
+
 }

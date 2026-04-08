@@ -23,24 +23,11 @@ import seedu.address.model.person.TGroup;
  */
 public class FilterCommandParser implements Parser<FilterCommand> {
 
-    // Error Messages (made public for use in tests) — delegate wording to ParserMessages to ensure
-    // consistent parser UX across commands while keeping these constants public for tests.
-    public static final String MESSAGE_INVALID_PREFIX = ParserMessages.invalidPrefix(
-            "crs/, tg/, p/, and abs./", FilterCommand.MESSAGE_USAGE);
-    public static final String MESSAGE_UNEXPECTED_PREAMBLE = ParserMessages.unexpectedPreamble(
-            FilterCommand.MESSAGE_USAGE);
     public static final String MESSAGE_EMPTY_COURSE_ID = ParserMessages.missingPrefixValue(
             "crs/", "Course ID cannot be empty.", FilterCommand.MESSAGE_USAGE);
-    public static final String MESSAGE_EMPTY_TGROUP = ParserMessages.missingPrefixValue(
-            "tg/", "Tutorial group cannot be empty.", FilterCommand.MESSAGE_USAGE);
-    public static final String MESSAGE_EMPTY_PROGRESS = ParserMessages.missingPrefixValue(
-            "p/", "Progress cannot be empty.", FilterCommand.MESSAGE_USAGE);
-    public static final String MESSAGE_EMPTY_ABSENCE = ParserMessages.missingPrefixValue(
-            "abs/", "Absence count cannot be empty.", FilterCommand.MESSAGE_USAGE);
     public static final String MESSAGE_NO_FILTERS =
             "At least one filter must be provided.\n" + FilterCommand.MESSAGE_USAGE;
-    public static final String MESSAGE_POSSIBLE_PREFIX_MISSING_SLASH = ParserMessages.possiblePrefixMissingSlash(
-            FilterCommand.MESSAGE_USAGE);
+
     /**
      * The list of prefixes that this parser is able to handle.
      */
@@ -79,11 +66,10 @@ public class FilterCommandParser implements Parser<FilterCommand> {
      * @throws ParseException if validation fails.
      */
     private void validateInput(String args, ArgumentMultimap argMultimap) throws ParseException {
-        ParserValidators.checkForBarePrefixes(argMultimap, FILTER_PREFIXES, FilterCommand.MESSAGE_USAGE);
         ParserValidators.checkForUnknownPrefixTokens(args, FILTER_PREFIXES, "crs/, tg/, p/, and abs/",
                 FilterCommand.MESSAGE_USAGE);
-        ParserValidators.checkForUnexpectedPreamble(argMultimap, FilterCommand.MESSAGE_USAGE);
         ensureAtLeastOneFilterPresent(argMultimap);
+        ParserValidators.checkForUnexpectedPreamble(argMultimap, FilterCommand.MESSAGE_USAGE);
         argMultimap.verifyNoDuplicatePrefixesFor(FILTER_PREFIXES);
         ParserValidators.checkForMissingValues(argMultimap, FILTER_PREFIXES,
                 new String[] {"crs/", "tg/", "p/", "abs/"},

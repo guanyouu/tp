@@ -41,9 +41,6 @@ public class UnCancelWeekCommandParser implements Parser<UnCancelWeekCommand> {
                 UnCancelWeekCommand.MESSAGE_USAGE
         );
 
-        ParserValidators.checkForBarePrefixes(argMultimap, PREFIXES,
-                UnCancelWeekCommand.MESSAGE_USAGE);
-
         ParserValidators.checkForUnknownPrefixTokens(args, PREFIXES,
                 "crs/, tg/, and week/",
                 UnCancelWeekCommand.MESSAGE_USAGE);

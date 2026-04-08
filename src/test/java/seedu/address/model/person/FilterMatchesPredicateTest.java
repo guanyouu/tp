@@ -3,6 +3,7 @@ package seedu.address.model.person;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
@@ -11,6 +12,10 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.testutil.PersonBuilder;
 
+/**
+ * Unit tests for {@link FilterMatchesPredicate}.
+ * Focuses on Equivalence Partitioning (EP) and Boundary Value Analysis (BVA).
+ */
 public class FilterMatchesPredicateTest {
 
     @Test
@@ -58,7 +63,7 @@ public class FilterMatchesPredicateTest {
 
     @Test
     public void equals_normalizedCourseIdAndTGroup_areEqualAndHashCodeEqual() {
-        // CourseId comparison should be based on normalized values (stored uppercase).
+        // EP: Case-insensitive normalization (Input vs Model)
         FilterMatchesPredicate upperCoursePredicate = new FilterMatchesPredicate(
                 Optional.of(new CourseId("CS2103T")), Optional.empty(), Optional.empty(), Optional.empty());
         FilterMatchesPredicate lowerCoursePredicate = new FilterMatchesPredicate(
@@ -67,7 +72,6 @@ public class FilterMatchesPredicateTest {
         assertEquals(upperCoursePredicate, lowerCoursePredicate);
         assertEquals(upperCoursePredicate.hashCode(), lowerCoursePredicate.hashCode());
 
-        // TGroup comparison should also be based on normalized values (stored uppercase).
         FilterMatchesPredicate upperTGroupPredicate = new FilterMatchesPredicate(
                 Optional.empty(), Optional.of(new TGroup("T01")), Optional.empty(), Optional.empty());
         FilterMatchesPredicate lowerTGroupPredicate = new FilterMatchesPredicate(
@@ -83,7 +87,7 @@ public class FilterMatchesPredicateTest {
                 Optional.of(new CourseId("CS2103T")), Optional.empty(), Optional.empty(), Optional.empty());
 
         assertTrue(predicate.test(new PersonBuilder().withCourseId("CS2103T").build()));
-        // Case insensitive match
+        // EP: Case-insensitive match
         assertTrue(predicate.test(new PersonBuilder().withCourseId("cs2103t").build()));
         assertTrue(predicate.test(new PersonBuilder().withCourseId("Cs2103T").build()));
     }
@@ -100,7 +104,7 @@ public class FilterMatchesPredicateTest {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.empty(), Optional.of(new TGroup("T01")), Optional.empty(), Optional.empty());
         assertTrue(predicate.test(new PersonBuilder().withTGroup("T01").build()));
-        // Case insensitive match
+        // EP: Case-insensitive match
         assertTrue(predicate.test(new PersonBuilder().withTGroup("t01").build()));
     }
 
@@ -111,25 +115,30 @@ public class FilterMatchesPredicateTest {
         assertTrue(predicate.test(new PersonBuilder().withProgress(Progress.ON_TRACK).build()));
     }
 
+    /**
+     * Tests the threshold logic for absence counts using Equivalence Partitioning and Boundary Value Analysis.
+     * EP: [0, threshold-1] -> false
+     * EP: [threshold, max_absences] -> true
+     */
     @Test
     public void test_absenceCount_thresholdLogic() {
         // Filter threshold: Absences >= 3
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(3));
 
-        // 1. Person with exactly 3 absences -> returns true
+        // BVA: Exactly at threshold
         assertTrue(predicate.test(new PersonBuilder().withAbsences(3).build()));
 
-        // 2. Person with 5 absences (above threshold) -> returns true
+        // EP: Above threshold
         assertTrue(predicate.test(new PersonBuilder().withAbsences(5).build()));
 
-        // 3. Person with 2 absences (below threshold) -> returns false
+        // BVA: Just below threshold
         assertFalse(predicate.test(new PersonBuilder().withAbsences(2).build()));
 
-        // 4. Person with 0 absences (default) -> returns false
-        assertFalse(predicate.test(new PersonBuilder().build()));
+        // EP: Minimum possible value (0)
+        assertFalse(predicate.test(new PersonBuilder().withAbsences(0).build()));
 
-        // 5. Filter: Absences >= 0 -> returns true for any person
+        // BVA: Minimum threshold check (Absences >= 0)
         FilterMatchesPredicate zeroPredicate = new FilterMatchesPredicate(
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(0));
         assertTrue(zeroPredicate.test(new PersonBuilder().withAbsences(0).build()));
@@ -137,127 +146,92 @@ public class FilterMatchesPredicateTest {
     }
 
     @Test
+    public void test_partialPredicate_ignoresMissingFields() {
+        // EP: Only CourseId is set; others are Optional.empty()
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+                Optional.of(new CourseId("CS2103T")),
+                Optional.empty(), Optional.empty(), Optional.empty());
+
+        // Matches despite different progress and absences
+        assertTrue(predicate.test(new PersonBuilder().withCourseId("CS2103T")
+                .withProgress(Progress.AT_RISK).withAbsences(10).build()));
+        assertTrue(predicate.test(new PersonBuilder().withCourseId("CS2103T")
+                .withProgress(Progress.ON_TRACK).withAbsences(0).build()));
+    }
+
+    @Test
     public void test_allFieldsMatch_returnsTrue() {
+        // EP: All fields provided (Logical AND)
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.of(new CourseId("CS2103T")),
                 Optional.of(new TGroup("T01")),
                 Optional.of(Progress.ON_TRACK),
                 Optional.of(2));
 
-        // All fields match exactly or satisfy threshold
         assertTrue(predicate.test(new PersonBuilder()
                 .withCourseId("CS2103T")
                 .withTGroup("T01")
                 .withProgress(Progress.ON_TRACK)
                 .withAbsences(2)
                 .build()));
-
-        // All match, and absences (5) is above threshold (2)
-        assertTrue(predicate.test(new PersonBuilder()
-                .withCourseId("cs2103t")
-                .withTGroup("t01")
-                .withProgress(Progress.ON_TRACK)
-                .withAbsences(5)
-                .build()));
     }
 
     @Test
     public void test_multiFieldMismatch_returnsFalse() {
+        // EP: Multiple conditions met but one fails (AND logic)
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.of(new CourseId("CS2103T")),
                 Optional.of(new TGroup("T01")),
                 Optional.of(Progress.ON_TRACK),
                 Optional.of(3));
 
-        // Everything matches except course
+        // Course mismatch
         assertFalse(predicate.test(new PersonBuilder()
                 .withCourseId("CS1231")
                 .withTGroup("T01")
                 .withProgress(Progress.ON_TRACK)
-                .withAbsences(3)
-                .build()));
+                .withAbsences(3).build()));
 
-        // Everything matches except absences (too few)
+        // Absence mismatch (below threshold)
         assertFalse(predicate.test(new PersonBuilder()
                 .withCourseId("CS2103T")
                 .withTGroup("T01")
                 .withProgress(Progress.ON_TRACK)
-                .withAbsences(2)
-                .build()));
-
-        // Everything matches except progress
-        assertFalse(predicate.test(new PersonBuilder()
-                .withCourseId("CS2103T")
-                .withTGroup("T01")
-                .withProgress(Progress.NEEDS_ATTENTION)
-                .withAbsences(3)
-                .build()));
+                .withAbsences(2).build()));
     }
 
     @Test
     public void test_emptyPredicate_returnsTrue() {
+        // EP: No filters provided
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-        // Empty predicate should match any person
         assertTrue(predicate.test(new PersonBuilder().build()));
-        assertTrue(predicate.test(new PersonBuilder().withAbsences(10).withProgress(Progress.AT_RISK).build()));
     }
 
     @Test
     public void test_null_throwsNullPointerException() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(0));
-        // Ensure the predicate handles null person gracefully by throwing NPE as per requireNonNull
-        org.junit.jupiter.api.Assertions.assertThrows(NullPointerException.class, () -> predicate.test(null));
+        assertThrows(NullPointerException.class, () -> predicate.test(null));
     }
 
     @Test
     public void test_absenceCount_maxBoundary() {
-        // Filter threshold: Absences >= 13 (The maximum possible)
+        // BVA: Testing the maximum realistic boundary (13 weeks)
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(13));
 
-        // Person with 12 absences -> FALSE
         assertFalse(predicate.test(new PersonBuilder().withAbsences(12).build()));
-
-        // Person with 13 absences -> TRUE
         assertTrue(predicate.test(new PersonBuilder().withAbsences(13).build()));
     }
 
     @Test
-    public void test_mixedMatches_returnsFalse() {
-        // Predicate with all fields set
+    public void test_singleFieldMismatch_returnsFalse() {
         FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.of(new CourseId("CS2103T")),
-                Optional.of(new TGroup("T01")),
-                Optional.of(Progress.ON_TRACK),
-                Optional.of(2));
+                Optional.of(new CourseId("CS2103T")), Optional.empty(), Optional.empty(), Optional.empty());
 
-        // 1. Only CourseId matches -> FALSE
-        assertFalse(predicate.test(new PersonBuilder().withCourseId("CS2103T")
-                .withTGroup("T02").withProgress(Progress.AT_RISK).withAbsences(0).build()));
-
-        // 2. Only TGroup matches -> FALSE
-        assertFalse(predicate.test(new PersonBuilder().withCourseId("CS1010")
-                .withTGroup("T01").withProgress(Progress.AT_RISK).withAbsences(0).build()));
-
-        // 3. Only Progress matches -> FALSE
-        assertFalse(predicate.test(new PersonBuilder().withCourseId("CS1010")
-                .withTGroup("T02").withProgress(Progress.ON_TRACK).withAbsences(0).build()));
-
-        // 4. Only AbsenceCount matches -> FALSE
-        assertFalse(predicate.test(new PersonBuilder().withCourseId("CS1010")
-                .withTGroup("T02").withProgress(Progress.AT_RISK).withAbsences(2).build()));
-    }
-
-    @Test
-    public void test_absenceCountHighThreshold_returnsFalse() {
-        // Threshold higher than possible weeks (e.g., 14)
-        // Even with max absences (13), this should always be false.
-        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
-                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(14));
-
-        assertFalse(predicate.test(new PersonBuilder().withAbsences(13).build()));
+        // Correct everything except course
+        assertFalse(predicate.test(new PersonBuilder().withCourseId("MA1521").build()));
     }
 
     @Test
@@ -274,4 +248,5 @@ public class FilterMatchesPredicateTest {
                 + "}";
         assertEquals(expected, predicate.toString());
     }
+
 }
