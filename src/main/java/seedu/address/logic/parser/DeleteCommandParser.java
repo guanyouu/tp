@@ -31,8 +31,13 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
                     + "\n" + DeleteCommand.MESSAGE_USAGE);
         }
 
-        ArgumentMultimap argMultimap =
-                ArgumentTokenizer.tokenize(args, PREFIX_STUDENTID, PREFIX_COURSEID, PREFIX_TGROUP);
+        Prefix[] allowedPrefixes = {PREFIX_STUDENTID, PREFIX_COURSEID, PREFIX_TGROUP};
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, allowedPrefixes);
+
+        ParserValidators.checkForUnknownPrefixTokens(args, allowedPrefixes,
+                "id/, crs/, tg/", DeleteCommand.MESSAGE_USAGE);
+
+        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_STUDENTID, PREFIX_COURSEID, PREFIX_TGROUP);
 
         boolean hasStudentId = argMultimap.getValue(PREFIX_STUDENTID).isPresent();
         boolean hasCourseId = argMultimap.getValue(PREFIX_COURSEID).isPresent();
@@ -40,11 +45,14 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
 
         boolean isIdentityMode = hasStudentId || hasCourseId || hasTGroup;
 
-        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_STUDENTID, PREFIX_COURSEID, PREFIX_TGROUP);
-
         if (isIdentityMode) {
-            if (!arePrefixesPresent(argMultimap, PREFIX_STUDENTID, PREFIX_COURSEID, PREFIX_TGROUP)
-                    || !argMultimap.getPreamble().isEmpty()) {
+            ParserValidators.checkForBarePrefixes(argMultimap, allowedPrefixes, DeleteCommand.MESSAGE_USAGE);
+
+            if (!argMultimap.getPreamble().trim().isEmpty()) {
+                throw new ParseException(ParserMessages.unexpectedPreamble(DeleteCommand.MESSAGE_USAGE));
+            }
+
+            if (!(hasStudentId && hasCourseId && hasTGroup)) {
                 throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
             }
 
@@ -54,6 +62,8 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
 
             return new DeleteCommand(studentId, courseId, tGroup);
         }
+
+        ParserValidators.checkForBarePrefixes(argMultimap, allowedPrefixes, DeleteCommand.MESSAGE_USAGE);
 
         if (trimmedInput.matches("[1-9]\\d*\\s+.+")) {
             throw new ParseException(DeleteCommand.MESSAGE_UNEXPECTED_TEXT_AFTER_INDEX
@@ -71,17 +81,5 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
         }
 
         throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
-    }
-
-    /**
-     * Returns true if all the specified prefixes are present in the argument multimap.
-     */
-    private static boolean arePrefixesPresent(ArgumentMultimap argumentMultimap, Prefix... prefixes) {
-        for (Prefix prefix : prefixes) {
-            if (argumentMultimap.getValue(prefix).isEmpty()) {
-                return false;
-            }
-        }
-        return true;
     }
 }
