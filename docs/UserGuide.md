@@ -22,6 +22,8 @@ And the best part? No technical expertise needed—just basic computer skills li
   - [Editing a student: `edit`](#edit)
   - [Marking a student's attendance: `markattendance`](#mark-attendance)
   - [Updating a student's progress: `updateprogress`](#update-progress)
+  - [Cancelling a tutorial's week: `cancelweek`](#cancel-week)
+  - [Unancelling a tutorial's week: `uncancelweek`](#uncancel-week)
   - [Remarks](#remarks)
     - [Adding a remark: `remark`](#remark)
     - [Deleting a remark: `unremark`](#unremark)
@@ -149,13 +151,118 @@ Examples:
 add n/JOHN DOE id/A0123456X e/johnd@u.nus.edu crs/CS2103T tg/T01 tel/@JOHNDOE
 ```
 
+When done successfully, it should look like this:
+
+![successful add](images/successfulAdd.png)
+
+If any required fields are missing or the index is wrong, an error will be shown:
+
+![add error](images/errorAdd.png)
+
 <find>
 
 <filter>
 
-<edit>
+<a name="edit"></a>
+### Editing a student: `edit`
+
+Edits a student based on the index given. At least one field must be present.
+
+Format:
+```
+edit [n\NAME] [id/STUDENT_ID] [e/EMAIL] [crs/COURSE_ID] [tg/TUTORIAL_GROUP] [tel/TELEGRAM_USERNAME]
+```
+
+Examples:
+```
+edit 1 n/JOHN HOE
+```
+
+When done successfully, it should look like this:
+
+![successful edit](images/successfulEdit.png)
+
+If any required fields are missing or wrong, an error will be shown:
+
+![edit error index 0](images/errorEditIndexZero.png)
+
+![edit error index out](images/errorEditIndexOut.png)
+
+![edit error no field](images/errorEditNoField.png)
 
 <markattendance>
+### Marks a students attendance: `markattendance`
+![MarkAttendanceUI.png](images/MarkAttendanceUI.png)
+**Update attendance by index, week, status**
+
+Format:
+```
+markattendance INDEX week/WEEK sta/STATUS
+```
+
+* Updates the attendance of student at the specified `INDEX` and `WEEK` to `STATUS`.
+* The index refers to the index number shown in the currently displayed student list.
+* The index **must be a positive integer** 1, 2, 3, …
+* The week referes to school weeks, which are visible to the right of teachassist
+
+**Examples**:
+`markattendance 1 week/3 sta/y`
+* marks the attendance of the 1st student's attendance in week 3 as present -> Green.
+
+`markattendance 2 week/6 sta/a`
+* marks the attendance of the 2nd student's attendance in week 6 as absent -> Red.
+
+`markattendance 4 week/4 sta/n`
+* marks the attendance of the 4th student's attendance in week 4 as unmarked -> Grey.
+
+##
+<cancelweek>
+<a name="cancel-week"></a>
+### Cancelling a tutorial's week: `cancelweek`
+![CancelWeekUI.png](images/CancelWeekUI.png)
+Marks a specific week as **cancelled** for all students in a given course and tutorial group.
+
+Format:
+
+cancelweek crs/COURSE_ID tg/TUTORIAL_GROUP week/WEEK
+
+
+* Cancels the specified `WEEK` for **all students** in the matching `COURSE_ID` and `TUTORIAL_GROUP`.
+* A cancelled week will be reflected in each student’s attendance record.
+* If the week is already cancelled, the command will have no additional effect.
+* The cancellation is applied to:
+    * Existing students in that course and tutorial group.
+    * Future students added to the same course and tutorial group.
+
+**Examples**:
+
+cancelweek crs/CS2103T tg/T01 week/5
+
+* Cancels week 5 for all students in CS2103T tutorial group T01.
+
+##
+<uncancelweek>
+<a name="uncancel-week"></a>
+### Uncancelling a tutorial's week: `uncancelweek`
+Reverts a previously cancelled week for a specific course and tutorial group.
+
+Format:
+
+uncancelweek crs/COURSE_ID tg/TUTORIAL_GROUP week/WEEK
+
+
+* Removes the cancelled status for the specified `WEEK`.
+* The week will return to a normal attendance state for all students in the matching course and tutorial group.
+* This affects:
+    * Existing students (their week status will be updated).
+    * Future students (the week will no longer be auto-marked as cancelled).
+* If the week was not previously cancelled, the command will have no effect.
+
+**Examples**:
+
+uncancelweek crs/CS2103T tg/T01 week/5
+
+* Restores week 5 as a normal week for all students in CS2103T tutorial group T01.
 
 <a name="update-progress"></a>
 ### Updating a student's progress : `updateprogress`
@@ -192,6 +299,53 @@ The progress tags added should look like the following:
 ![progress updated](images/updateProgressExample.png)
 
 <remark>
+
+### Remarks
+
+<a name="remark"></a>
+
+#### Adding a remark : `remark`
+
+Need to record an important note about a student? Use the `remark` command to attach a remark directly to that student’s record! Keep track of class participation, proficiency in topics, or just general remarks of a student!
+
+Format:
+```
+remark INDEX txt/REMARK
+```
+
+Examples:
+```
+remark 1 txt/Participates actively in class!
+```
+
+Notes:
+* The remark must be prefixed with `txt/`.
+* If multiple `txt/` prefixes are provided, only the first `txt/` is treated as a prefix, subsequent `txt/` prefixes will be treated as part of the remark
+* Each remark is limited to a 100 characters. Keep your remarks concise!
+
+Example:
+```
+remark 1 txt/Needs more practice on txt/recursion
+```
+will be stored as `Needs more practice on txt/recursion`
+
+
+<a name="unremark"></a>
+
+#### Removing a remark : `unremark`
+
+Over time, some remarks may become outdated, unnecessary, or incorrect. The `unremark` feature lets you delete a specific remark from a student’s record when it is no longer useful.
+
+Format:
+```
+unremark INDEX r/REMARK_INDEX
+```
+
+Examples:
+```
+unremark 1 r/2
+```
+
 
 <view>
 
@@ -402,24 +556,7 @@ The **View Window** on the right side of the application updates to show the sel
 </box>
 
 <a name="mark-attendance"></a>
-### Marks a students attendance: `markattendance`
 
-Updates attendance using the given week and status
-
-Format:
-```
-markattendance INDEX week/WEEK_NUMBER sta/STATUS
-```
-
-* Supported attendance status values:
-    * `y` --> Present  --> Green
-    * `a` --> Absent   --> Red
-    * `n` --> Undetermined   --> Grey
-
-Examples:
-```
-markattendance 1 week/1 sta/y
-```
 
 
 <a name="update-progress"></a>
@@ -462,37 +599,6 @@ updateprogress id/STUDENT_ID crs/COURSE_ID tg/TUTORIAL_GROUP p/PROGRESS
 * `updateprogress 2 p/not_set` - Clears the progress status of the 2nd student in the currently displayed student list.
 
 ##
-
-<a name="remark"></a>
-### Adding a remark : `remark`
-
-Adds a textual remark to the student.
-
-Format:
-```
-remark INDEX txt/REMARK
-```
-
-Examples:
-```
-remark 1 txt/Participates actively in class!
-```
-
-
-<a name="unremark"></a>
-### Removing a remark : `unremark`
-
-Removes the specified remark from the student.
-
-Format:
-```
-unremark INDEX r/REMARK_INDEX
-```
-
-Examples:
-```
-unremark 1 r/2
-```
 
 
 <div markdown="span" class="alert alert-primary"></div>
@@ -557,4 +663,3 @@ No. For commands with prefixes such as add and filter, parameters can be entered
 
 **Q: Why did delete 1 remove a different student than I expected?**
 Because the index refers to the current displayed list. You may be referring to an outdated list.
-

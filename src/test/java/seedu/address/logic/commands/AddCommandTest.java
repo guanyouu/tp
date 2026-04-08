@@ -162,6 +162,16 @@ public class AddCommandTest {
         }
 
         @Override
+        public boolean hasCourseTGroup(CourseId courseId, TGroup tGroup) {
+            return false;
+        }
+
+        @Override
+        public boolean isWeekCancelled(CourseId courseId, TGroup tGroup, int weekIdx) {
+            return false;
+        }
+
+        @Override
         public Set<Integer> getCancelledWeeks(CourseId courseId, TGroup tGroup) {
             return Set.of();
         }

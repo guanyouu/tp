@@ -85,6 +85,9 @@ public interface Model {
 
     /** Returns the full list of students */
     ObservableList<Person> getFullPersonList();
+    boolean hasCourseTGroup(CourseId courseId, TGroup tGroup);
+
+    boolean isWeekCancelled(CourseId courseId, TGroup tGroup, int weekIdx);
 
     Set<Integer> getCancelledWeeks(CourseId courseId, TGroup tGroup);
 

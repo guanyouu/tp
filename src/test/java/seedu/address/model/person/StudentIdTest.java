@@ -58,6 +58,6 @@ public class StudentIdTest {
         assertFalse(studentId.equals(5.0f));
 
         // different values -> returns false
-        assertFalse(studentId.equals(new StudentId("B1234567X")));
+        assertFalse(studentId.equals(new StudentId("A2234567X")));
     }
 }

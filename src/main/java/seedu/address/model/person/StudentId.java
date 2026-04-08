@@ -9,8 +9,9 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class StudentId {
 
-    public static final String MESSAGE_CONSTRAINTS = "Student ID should be a 9 characters long, alphanumeric";
-    public static final String VALIDATION_REGEX = "[A-Za-z][0-9]{7}[A-Za-z]";
+    public static final String MESSAGE_CONSTRAINTS = "Student ID should start with 'A', followed by 7 digits"
+            + " and end with a letter. It should not be blank.";
+    public static final String VALIDATION_REGEX = "[Aa][0-9]{7}[A-Za-z]";
     public final String value;
 
     /**
@@ -21,7 +22,7 @@ public class StudentId {
     public StudentId(String value) {
         requireNonNull(value);
         checkArgument(isValidStudentId(value), MESSAGE_CONSTRAINTS);
-        this.value = value;
+        this.value = value.toUpperCase();
     }
 
     public String getValue() {

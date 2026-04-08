@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -128,11 +129,52 @@ public class ModelManager implements Model {
         addressBook.setPerson(target, updatedPerson);
     }
 
+    //=========== Cancel/Uncancel Week =============================================================
+    /**
+     * Returns {@code true} if there exists at least one {@code Person} in the model
+     * with the specified course ID and tutorial group.
+     *
+     * @param courseId The course identifier.
+     * @param tGroup The tutorial group.
+     * @return {@code true} if a matching course–tutorial pair exists, {@code false} otherwise.
+     */
+    @Override
+    public boolean hasCourseTGroup(CourseId courseId, TGroup tGroup) {
+        ObservableList<Person> persons = addressBook.getPersonList();
+        return persons.stream()
+                .anyMatch(p -> p.getCourseId().equals(courseId)
+                        && p.getTGroup().equals(tGroup));
+    }
+    /**
+     * Returns {@code true} if the specified week is marked as cancelled
+     * for the given course ID and tutorial group.
+     *
+     * @param courseId The course identifier.
+     * @param tGroup The tutorial group.
+     * @param weekIdx The week index (0-based).
+     * @return {@code true} if the week is cancelled, {@code false} otherwise.
+     */
+    @Override
+    public boolean isWeekCancelled(CourseId courseId, TGroup tGroup, int weekIdx) {
+        return getCancelledWeeks(courseId, tGroup).contains(weekIdx);
+    }
+    /**
+     * Returns an unmodifiable set of cancelled week indices for the specified
+     * course ID and tutorial group.
+     *
+     * <p>If no cancelled weeks exist for the given pair, an empty set is returned.
+     *
+     * @param courseId The course identifier.
+     * @param tGroup The tutorial group.
+     * @return An unmodifiable {@code Set} of cancelled week indices (0-based).
+     * @throws NullPointerException if any argument is {@code null}.
+     */
     @Override
     public Set<Integer> getCancelledWeeks(CourseId courseId, TGroup tGroup) {
         requireAllNonNull(courseId, tGroup);
         String key = makeKey(courseId, tGroup);
-        return cancelledWeeksMap.getOrDefault(key, new java.util.HashSet<>());
+        return Collections.unmodifiableSet(
+                cancelledWeeksMap.getOrDefault(key, Collections.emptySet()));
     }
     private void deriveCancelledWeekList(CourseId courseId, TGroup tGroup, int weekIndex) {
         List<Person> persons = addressBook.getPersonList();
@@ -150,16 +192,7 @@ public class ModelManager implements Model {
                     continue;
                 }
 
-                Person editedPerson = new Person(
-                        personToEdit.getName(),
-                        personToEdit.getCourseId(),
-                        personToEdit.getEmail(),
-                        personToEdit.getStudentId(),
-                        personToEdit.getTGroup(),
-                        personToEdit.getTele(),
-                        weekList,
-                        personToEdit.getProgress()
-                );
+                Person editedPerson = cloneWithWeekList(personToEdit, weekList);
                 setPerson(personToEdit, editedPerson);
             }
         }
@@ -167,51 +200,99 @@ public class ModelManager implements Model {
     private void deriveUncancelledWeekList(CourseId courseId, TGroup tGroup, int weekIndex) {
         List<Person> persons = addressBook.getPersonList();
         // update existing persons
-        for (Person person : persons) {
-            if (person.getCourseId().equals(courseId)
-                    && person.getTGroup().equals(tGroup)) {
+        for (Person personToEdit : persons) {
+            if (personToEdit.getCourseId().equals(courseId)
+                    && personToEdit.getTGroup().equals(tGroup)) {
 
-                WeekList weekList = person
+                WeekList weekList = personToEdit
                         .getWeekList().copy();
-                weekList.markAsUncancelled(weekIndex);
+                try {
+                    weekList.markAsUncancelled(weekIndex);
+                } catch (IllegalStateException e) {
+                    continue; // skip invalid ones safely
+                }
 
-                Person updated = new Person(
-                        person.getName(),
-                        person.getCourseId(),
-                        person.getEmail(),
-                        person.getStudentId(),
-                        person.getTGroup(),
-                        person.getTele(),
-                        weekList,
-                        person.getProgress()
-                );
+                Person updated = cloneWithWeekList(personToEdit, weekList);
 
-                setPerson(person, updated);
+                setPerson(personToEdit, updated);
             }
         }
     }
+    private Person cloneWithWeekList(Person p, WeekList list) {
+        Person updated = new Person(
+                p.getName(),
+                p.getCourseId(),
+                p.getEmail(),
+                p.getStudentId(),
+                p.getTGroup(),
+                p.getTele(),
+                list,
+                p.getProgress()
+        );
 
+        for (Remark remark : p.getRemarks()) {
+            updated.addRemark(remark);
+        }
+
+        return updated;
+    }
+
+    /**
+     * Adds a cancelled week for the specified course ID and tutorial group.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Ensures the course–tutorial pair exists in the internal map</li>
+     *     <li>Ignores the operation if the week is already marked as cancelled</li>
+     *     <li>Propagates the cancellation to all matching {@code Person} objects</li>
+     *     <li>Updates the persistent cancelled weeks map in the address book</li>
+     * </ul>
+     *
+     * @param courseId The course identifier.
+     * @param tGroup The tutorial group.
+     * @param weekIndex The week index to cancel (0-based).
+     * @throws NullPointerException if {@code courseId} or {@code tGroup} is {@code null}.
+     */
     @Override
     public void addCancelledWeek(CourseId courseId, TGroup tGroup, int weekIndex) {
         requireAllNonNull(courseId, tGroup);
-        deriveCancelledWeekList(courseId, tGroup, weekIndex);
         String key = makeKey(courseId, tGroup);
         cancelledWeeksMap.putIfAbsent(key, new java.util.HashSet<>());
+        if (cancelledWeeksMap.get(key).contains(weekIndex)) {
+            return;
+        }
+        deriveCancelledWeekList(courseId, tGroup, weekIndex);
         cancelledWeeksMap.get(key).add(weekIndex);
-
         addressBook.getCancelledWeeksMap().putAll(cancelledWeeksMap); // to save
     }
 
+    /**
+     * Removes a cancelled week for the specified course ID and tutorial group.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Does nothing if the course–tutorial pair or week does not exist</li>
+     *     <li>Removes the week from the cancelled weeks map</li>
+     *     <li>Propagates the uncancellation to all matching {@code Person} objects</li>
+     *     <li>Updates the persistent cancelled weeks map in the address book</li>
+     * </ul>
+     *
+     * @param courseId The course identifier.
+     * @param tGroup The tutorial group.
+     * @param weekIndex The week index to uncancel (0-based).
+     * @throws NullPointerException if {@code courseId} or {@code tGroup} is {@code null}.
+     */
     @Override
     public void removeCancelledWeek(CourseId courseId, TGroup tGroup, int weekIndex) {
         requireAllNonNull(courseId, tGroup);
         String key = makeKey(courseId, tGroup);
-        if (cancelledWeeksMap.containsKey(key)) {
-            cancelledWeeksMap.get(key).remove(weekIndex);
+        if (!cancelledWeeksMap.containsKey(key)
+                || !cancelledWeeksMap.get(key).contains(weekIndex)) {
+            return;
         }
-
-        addressBook.getCancelledWeeksMap().putAll(cancelledWeeksMap);
+        cancelledWeeksMap.get(key).remove(weekIndex);
         deriveUncancelledWeekList(courseId, tGroup, weekIndex);
+        addressBook.getCancelledWeeksMap().putAll(cancelledWeeksMap);
     }
 
     private Person applyCancelledWeeks(Person person) {
@@ -228,20 +309,7 @@ public class ModelManager implements Model {
             }
         }
 
-        Person updatedPerson = new Person(
-                person.getName(),
-                person.getCourseId(),
-                person.getEmail(),
-                person.getStudentId(),
-                person.getTGroup(),
-                person.getTele(),
-                weekList,
-                person.getProgress()
-        );
-
-        for (Remark remark : person.getRemarks()) {
-            updatedPerson.addRemark(remark);
-        }
+        Person updatedPerson = cloneWithWeekList(person, weekList);
 
         return updatedPerson;
     }
@@ -300,7 +368,4 @@ public class ModelManager implements Model {
                 && userPrefs.equals(otherModelManager.userPrefs)
                 && filteredPersons.equals(otherModelManager.filteredPersons);
     }
-
-
-
 }

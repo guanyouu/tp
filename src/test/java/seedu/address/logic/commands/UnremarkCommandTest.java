@@ -220,6 +220,16 @@ public class UnremarkCommandTest {
         }
 
         @Override
+        public boolean hasCourseTGroup(CourseId courseId, TGroup tGroup) {
+            return false;
+        }
+
+        @Override
+        public boolean isWeekCancelled(CourseId courseId, TGroup tGroup, int weekIdx) {
+            return false;
+        }
+
+        @Override
         public void updateFilteredPersonList(Predicate<Person> predicate) {
             throw new AssertionError();
         }
