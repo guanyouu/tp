@@ -140,6 +140,11 @@ public class UnremarkCommandTest {
         }
 
         @Override
+        public ObservableList<Person> getFullPersonList() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public void addCancelledWeek(CourseId courseId, TGroup tGroup, int weekNumber) {
             throw new AssertionError("This method should not be called.");
         }

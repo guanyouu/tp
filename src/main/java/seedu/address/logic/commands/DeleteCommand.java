@@ -84,23 +84,27 @@ public class DeleteCommand extends Command {
     }
 
     /**
-     * Resolves and returns the person to delete from the currently filtered list.
+     * Resolves and returns the person to delete.
+     * Index-based deletion uses the currently filtered list.
+     * Details-based deletion searches the full address book.
      */
     public Person getPersonToDelete(Model model) throws CommandException {
         requireNonNull(model);
-        List<Person> lastShownList = model.getFilteredPersonList();
 
         Person personToDelete;
 
         if (targetIndex != null) {
+            List<Person> lastShownList = model.getFilteredPersonList();
+
             if (targetIndex.getZeroBased() >= lastShownList.size()) {
                 throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
             }
             personToDelete = lastShownList.get(targetIndex.getZeroBased());
         } else {
+            List<Person> fullPersonList = model.getFullPersonList();
             personToDelete = null;
 
-            for (Person person : lastShownList) {
+            for (Person person : fullPersonList) {
                 boolean hasMatchingStudentId = person.getStudentId().equals(targetStudentId);
                 boolean hasMatchingCourseId = person.getCourseId().equals(targetCourseId);
                 boolean hasMatchingTGroup = person.getTGroup().equals(targetTGroup);

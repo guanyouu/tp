@@ -83,6 +83,8 @@ public interface Model {
     /** Returns an unmodifiable view of the filtered person list */
     ObservableList<Person> getFilteredPersonList();
 
+    /** Returns the full list of students */
+    ObservableList<Person> getFullPersonList();
     boolean hasCourseTGroup(CourseId courseId, TGroup tGroup);
 
     boolean isWeekCancelled(CourseId courseId, TGroup tGroup, int weekIdx);
