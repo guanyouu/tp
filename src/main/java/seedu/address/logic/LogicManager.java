@@ -37,14 +37,9 @@ public class LogicManager implements Logic {
     private final AddressBookParser addressBookParser;
 
     /**
-     * Stores the person awaiting delete confirmation.
+     * Stores the command awaiting user confirmation.
      */
-    private Person pendingPersonToDelete;
-
-    /**
-     * Tracks whether the app is currently waiting for the user to confirm or cancel a delete operation.
-     */
-    private boolean isAwaitingDeleteConfirmation;
+    private Command pendingConfirmationCommand;
 
     /**
      * Constructs a {@code LogicManager} with the given {@code Model} and {@code Storage}.
@@ -53,31 +48,43 @@ public class LogicManager implements Logic {
         this.model = model;
         this.storage = storage;
         this.addressBookParser = new AddressBookParser();
-        this.pendingPersonToDelete = null;
-        this.isAwaitingDeleteConfirmation = false;
+        this.pendingConfirmationCommand = null;
     }
 
     /**
-     * Returns true if the app is currently waiting for the user to confirm or cancel a pending delete.
+     * Returns true if there is a command awaiting user confirmation.
      */
-    private boolean hasPendingDeleteConfirmation() {
-        return isAwaitingDeleteConfirmation && pendingPersonToDelete != null;
+    private boolean hasPendingConfirmationCommand() {
+        return pendingConfirmationCommand != null;
     }
 
     /**
-     * Stores the given person as the pending person to delete and marks the app as waiting for confirmation.
+     * Stores the given command as the pending command awaiting confirmation.
      */
-    private void setPendingDeleteConfirmation(Person person) {
-        pendingPersonToDelete = person;
-        isAwaitingDeleteConfirmation = true;
+    private void setPendingConfirmationCommand(Command command) {
+        pendingConfirmationCommand = command;
     }
 
     /**
-     * Clears any pending delete confirmation state.
+     * Clears any pending confirmation command.
      */
-    private void clearPendingDeleteConfirmation() {
-        pendingPersonToDelete = null;
-        isAwaitingDeleteConfirmation = false;
+    private void clearPendingConfirmationCommand() {
+        pendingConfirmationCommand = null;
+    }
+
+    /**
+     * Saves the current address book state to storage.
+     *
+     * @throws CommandException if the save operation fails
+     */
+    private void saveAddressBook() throws CommandException {
+        try {
+            storage.saveAddressBook(model.getAddressBook());
+        } catch (AccessDeniedException e) {
+            throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
+        } catch (IOException ioe) {
+            throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
+        }
     }
 
     @Override
@@ -86,53 +93,33 @@ public class LogicManager implements Logic {
 
         String trimmedCommandText = commandText.trim();
 
-        if (hasPendingDeleteConfirmation()) {
+        if (hasPendingConfirmationCommand()) {
             if (trimmedCommandText.equalsIgnoreCase(ConfirmCommand.COMMAND_WORD)) {
-                Person personToDelete = pendingPersonToDelete;
-                model.deletePerson(personToDelete);
-                clearPendingDeleteConfirmation();
-
-                CommandResult commandResult = new CommandResult(
-                        String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)));
-
-                try {
-                    storage.saveAddressBook(model.getAddressBook());
-                } catch (AccessDeniedException e) {
-                    throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
-                } catch (IOException ioe) {
-                    throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
-                }
-
+                Command commandToExecute = pendingConfirmationCommand;
+                clearPendingConfirmationCommand();
+                CommandResult commandResult = commandToExecute.execute(model);
+                saveAddressBook();
                 return commandResult;
             }
 
             if (trimmedCommandText.equalsIgnoreCase(CancelCommand.COMMAND_WORD)) {
-                clearPendingDeleteConfirmation();
+                clearPendingConfirmationCommand();
                 return new CommandResult(CancelCommand.MESSAGE_CANCEL_SUCCESS);
             }
 
-            throw new ParseException("Please type 'yes' to confirm deletion or 'no' to cancel.");
+            clearPendingConfirmationCommand();
         }
 
         Command command = addressBookParser.parseCommand(commandText);
 
         if (command instanceof DeleteCommand) {
             DeleteCommand deleteCommand = (DeleteCommand) command;
-            Person personToDelete = deleteCommand.getPersonToDelete(model);
-            setPendingDeleteConfirmation(personToDelete);
-            return new CommandResult(String.format(DeleteCommand.MESSAGE_CONFIRM_DELETE, personToDelete.getName()));
+            setPendingConfirmationCommand(deleteCommand.getConfirmedCommand(model));
+            return new CommandResult(deleteCommand.getConfirmationMessage(model));
         }
 
         CommandResult commandResult = command.execute(model);
-
-        try {
-            storage.saveAddressBook(model.getAddressBook());
-        } catch (AccessDeniedException e) {
-            throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
-        } catch (IOException ioe) {
-            throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
-        }
-
+        saveAddressBook();
         return commandResult;
     }
 

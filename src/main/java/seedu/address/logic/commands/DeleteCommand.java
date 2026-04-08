@@ -120,6 +120,22 @@ public class DeleteCommand extends Command {
     }
 
     /**
+     * Creates and returns the command to execute after delete confirmation is given.
+     */
+    public Command getConfirmedCommand(Model model) throws CommandException {
+        Person personToDelete = getPersonToDelete(model);
+        return new ConfirmedDeleteCommand(personToDelete);
+    }
+
+    /**
+     * Returns the delete confirmation message for the resolved target person.
+     */
+    public String getConfirmationMessage(Model model) throws CommandException {
+        Person personToDelete = getPersonToDelete(model);
+        return String.format(MESSAGE_CONFIRM_DELETE, personToDelete.getName());
+    }
+
+    /**
      * DeleteCommand should be intercepted by LogicManager to handle confirmation first.
      */
     @Override
