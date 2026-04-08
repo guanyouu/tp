@@ -69,17 +69,10 @@ public class ProgressCommandParserTest {
     }
 
     @Test
-    public void parse_oldIdentityFormat_failure() {
-        assertParseFailure(parser,
-                "crs/A1111 p/needs_attention",
-                String.format(MESSAGE_INVALID_COMMAND_FORMAT, ProgressCommand.MESSAGE_USAGE));
-    }
-
-    @Test
     public void parse_indexAndIdentityMixed_failure() {
         assertParseFailure(parser,
                 "1 id/A0301200M crs/CS2103 tg/T01 p/on_track",
-                String.format(MESSAGE_INVALID_COMMAND_FORMAT, ProgressCommand.MESSAGE_USAGE));
+                ParserMessages.invalidPrefix("p/", ProgressCommand.MESSAGE_USAGE));
     }
 
     @Test
@@ -101,5 +94,19 @@ public class ProgressCommandParserTest {
         assertParseFailure(parser,
                 "1 p/on_track p/at_risk",
                 "Multiple values specified for the following single-valued field(s): p/");
+    }
+
+    @Test
+    public void parse_barePrefix_failure() {
+        assertParseFailure(parser,
+                "1 p on_track",
+                ParserMessages.possiblePrefixMissingSlash(ProgressCommand.MESSAGE_USAGE));
+    }
+
+    @Test
+    public void parse_unknownPrefix_failure() {
+        assertParseFailure(parser,
+                "1 prog/on_track",
+                ParserMessages.invalidPrefix("p/", ProgressCommand.MESSAGE_USAGE));
     }
 }

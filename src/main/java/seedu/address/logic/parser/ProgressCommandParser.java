@@ -22,11 +22,17 @@ public class ProgressCommandParser implements Parser<ProgressCommand> {
     public ProgressCommand parse(String args) throws ParseException {
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_PROGRESS);
 
+        Prefix[] allowedPrefixes = {PREFIX_PROGRESS};
+
+        ParserValidators.checkForBarePrefixes(argMultimap, allowedPrefixes, ProgressCommand.MESSAGE_USAGE);
+        ParserValidators.checkForUnknownPrefixTokens(args, allowedPrefixes,
+                "p/", ProgressCommand.MESSAGE_USAGE);
+
+        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_PROGRESS);
+
         if (argMultimap.getPreamble().isEmpty() || argMultimap.getValue(PREFIX_PROGRESS).isEmpty()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ProgressCommand.MESSAGE_USAGE));
         }
-
-        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_PROGRESS);
 
         String preamble = argMultimap.getPreamble().trim();
 
