@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.parser.ParserUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
@@ -116,12 +117,33 @@ public class FindCommandTest {
         FindCommand findFirstCommand = new FindCommand(firstPredicate);
         FindCommand findSecondCommand = new FindCommand(secondPredicate);
 
+        // same object -> true
         assertEquals(findFirstCommand, findFirstCommand);
+
+        // same values -> true
         assertEquals(findFirstCommand, new FindCommand(firstPredicate));
 
+        // null -> false
         assertNotEquals(null, findFirstCommand);
+
+        // different type -> false
         assertNotEquals(1, findFirstCommand);
+
+        // different predicate -> false
         assertNotEquals(findFirstCommand, findSecondCommand);
+    }
+
+    @Test
+    public void toString_method() {
+        NameContainsKeywordsPredicate predicate =
+                new NameContainsKeywordsPredicate(Collections.singletonList("test"));
+        FindCommand command = new FindCommand(predicate);
+
+        String expected = new ToStringBuilder(command)
+                .add("predicate", predicate)
+                .toString();
+
+        assertEquals(expected, command.toString());
     }
 
     private NameContainsKeywordsPredicate preparePredicate(String userInput) {
