@@ -50,7 +50,7 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_STUDENTID, PREFIX_COURSEID, PREFIX_TGROUP);
 
         if (isIdentityMode) {
-            if (!arePrefixesPresent(argMultimap, PREFIX_STUDENTID, PREFIX_COURSEID, PREFIX_TGROUP)
+          if (!argMultimap.arePrefixesPresent(PREFIX_STUDENTID, PREFIX_COURSEID, PREFIX_TGROUP)
                     || !argMultimap.getPreamble().isEmpty()) {
                 throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
             }
@@ -78,17 +78,5 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
 
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
         }
-    }
-
-    /**
-     * Returns true if all the specified prefixes are present in the argument multimap.
-     */
-    private static boolean arePrefixesPresent(ArgumentMultimap argumentMultimap, Prefix... prefixes) {
-        for (Prefix prefix : prefixes) {
-            if (argumentMultimap.getValue(prefix).isEmpty()) {
-                return false;
-            }
-        }
-        return true;
     }
 }

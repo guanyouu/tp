@@ -37,7 +37,7 @@ public class AddCommandParser implements Parser<AddCommand> {
                 ArgumentTokenizer.tokenize(args, PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL,
                         PREFIX_COURSEID, PREFIX_TGROUP, PREFIX_TELE);
 
-        if (!arePrefixesPresent(argMultimap, PREFIX_NAME, PREFIX_STUDENTID,
+        if (!argMultimap.arePrefixesPresent(PREFIX_NAME, PREFIX_STUDENTID,
                 PREFIX_EMAIL, PREFIX_COURSEID, PREFIX_TGROUP)
                 || !argMultimap.getPreamble().isEmpty()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
@@ -59,14 +59,6 @@ public class AddCommandParser implements Parser<AddCommand> {
         Person person = new Person(name, courseId, email, studentId, tGroup, tele, new WeekList(), Progress.NOT_SET);
 
         return new AddCommand(person);
-    }
-
-    /**
-     * Returns true if none of the prefixes contains empty {@code Optional} values in the given
-     * {@code ArgumentMultimap}.
-     */
-    private static boolean arePrefixesPresent(ArgumentMultimap argumentMultimap, Prefix... prefixes) {
-        return Stream.of(prefixes).allMatch(prefix -> argumentMultimap.getValue(prefix).isPresent());
     }
 
 }
