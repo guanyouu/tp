@@ -81,7 +81,12 @@ public final class ParserValidators {
             Prefix[] prefixes,
             String[] prefixStrings,
             String commandUsage) throws ParseException {
+        // Fast-path: if all prefixes are present, nothing to do.
+        if (argMultimap.arePrefixesPresent(prefixes)) {
+            return;
+        }
 
+        // Otherwise compute which ones are missing for a helpful error message.
         List<String> missing = getMissingList(argMultimap, prefixes, prefixStrings);
 
         if (!missing.isEmpty()) {
@@ -111,9 +116,13 @@ public final class ParserValidators {
             missingParts.add("student index");
         }
 
-        List<String> missingPrefixes = getMissingList(argMultimap, prefixes, prefixStrings);
-        if (!missingPrefixes.isEmpty()) {
-            missingParts.add("prefix(es): " + String.join(", ", missingPrefixes));
+        // Use ArgumentMultimap.arePrefixesPresent for a concise presence check;
+        // if not all present, compute which are missing for the error message.
+        if (!argMultimap.arePrefixesPresent(prefixes)) {
+            List<String> missingPrefixes = getMissingList(argMultimap, prefixes, prefixStrings);
+            if (!missingPrefixes.isEmpty()) {
+                missingParts.add("prefix(es): " + String.join(", ", missingPrefixes));
+            }
         }
 
         if (!missingParts.isEmpty()) {
