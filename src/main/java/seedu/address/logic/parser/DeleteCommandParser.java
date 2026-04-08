@@ -58,7 +58,6 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
             return new DeleteCommand(studentId, courseId, tGroup);
         }
 
-        ParserValidators.checkForBarePrefixes(argMultimap, allowedPrefixes, DeleteCommand.MESSAGE_USAGE);
 
         if (trimmedInput.matches("[1-9]\\d*\\s+.+")) {
             throw new ParseException(DeleteCommand.MESSAGE_UNEXPECTED_TEXT_AFTER_INDEX
