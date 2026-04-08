@@ -226,6 +226,15 @@ public class FilterMatchesPredicateTest {
     }
 
     @Test
+    public void test_singleFieldMismatch_returnsFalse() {
+        FilterMatchesPredicate predicate = new FilterMatchesPredicate(
+                Optional.of(new CourseId("CS2103T")), Optional.empty(), Optional.empty(), Optional.empty());
+
+        // Correct everything except course
+        assertFalse(predicate.test(new PersonBuilder().withCourseId("MA1521").build()));
+    }
+
+    @Test
     public void test_toString() {
         Optional<CourseId> courseId = Optional.of(new CourseId("CS2103T"));
         Optional<TGroup> tGroup = Optional.of(new TGroup("T01"));
@@ -239,4 +248,5 @@ public class FilterMatchesPredicateTest {
                 + "}";
         assertEquals(expected, predicate.toString());
     }
+
 }

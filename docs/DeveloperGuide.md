@@ -96,6 +96,7 @@ The `UI` component,
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
 * depends on some classes in the `Model` component, as it displays `Person` object residing in the `Model`.
 
+
 ### Logic component
 
 **API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
@@ -176,25 +177,68 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
-### Feature: Add Student
+### Feature: Filter Command
 
 #### Overview
-
-Describe the purpose of the `add` command and how it differs from the original AB3 implementation. State that TeachAssist uses student-specific fields instead of generic contact-oriented fields.
-
-#### Student data model
-
-Describe the student-related field classes involved in creating a student record, such as `Name`, `StudentId`, `CourseId`, `TGroup`, `Email`, `Tele`, and any other relevant attributes stored in `Person`.
-
-Relevant diagram: Class diagram showing `Person` and the student-related field classes.
+The filter command allows Teaching Assistants (TAs) to narrow down the displayed student list using one or more criteria. This is especially useful for managing large cohorts and identifying specific groups, such as students who are at-risk or frequently absent.
+The command only affects the current view and does not modify any underlying student data.
+The supported criteria are:
+* Course ID (crs/)
+* Tutorial Group (tg/)
+* Progress Status (p/)
+* Minimum Absence Count (abs/)
+The expected format is:
+filter [crs/COURSE_ID] [tg/TUTORIAL_GROUP] [p/PROGRESS_STATUS] [abs/MIN_ABSENCE_COUNT]
+Example:
+filter crs/CS2103T tg/T01 abs/3
+This displays students in CS2103T T01 with at least 3 absences.
+#### Filtering behavior
+Multiple criteria are combined using logical AND
+A student is shown only if they satisfy all provided filters
+If no criteria are provided, the command is considered invalid
+Matching rules:
+Course ID and Tutorial Group → case-insensitive exact match
+Progress Status → exact enum match
+Absences → threshold match (>=)
 
 #### Implementation
+The filter feature is implemented using:
+FilterCommand
+FilterCommandParser
+FilterMatchesPredicate
+**Execution flow:**
+1. FilterCommandParser parses input arguments and validates prefixes
+2. Ensures at least one filtering criterion is present
+3. Constructs a FilterMatchesPredicate with the provided conditions
+4. FilterCommand#execute(Model model) is invoked by the LogicManager
+5. Command calls model.updateFilteredPersonList(predicate)
+6. The model updates the filtered list
+7. UI automatically refreshes via its binding to the observable list
+8. A CommandResult is returned showing the number of matched students
 
-Explain how `AddCommandParser` parses the user input, validates each field, constructs the `Person` object, and passes it to `AddCommand` for insertion into the model.
+Predicate design
+FilterMatchesPredicate implements Predicate<Person> and stores each criterion as an optional field.
+The test(Person person) method evaluates:
+Course and tutorial group matching
+Progress status equality
+Absence count threshold
+A student passes the predicate only if all present criteria evaluate to true.
 
-#### Duplicate handling
-
-Explain how TeachAssist checks whether a student record already exists before adding it, and describe which fields are used to determine duplicates in the current implementation.
+Design Considerations
+Aspect: Combining multiple criteria
+Current choice: Logical AND
+Pros: Predictable; supports narrowing down results effectively
+Cons: Cannot perform OR-based queries (e.g., Course A or Course B)
+Alternative: Logical OR
+Pros: Enables broader searches
+Cons: Less useful for refinement; may return overly large result sets
+Aspect: Representation of filtering logic
+Current choice: Single predicate with optional fields
+Pros: Simple and centralized logic; easy to debug
+Cons: May become bulky as more criteria are added
+Alternative: Predicate composition (e.g., chaining smaller predicates)
+Pros: More modular and flexible
+Cons: Adds complexity; harder to trace combined filtering behavior
 
 
 ### Feature: Delete Student
@@ -402,6 +446,7 @@ If an invalid operation occurs (e.g., duplicate status or cancelled week), a `Co
 The following diagram shows how attendance input is parsed, validated, and applied to the target student.
 <puml src="diagrams/MarkAttendanceSequenceDiagram.puml" width="600" />
 
+
 ### Feature: Cancel Week
 
 #### Overview
@@ -570,17 +615,24 @@ Using a separate `unremark` command allows remark deletion to remain explicit an
 
 #### Overview
 
-Describe the purpose of the `view` command and what additional student information it allows users to inspect.
-
-#### UI behaviour
-
-Explain what the user sees when the command is executed, such as whether a separate window, popup, or detailed panel is shown, and what information is included in the display.
+The `view` command opens a dedicated panel on the right-hand side of the UI to display the full details of a single student. This provides a comprehensive, at-a-glance summary, including the student's attendance record and all associated remarks, which are not fully visible in the main list.
 
 #### Implementation
 
-Explain how the command identifies the target student, retrieves the required details and remarks from the model, and passes the data to the relevant UI component for display.
+The `view` command is implemented by `ViewCommand`, `ViewCommandParser`, and the `ViewWindow` UI component.
 
-Relevant diagram: Sequence diagram showing how the selected student’s details and remarks are retrieved and passed to the UI for display.
+1.  **`ViewCommandParser`**: Parses the user input to extract the target student's index from the currently displayed list.
+2.  **`ViewCommand`**: Retrieves the `Person` object from the `Model` at the specified index. It then returns a `CommandResult` with the `showView` flag set to `true` and a reference to the `Person` object to be viewed.
+3.  **`MainWindow`**: Receives the `CommandResult` and calls `handleView(person)`. This method updates the `ViewWindow` with the student's data and displays it in the `viewWindowPlaceholder`.
+4.  **`ViewWindow`**: A `UiPart` that contains FXML elements for displaying person details. Its `setPerson(Person person)` method populates the UI fields with the student's information, including dynamically generated cards for each remark.
+
+#### View Window Auto-Sync
+
+The `ViewWindow` has logic to automatically update or clear itself after any command is executed. This ensures the displayed details do not become stale. For example, if the user edits a student who is currently being viewed, the view should refresh. If the student is deleted or filtered out of the main list, the view should be cleared.
+
+The activity diagram below illustrates this logic, which is primarily handled by the `updateViewWindowAfterCommand()` method in `MainWindow`.
+
+<puml src="diagrams/ViewWindowSyncActivityDiagram.puml" alt="View Window Auto-Sync Logic" />
 
 
 --------------------------------------------------------------------------------------------------------------------
@@ -808,13 +860,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 **Actor:** User <br>
 **MSS:**
 
-1. User enters a `filter` command with one or more criteria (e.g., course, tutorial group, progress state, attendance threshold).
-2. TeachAssist applies the filter and updates the displayed student list to show only students matching all provided criteria.
+1. User enters a `filter` command with one or more criteria (e.g., `crs/`, `tg/`, `p/`, `abs/`).
+2. TeachAssist updates the displayed student list to show only students matching all provided criteria.
 3. TeachAssist displays feedback summarising the active filter and the number of matching students.
 4. Use case ends.
 
-
-**Extensions :**
+**Extensions:**
 
 * 2a. A required parameter value is missing for one of the criteria (e.g., `crs/` with no course id).
     * 2a1. TeachAssist informs the user of the missing value and shows correct usage.
@@ -1381,10 +1432,14 @@ testers are expected to do more *exploratory* testing.
 
 ## **Appendix: Planned Enhancements**
 
-1.Relax student name and find command keywords validation to support special characters. Currently, the name field accepts only alphanumeric characters and spaces; we plan to extend this to support names containing hyphens, apostrophes, and other common punctuation, such as “O’Connor” and “Smith-Jones.”
+1.Relax student name and find command keywords validation to support special characters. Currently, the name field accepts only alphabetical characters and spaces; we plan to extend this to support names containing hyphens, apostrophes, and other common punctuation, such as “O’Connor” and “Smith-Jones.”
 
 2.Extend find to support prefix-based search across additional fields such as student ID, email, and course, instead of names only.
 
 3.Add support for multi-value filtering. Currently, each filter prefix accepts only a single value; we plan to extend this to allow multiple values under the same prefix in a single filter command.
 
 4.Add support for more flexible absence filtering. Currently, absence filtering only supports values greater than or equal to a given threshold; we plan to extend this to support exact values, upper bounds, and ranges.
+
+5.Preserve and refresh embedded ViewWindow on edits. Currently, editing a person while their details are shown in the embedded right-hand `ViewWindow` causes the view to be cleared. This breaks UX by losing context. Planned change: when the edited person is the one currently displayed, keep the `ViewWindow` open and update its contents in-place to reflect the edited data. Only clear the view when the person is deleted or removed from the filtered list.
+
+6.When parsing remarks, only the first `txt/` prefix is treated as the remark delimiter; subsequent `txt/` substrings are treated as part of the remark text.
