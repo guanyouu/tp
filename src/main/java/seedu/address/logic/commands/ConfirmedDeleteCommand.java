@@ -15,8 +15,7 @@ public class ConfirmedDeleteCommand extends Command {
     private final Person personToDelete;
 
     /**
-     * Creates a confirmed delete command
-     * @param personToDelete
+     * Creates a command to delete the given person after confirmation.
      */
     public ConfirmedDeleteCommand(Person personToDelete) {
         requireNonNull(personToDelete);

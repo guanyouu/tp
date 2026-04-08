@@ -116,7 +116,9 @@ public class Person {
         }
 
         return otherPerson != null
-                && otherPerson.getStudentId().equals(getStudentId());
+                && (otherPerson.getStudentId().equals(getStudentId())
+                || otherPerson.getEmail().equals(getEmail())
+                || (otherPerson.getTele() != null && otherPerson.getTele().equals(getTele())));
     }
 
     /**
@@ -131,12 +133,12 @@ public class Person {
         if (!(other instanceof Person otherPerson)) {
             return false;
         }
-
-        return name.equals(otherPerson.name)
-                && courseId.equals(otherPerson.courseId)
-                && studentId.equals(otherPerson.studentId)
-                && tGroup.equals(otherPerson.tGroup)
-                && email.equals(otherPerson.email);
+        if (isSamePerson(otherPerson)) {
+            if (courseId.equals(otherPerson.courseId)) {
+                return tGroup.equals(otherPerson.tGroup);
+            }
+        }
+        return false;
     }
 
     @Override
