@@ -108,4 +108,74 @@ public final class ParserValidators {
             }
         }
     }
+
+    /**
+     * Checks that all prefixes are present.
+     * @param argMultimap the token map
+     * @param prefixes array of Prefix
+     * @param prefixStrings human-readable prefix strings (e.g., "crs/")
+     * @param commandUsage command usage to include in the error message
+     * @throws ParseException when any prefix is not present
+     */
+    public static void ensureAllPrefixesPresent(
+            ArgumentMultimap argMultimap,
+            Prefix[] prefixes,
+            String[] prefixStrings,
+            String commandUsage) throws ParseException {
+
+        StringBuilder missing = getMissing(argMultimap, prefixes, prefixStrings);
+
+        if (!missing.isEmpty()) {
+            throw new ParseException(
+                    "Missing required prefix(es): " + missing.toString()
+                            + "\n" + commandUsage);
+        }
+    }
+
+    private static StringBuilder getMissing(ArgumentMultimap argMultimap, Prefix[] prefixes, String[] prefixStrings) {
+        StringBuilder missing = new StringBuilder();
+
+        for (int i = 0; i < prefixes.length; i++) {
+            if (argMultimap.getValue(prefixes[i]).isEmpty()) {
+                if (!missing.isEmpty()) {
+                    missing.append(", ");
+                }
+                missing.append(prefixStrings[i]);
+            }
+        }
+        return missing;
+    }
+
+    /**
+     * Checks that all prefixes and the Index are present.
+     * @param argMultimap the token map
+     * @param prefixes array of Prefix
+     * @param prefixStrings human-readable prefix strings (e.g., "crs/")
+     * @param commandUsage command usage to include in the error message
+     * @throws ParseException when any prefix is not present
+     */
+    public static void ensureIndexAndPrefixesPresent(
+            ArgumentMultimap argMultimap,
+            Prefix[] prefixes,
+            String[] prefixStrings,
+            String commandUsage) throws ParseException {
+
+        StringBuilder missingParts = new StringBuilder();
+        if (argMultimap.getPreamble().trim().isEmpty()) {
+            missingParts.append("student index");
+        }
+        StringBuilder missingPrefixes = getMissing(argMultimap, prefixes, prefixStrings);
+        if (!missingPrefixes.isEmpty()) {
+            if (!missingParts.isEmpty()) {
+                missingParts.append(" AND ");
+            }
+            missingParts.append("prefix(es): ").append(missingPrefixes);
+        }
+        if (!missingParts.isEmpty()) {
+            throw new ParseException(
+                    "Missing required: " + missingParts.toString()
+                            + "\n" + commandUsage
+            );
+        }
+    }
 }
