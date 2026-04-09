@@ -65,10 +65,7 @@ public class UnremarkCommandParserTest {
     @Test
     public void parse_missingRemarkIndex_returnsFailure() {
         assertParseFailure(parser, "1 r/",
-            ParserMessages.missingPrefixValue(
-                "r/",
-                "Remark index cannot be empty.",
-                "") + "\n" + UnremarkCommand.MESSAGE_USAGE);
+            "Missing value for prefix(es): r/\n" + UnremarkCommand.MESSAGE_USAGE);
     }
 
     @Test

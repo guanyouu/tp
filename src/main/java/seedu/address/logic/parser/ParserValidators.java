@@ -59,15 +59,17 @@ public final class ParserValidators {
         assert prefixes.length == prefixStrings.length : "Prefix arrays mismatch";
         assert prefixes.length == detailMessages.length : "Detail message arrays mismatch";
 
-        List<String> errorMessages = new ArrayList<>();
+        List<String> missingValuePrefixes = new ArrayList<>();
         for (int i = 0; i < prefixes.length; i++) {
             if (argMultimap.isValueBlank(prefixes[i])) {
-                errorMessages.add(ParserMessages.missingPrefixValue(prefixStrings[i], detailMessages[i], ""));
+                missingValuePrefixes.add(prefixStrings[i]);
             }
         }
 
-        if (!errorMessages.isEmpty()) {
-            throw new ParseException(String.join("\n", errorMessages) + "\n" + commandUsage);
+        if (!missingValuePrefixes.isEmpty()) {
+            throw new ParseException("Missing value for prefix(es): "
+                    + String.join(" ", missingValuePrefixes)
+                    + "\n" + commandUsage);
         }
     }
 
