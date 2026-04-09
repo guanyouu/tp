@@ -121,12 +121,7 @@ public class ViewWindow extends UiPart<Region> {
         remarksGrid.add(dateLabel, COL_INDEX_DATE, rowIndex);
         remarksGrid.add(remarkLabel, COL_INDEX_TEXT, rowIndex);
 
-        GridPane.setFillWidth(indexLabel, true);
-        GridPane.setFillHeight(indexLabel, true);
-        GridPane.setFillWidth(dateLabel, true);
-        GridPane.setFillHeight(dateLabel, true);
-        GridPane.setFillWidth(remarkLabel, true);
-        GridPane.setFillHeight(remarkLabel, true);
+
     }
 
     /**
@@ -141,7 +136,6 @@ public class ViewWindow extends UiPart<Region> {
         label.getStyleClass().add(styleClass);
         label.setMaxWidth(Double.MAX_VALUE);
         label.setMaxHeight(Double.MAX_VALUE);
-        label.setMinWidth(Region.USE_PREF_SIZE);
         label.setMinHeight(Region.USE_PREF_SIZE);
         return label;
     }
