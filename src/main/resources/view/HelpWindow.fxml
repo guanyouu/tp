@@ -12,6 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.stage.Stage?>
 
+        <!-- Solution below inspired by https://github.com/AY2526S1-CS2103T-T09-3/tp/blob/master/src/main/resources/view/HelpWindow.fxml -->
 <fx:root title="Help" type="javafx.stage.Stage" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
   <icons>
     <Image url="@/images/help_icon.png" />
