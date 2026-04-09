@@ -27,16 +27,6 @@ public class MainWindow extends UiPart<Stage> {
 
     private static final String FXML = "MainWindow.fxml";
 
-    // messages for deletion
-    private static final String MESSAGE_CONFIRM_DELETE =
-            "Are you sure you want to delete %s? Type 'yes' to confirm or 'no' to cancel.";
-
-    private static final String MESSAGE_DELETE_CANCELLED =
-            "Delete operation cancelled.";
-
-    private static final String MESSAGE_INVALID_CONFIRMATION_RESPONSE =
-            "Please type 'yes' to confirm deletion or 'no' to cancel.";
-
     private static final String WELCOME_MESSAGE = "Welcome to TeachAssist!\n"
             + "Manage student attendance, progress, and remarks across multiple courses in one place.\n"
             + "Type 'help' to see the list of available commands.";
@@ -52,9 +42,6 @@ public class MainWindow extends UiPart<Stage> {
     private HelpWindow helpWindow;
     private CommandBox commandBox;
 
-    // stores the deleting state
-    private String pendingDeleteCommandText;
-    private boolean isAwaitingDeleteConfirmation = false;
     private ViewWindow viewWindow;
 
     @FXML
@@ -202,10 +189,17 @@ public class MainWindow extends UiPart<Stage> {
      */
     @FXML
     public void handleView(Person person) {
+        assert person != null : "Person to view cannot be null";
         // Set the person data on the embedded view and add the UI to the placeholder
         viewWindow.setPerson(person);
         if (viewWindowPlaceholder.getChildren().isEmpty()) {
             viewWindowPlaceholder.getChildren().add(viewWindow.getRoot());
+        }
+        // Ensure the person list selection reflects the person being viewed.
+        // This keeps the UI selection (blue highlight) in sync with the embedded view.
+        if (personListPanel != null && personListPanel.getPersonListView() != null) {
+            personListPanel.getPersonListView().getSelectionModel().select(person);
+            personListPanel.getPersonListView().scrollTo(person);
         }
     }
 
@@ -248,38 +242,14 @@ public class MainWindow extends UiPart<Stage> {
     private CommandResult executeCommand(String commandText) throws CommandException, ParseException {
         try {
             CommandResult commandResult = logic.execute(commandText);
-
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
 
-            if (commandResult.isShowView()) {
-                handleView(commandResult.getPersonToView());
-            }
+            // Process various command outcomes
+            handleCommandResult(commandResult);
 
-            if (commandResult.isShowHelp()) {
-                handleHelp();
-            }
-
-            if (commandResult.isExit()) {
-                handleExit();
-            }
-
-            if (!viewWindowPlaceholder.getChildren().isEmpty()) {
-                // Refresh view if person exists; clear if deleted.
-                boolean stillViewing = logic.getFilteredPersonList().stream()
-                        .filter(p -> viewWindow.isViewing(p))
-                        .findFirst()
-                        .map(updatedPerson -> {
-                            viewWindow.setPerson(updatedPerson);
-                            return true;
-                        })
-                        .orElse(false);
-
-                if (!stillViewing) {
-                    viewWindow.clear();
-                    viewWindowPlaceholder.getChildren().clear();
-                }
-            }
+            // SLAP: Extract the complex view-refresh logic to a helper
+            updateViewWindowAfterCommand();
 
             return commandResult;
         } catch (CommandException | ParseException e) {
@@ -288,4 +258,62 @@ public class MainWindow extends UiPart<Stage> {
             throw e;
         }
     }
+
+
+    /**
+     * Processes the outcome of a command execution.
+     */
+    private void handleCommandResult(CommandResult commandResult) {
+        if (commandResult.isShowView()) {
+            handleView(commandResult.getPersonToView());
+        }
+
+        if (commandResult.isShowHelp()) {
+            handleHelp();
+        }
+
+        if (commandResult.isExit()) {
+            handleExit();
+        }
+    }
+
+    /**
+     * Updates or clears the view window based on the current state of the filtered person list.
+     */
+    private void updateViewWindowAfterCommand() {
+        if (viewWindowPlaceholder.getChildren().isEmpty()) {
+            return;
+        }
+
+        boolean stillViewing = logic.getFilteredPersonList().stream()
+                .filter(p -> viewWindow.isViewing(p))
+                .findFirst()
+                .map(updatedPerson -> {
+                    viewWindow.setPerson(updatedPerson);
+                    // Keep list selection in sync when view is auto-refreshed
+                    if (personListPanel != null && personListPanel.getPersonListView() != null) {
+                        personListPanel.getPersonListView().getSelectionModel().select(updatedPerson);
+                        personListPanel.getPersonListView().scrollTo(updatedPerson);
+                    }
+                    return true;
+                })
+                .orElse(false);
+
+        if (!stillViewing) {
+            clearViewWindow();
+        }
+    }
+
+    /**
+     * Clears the view window and its placeholder.
+     */
+    private void clearViewWindow() {
+        viewWindow.clear();
+        viewWindowPlaceholder.getChildren().clear();
+        // Also clear selection in the person list to avoid stale blue highlight
+        if (personListPanel != null && personListPanel.getPersonListView() != null) {
+            personListPanel.getPersonListView().getSelectionModel().clearSelection();
+        }
+    }
 }
+

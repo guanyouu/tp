@@ -3,8 +3,8 @@ package seedu.address.logic.commands;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
+import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalPersons.ALICE;
@@ -13,7 +13,6 @@ import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
-import seedu.address.logic.ConfirmationManager;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -33,105 +32,88 @@ public class DeleteCommandTest {
     private Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
 
     @Test
-    public void execute_validIndexUnfilteredList_success() throws CommandException {
+    public void getPersonToDelete_validIndexUnfilteredList_success() throws Exception {
         Person personToDelete = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
-        ConfirmationManager confirmationManager = new ConfirmationManager();
-        DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON, confirmationManager);
+        DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
 
-        CommandResult commandResult = deleteCommand.execute(model);
-
-        String expectedMessage = String.format(DeleteCommand.MESSAGE_CONFIRM_DELETE,
-                personToDelete.getName());
-
-        assertEquals(expectedMessage, commandResult.getFeedbackToUser());
-        assertTrue(confirmationManager.hasPendingCommand());
+        assertEquals(personToDelete, deleteCommand.getPersonToDelete(model));
         assertTrue(model.getFilteredPersonList().contains(personToDelete));
     }
 
     @Test
-    public void execute_invalidIndexUnfilteredList_throwsCommandException() {
+    public void getPersonToDelete_invalidIndexUnfilteredList_throwsCommandException() {
         Index outOfBoundIndex = Index.fromOneBased(model.getFilteredPersonList().size() + 1);
         DeleteCommand deleteCommand = new DeleteCommand(outOfBoundIndex);
 
-        assertCommandFailure(deleteCommand, model, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, (
+                ) -> deleteCommand.getPersonToDelete(model));
     }
 
     @Test
-    public void execute_validIndexUnfilteredList_returnsConfirmationMessage() {
+    public void getConfirmationMessage_validIndexUnfilteredList_success() throws Exception {
         Person personToDelete = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
-        ConfirmationManager confirmationManager = new ConfirmationManager();
-        DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON, confirmationManager);
+        DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
 
-        CommandResult commandResult = null;
-        try {
-            commandResult = deleteCommand.execute(model);
-        } catch (CommandException e) {
-            throw new RuntimeException(e);
-        }
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_CONFIRM_DELETE, personToDelete.getName());
 
-        String expectedMessage = String.format(DeleteCommand.MESSAGE_CONFIRM_DELETE,
-                personToDelete.getName());
-
-        assertEquals(expectedMessage, commandResult.getFeedbackToUser());
-        assertTrue(confirmationManager.hasPendingCommand());
+        assertEquals(expectedMessage, deleteCommand.getConfirmationMessage(model));
         assertTrue(model.getFilteredPersonList().contains(personToDelete));
     }
 
     @Test
-    public void execute_validIndexFilteredList_returnsConfirmationMessage() {
+    public void getConfirmationMessage_validIndexFilteredList_success() throws Exception {
         showPersonAtIndex(model, INDEX_FIRST_PERSON);
 
         Person personToDelete = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
-        ConfirmationManager confirmationManager = new ConfirmationManager();
-        DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON, confirmationManager);
+        DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
 
-        CommandResult commandResult = null;
-        try {
-            commandResult = deleteCommand.execute(model);
-        } catch (CommandException e) {
-            throw new RuntimeException(e);
-        }
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_CONFIRM_DELETE, personToDelete.getName());
 
-        String expectedMessage = String.format(DeleteCommand.MESSAGE_CONFIRM_DELETE,
-                personToDelete.getName());
-
-        assertEquals(expectedMessage, commandResult.getFeedbackToUser());
-        assertTrue(confirmationManager.hasPendingCommand());
+        assertEquals(expectedMessage, deleteCommand.getConfirmationMessage(model));
         assertTrue(model.getFilteredPersonList().contains(personToDelete));
     }
 
     @Test
-    public void execute_validDetailsUnfilteredList_returnsConfirmationMessage() {
-        ConfirmationManager confirmationManager = new ConfirmationManager();
+    public void getConfirmationMessage_validDetailsUnfilteredList_success() throws Exception {
         DeleteCommand deleteCommand = new DeleteCommand(
                 new StudentId(ALICE.getStudentId().value),
                 new CourseId(ALICE.getCourseId().value),
-                new TGroup(ALICE.getTGroup().value),
-                confirmationManager);
+                new TGroup(ALICE.getTGroup().value));
 
-        CommandResult commandResult = null;
-        try {
-            commandResult = deleteCommand.execute(model);
-        } catch (CommandException e) {
-            throw new RuntimeException(e);
-        }
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_CONFIRM_DELETE, ALICE.getName());
 
-        String expectedMessage = String.format(DeleteCommand.MESSAGE_CONFIRM_DELETE,
-                ALICE.getName());
-
-        assertEquals(expectedMessage, commandResult.getFeedbackToUser());
-        assertTrue(confirmationManager.hasPendingCommand());
+        assertEquals(expectedMessage, deleteCommand.getConfirmationMessage(model));
         assertTrue(model.getFilteredPersonList().contains(ALICE));
     }
 
     @Test
-    public void execute_invalidDetailsUnfilteredList_throwsCommandException() {
+    public void getPersonToDelete_invalidDetailsUnfilteredList_throwsCommandException() {
         DeleteCommand deleteCommand = new DeleteCommand(
                 new StudentId("A0000000Z"),
                 new CourseId("CS9999"),
                 new TGroup("T99"));
 
-        assertCommandFailure(deleteCommand, model, DeleteCommand.MESSAGE_PERSON_NOT_FOUND_BY_DETAILS);
+        assertThrows(CommandException.class, DeleteCommand.MESSAGE_PERSON_NOT_FOUND_BY_DETAILS, (
+                ) -> deleteCommand.getPersonToDelete(model));
+    }
+
+    @Test
+    public void getConfirmedCommand_validIndex_success() throws Exception {
+        Person personToDelete = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
+
+        Command confirmedCommand = deleteCommand.getConfirmedCommand(model);
+
+        assertEquals(new ConfirmedDeleteCommand(personToDelete), confirmedCommand);
+    }
+
+    @Test
+    public void execute_throwsCommandException() {
+        DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
+
+        assertThrows(CommandException.class,
+                "Delete command should be handled through confirmation flow.", (
+                    ) -> deleteCommand.execute(model));
     }
 
     @Test
@@ -176,14 +158,5 @@ public class DeleteCommandTest {
                 + "{targetIndex=" + targetIndex
                 + ", targetStudentId=null, targetCourseId=null, targetTGroup=null}";
         assertEquals(expected, deleteCommand.toString());
-    }
-
-    /**
-     * Updates {@code model}'s filtered list to show no one.
-     */
-    private void showNoPerson(Model model) {
-        model.updateFilteredPersonList(p -> false);
-
-        assertTrue(model.getFilteredPersonList().isEmpty());
     }
 }

@@ -8,8 +8,11 @@ import java.util.logging.Logger;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.logic.commands.CancelCommand;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.ConfirmCommand;
+import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -32,7 +35,11 @@ public class LogicManager implements Logic {
     private final Model model;
     private final Storage storage;
     private final AddressBookParser addressBookParser;
-    private final ConfirmationManager confirmationManager;
+
+    /**
+     * Stores the command awaiting user confirmation.
+     */
+    private Command pendingConfirmationCommand;
 
     /**
      * Constructs a {@code LogicManager} with the given {@code Model} and {@code Storage}.
@@ -40,17 +47,37 @@ public class LogicManager implements Logic {
     public LogicManager(Model model, Storage storage) {
         this.model = model;
         this.storage = storage;
-        this.confirmationManager = new ConfirmationManager();
-        this.addressBookParser = new AddressBookParser(confirmationManager);
+        this.addressBookParser = new AddressBookParser();
+        this.pendingConfirmationCommand = null;
     }
 
-    @Override
-    public CommandResult execute(String commandText) throws CommandException, ParseException {
-        logger.info("----------------[USER COMMAND][" + commandText + "]");
+    /**
+     * Returns true if there is a command awaiting user confirmation.
+     */
+    private boolean hasPendingConfirmationCommand() {
+        return pendingConfirmationCommand != null;
+    }
 
-        Command command = addressBookParser.parseCommand(commandText);
-        CommandResult commandResult = command.execute(model);
+    /**
+     * Stores the given command as the pending command awaiting confirmation.
+     */
+    private void setPendingConfirmationCommand(Command command) {
+        pendingConfirmationCommand = command;
+    }
 
+    /**
+     * Clears any pending confirmation command.
+     */
+    private void clearPendingConfirmationCommand() {
+        pendingConfirmationCommand = null;
+    }
+
+    /**
+     * Saves the current address book state to storage.
+     *
+     * @throws CommandException if the save operation fails
+     */
+    private void saveAddressBook() throws CommandException {
         try {
             storage.saveAddressBook(model.getAddressBook());
         } catch (AccessDeniedException e) {
@@ -58,7 +85,41 @@ public class LogicManager implements Logic {
         } catch (IOException ioe) {
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
+    }
 
+    @Override
+    public CommandResult execute(String commandText) throws CommandException, ParseException {
+        logger.info("----------------[USER COMMAND][" + commandText + "]");
+
+        String trimmedCommandText = commandText.trim();
+
+        if (hasPendingConfirmationCommand()) {
+            if (trimmedCommandText.equalsIgnoreCase(ConfirmCommand.COMMAND_WORD)) {
+                Command commandToExecute = pendingConfirmationCommand;
+                clearPendingConfirmationCommand();
+                CommandResult commandResult = commandToExecute.execute(model);
+                saveAddressBook();
+                return commandResult;
+            }
+
+            if (trimmedCommandText.equalsIgnoreCase(CancelCommand.COMMAND_WORD)) {
+                clearPendingConfirmationCommand();
+                return new CommandResult(CancelCommand.MESSAGE_CANCEL_SUCCESS);
+            }
+
+            clearPendingConfirmationCommand();
+        }
+
+        Command command = addressBookParser.parseCommand(commandText);
+
+        if (command instanceof DeleteCommand) {
+            DeleteCommand deleteCommand = (DeleteCommand) command;
+            setPendingConfirmationCommand(deleteCommand.getConfirmedCommand(model));
+            return new CommandResult(deleteCommand.getConfirmationMessage(model));
+        }
+
+        CommandResult commandResult = command.execute(model);
+        saveAddressBook();
         return commandResult;
     }
 

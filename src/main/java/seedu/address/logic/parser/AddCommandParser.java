@@ -8,8 +8,6 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_STUDENTID;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TELE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TGROUP;
 
-import java.util.stream.Stream;
-
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.CourseId;
@@ -36,8 +34,30 @@ public class AddCommandParser implements Parser<AddCommand> {
         ArgumentMultimap argMultimap =
                 ArgumentTokenizer.tokenize(args, PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL,
                         PREFIX_COURSEID, PREFIX_TGROUP, PREFIX_TELE);
+        Prefix[] allowedPrefixes = {
+            PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL,
+            PREFIX_COURSEID, PREFIX_TGROUP, PREFIX_TELE
+        };
+        String allowedReadable = "n/, sid/, e/, crs/, tg/, tele/";
 
-        if (!arePrefixesPresent(argMultimap, PREFIX_NAME, PREFIX_STUDENTID,
+        ParserValidators.checkForUnknownPrefixTokens(args, allowedPrefixes,
+                allowedReadable, AddCommand.MESSAGE_USAGE);
+
+        Prefix[] requiredPrefixes = {
+            PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL, PREFIX_COURSEID, PREFIX_TGROUP
+        };
+        String[] requiredPrefixStrings = {
+            "n/", "sid/", "e/", "crs/", "tg/"
+        };
+        String[] requiredPrefixDetails = {
+            "Name cannot be empty.",
+            "Student ID cannot be empty.",
+            "Email cannot be empty.",
+            "Course ID cannot be empty.",
+            "Tutorial group cannot be empty."
+        };
+
+        if (!argMultimap.arePrefixesPresent(PREFIX_NAME, PREFIX_STUDENTID,
                 PREFIX_EMAIL, PREFIX_COURSEID, PREFIX_TGROUP)
                 || !argMultimap.getPreamble().isEmpty()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
@@ -55,18 +75,12 @@ public class AddCommandParser implements Parser<AddCommand> {
         if (argMultimap.getValue(PREFIX_TELE).isPresent()) {
             tele = ParserUtil.parseTele(argMultimap.getValue(PREFIX_TELE).get());
         }
+        ParserValidators.checkForMissingValues(argMultimap, requiredPrefixes,
+                requiredPrefixStrings, requiredPrefixDetails, AddCommand.MESSAGE_USAGE);
 
         Person person = new Person(name, courseId, email, studentId, tGroup, tele, new WeekList(), Progress.NOT_SET);
 
         return new AddCommand(person);
-    }
-
-    /**
-     * Returns true if none of the prefixes contains empty {@code Optional} values in the given
-     * {@code ArgumentMultimap}.
-     */
-    private static boolean arePrefixesPresent(ArgumentMultimap argumentMultimap, Prefix... prefixes) {
-        return Stream.of(prefixes).allMatch(prefix -> argumentMultimap.getValue(prefix).isPresent());
     }
 
 }

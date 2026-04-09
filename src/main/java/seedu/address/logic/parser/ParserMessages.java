@@ -6,10 +6,7 @@ package seedu.address.logic.parser;
  * the command usage when appropriate.
  */
 public final class ParserMessages {
-    public static final String GENERIC_POSSIBLE_PREFIX_MISSING_SLASH =
-            "It looks like you used a prefix without the trailing '/' or value. "
-                    + "Make sure to use the form: <prefix>/<value> (e.g., abs/2).";
-    public static final String GENERIC_UNEXPECTED_PREAMBLE =
+    public static final String MESSAGE_UNEXPECTED_PREAMBLE =
             "Unexpected text before prefixes.";
     private static final String GENERIC_MISSING_PREFIX_VALUE_FORMAT = "Missing value for prefix: %s\n%s\n%s";
 
@@ -22,14 +19,7 @@ public final class ParserMessages {
      * Produces an 'unexpected preamble' message that includes the command usage.
      */
     public static String unexpectedPreamble(String commandUsage) {
-        return GENERIC_UNEXPECTED_PREAMBLE + "\n" + commandUsage;
-    }
-
-    /**
-     * Produces the 'possible missing slash' hint combined with the command usage.
-     */
-    public static String possiblePrefixMissingSlash(String commandUsage) {
-        return GENERIC_POSSIBLE_PREFIX_MISSING_SLASH + "\n" + commandUsage;
+        return MESSAGE_UNEXPECTED_PREAMBLE + "\n" + commandUsage;
     }
 
     /**
