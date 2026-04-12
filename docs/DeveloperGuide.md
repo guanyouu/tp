@@ -750,17 +750,26 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 2b1. TeachAssist informs the user and aborts the operation.
     * Use case ends.
 
-**Use Case: UC06 – Add Academic Notes**<br>
+**Use Case: UC06 – Add remark to student**<br>
 **Actor:** User<br>
 **MSS:**
 
-1. User selects a student.
-2. User enters the add note command.
-3. TeachAssist requests the note content.
-4. User enters the note.
-5. TeachAssist attaches the note with a timestamp to the student profile.
-6. TeachAssist confirms the addition.
-7. Use case ends.
+1. User views the student list.
+2. User enters the command `remark INDEX txt/REMARK`.
+3. TeachAssist adds the remark with the current date to the specified student's record.
+4. TeachAssist shows a success message confirming that the remark was added.
+
+**Extensions:**
+
+* 2a. The index is missing, invalid, or out of range.
+    * 2a1. TeachAssist shows an error message.
+    * Use case ends.
+* 2b. The `txt` prefix is missing.
+    * 2b1. TeachAssist shows an error message.
+    * Use case ends.
+* 2c. The remark text is empty or exceeds the allowed length.
+    * 2c1. TeachAssist shows an error message.
+    * Use case ends. 
 
 
 **Use Case: UC08 – Update Student Progress Status**<br>
