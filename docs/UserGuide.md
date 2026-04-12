@@ -24,9 +24,9 @@ And the best part? No technical expertise needed—just basic computer skills li
   - [Filtering students: `filter`](#filter)
   - [Editing a student: `edit`](#edit)
   - [Updating students' attendance](#attendance)
-    - [Marking a student's attendance: `markattendance`](#mark-attendance)
-    - [Cancelling a tutorial's week: `cancelweek`](#cancel-week)
-    - [Uncancelling a tutorial's week: `uncancelweek`](#uncancel-week)
+    - [Marking a student's attendance: `marka`](#mark-attendance)
+    - [Cancelling a tutorial's week: `cancelw`](#cancel-week)
+    - [Uncancelling a tutorial's week: `uncancelw`](#uncancel-week)
   - [Updating a student's progress: `updateprogress`](#update-progress)
   - [Remarks](#remarks)
     - [Adding a remark: `remark`](#remark)
@@ -191,6 +191,7 @@ It must be noted that when entering parameters, they should not be blank.
 * `TELEGRAM_USERNAME` should only contain alphanumeric characters and underscores, with no spaces and an optional '@' as a starting character.
 
 <box type="warning"> 
+
 Warning:
 What makes an entry a duplicate?
 
@@ -313,7 +314,7 @@ When the edit is successful, you will receive the following message:
 ### Updating students' attendance
 
 After setting up your student list, the next thing you will likely do throughout the semester is keep attendance records updated. You may be marking one student's attendance for a particular week, or handling a tutorial session that was cancelled for the whole class.
-TeachAssist provides three attendance-related commands. Use `markattendance` to update an individual student's attendance for a specific week, `cancelweek` to cancel a tutorial week for an entire class, and `uncancelweek` to restore a previously cancelled week.
+TeachAssist provides three attendance-related commands. Use `marka` to update an individual student's attendance for a specific week, `cancelw` to cancel a tutorial week for an entire class, and `uncancelw` to restore a previously cancelled week.
 
 <box type="info">
 Note:
@@ -321,7 +322,7 @@ Note:
 </box>
 
 <a name="mark-attendance"></a>
-#### Marking a student's attendance: `markattendance`
+#### Marking a student's attendance: `marka`
 
 Use this command to update the attendance of a specific student for a specific week.
 
@@ -332,7 +333,7 @@ Supported attendance statuses:
 
 **Format:** 
 ```
-markattendance INDEX week/WEEK sta/STATUS
+marka INDEX wk/WEEK s/STATUS
 ```
 
 * Updates the attendance of student at the specified `INDEX` and `WEEK` to `STATUS`.
@@ -342,11 +343,11 @@ markattendance INDEX week/WEEK sta/STATUS
 
 **Examples**:
 
-- `markattendance 1 week/3 sta/y` - marks the attendance of the 1st student's attendance in week 3 as present -> Green.
+- `marka 1 wk/3 s/y` - marks the attendance of the 1st student's attendance in week 3 as present -> Green.
 
-- `markattendance 2 week/6 sta/a` - marks the attendance of the 2nd student's attendance in week 6 as absent -> Red.
+- `marka 2 wk/6 s/a` - marks the attendance of the 2nd student's attendance in week 6 as absent -> Red.
 
-- `markattendance 4 week/4 sta/n` - marks the attendance of the 4th student's attendance in week 4 as unmarked -> Grey.
+- `marka 4 wk/4 s/n` - marks the attendance of the 4th student's attendance in week 4 as unmarked -> Grey.
 
 **Expected output:**
 
@@ -354,16 +355,16 @@ The selected student's attendance record is updated immediately in the student l
 mark
 
 The following shows week 3 marked as present for Alex Tan, week 6 marked as absent for Bernice Yu, and unmarked for everything else.
-<img src="images/markattendancesuccess.png" alt="markattendance success" width="700">
+<img src="images/markattendancesuccess.png" alt="marka success" width="700">
 
 <a name="cancel-week"></a>
-#### Cancelling a tutorial's week: `cancelweek`
+#### Cancelling a tutorial's week: `cancelw`
 
-Sometimes, a tutorial may not take place for a particular week, for example due to a public holiday, a make-up arrangement, or a planned cancellation. In such cases, use the `cancelweek` command to mark that week as cancelled for all students in a specific course and tutorial group.
+Sometimes, a tutorial may not take place for a particular week, for example due to a public holiday, a make-up arrangement, or a planned cancellation. In such cases, use the `cancelw` command to mark that week as cancelled for all students in a specific course and tutorial group.
 
 **Format:** 
 
-`cancelweek crs/COURSE_ID tg/TUTORIAL_GROUP week/WEEK`
+`cancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK`
 
 * Cancels the specified `WEEK` for **all students** in the matching `COURSE_ID` and `TUTORIAL_GROUP`.
 * A cancelled week will be reflected in each student’s attendance record.
@@ -378,23 +379,23 @@ Note:
 
 **Example:**
 
-- `cancelweek crs/CS2103T tg/T12 week/5` — cancels week 5 for all students in course `CS2103T` and tutorial group `T12can`.
+- `cancelw crs/CS2103T tg/T12 wk/5` — cancels week 5 for all students in course `CS2103T` and tutorial group `T12can`.
 
 **Expected output:**
 
 All matching students will show week 5 as cancelled (represented by an X) in their attendance records.
 
-<img src="images/cancelweeksuccess.png" alt="cancelweek success" width="700">
+<img src="images/cancelweeksuccess.png" alt="cancelw success" width="700">
 
 
 <a name="uncancel-week"></a>
-#### Uncancelling a tutorial's week: `uncancelweek`
+#### Uncancelling a tutorial's week: `uncancelw`
 
 Use this command to restore a previously cancelled tutorial week for all students in a specific course and tutorial group.
 
 **Format:** 
 ```
-uncancelweek crs/COURSE_ID tg/TUTORIAL_GROUP week/WEEK
+uncancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK
 ```
 
 * Removes the cancelled status for the specified `WEEK`.
@@ -406,7 +407,7 @@ uncancelweek crs/COURSE_ID tg/TUTORIAL_GROUP week/WEEK
 
 **Example:**
 
-- `uncancelweek crs/CS2103T tg/T12 week/5` — restores week 5 as a normal week for all students in course `CS2103T` and tutorial group `T12`.
+- `uncancelw crs/CS2103T tg/T12 wk/5` — restores week 5 as a normal week for all students in course `CS2103T` and tutorial group `T12`.
 
 <a name="update-progress"></a>
 ### Updating a student's progress : `updateprogress`
@@ -465,15 +466,18 @@ remark INDEX txt/REMARK
 
 **Examples:**
 
-- `remark 1 txt/Participates actively in class!`
+- `remark 1 txt/Was absent for consultation.`
 
 **Expected output:**
+```
+Added remark to Person:
+Alex Yeoh; Student ID: A1234567X; Email: alexyeoh@u.nus.edu; Course ID: CS2103T; TGroup: T12; Tele: @alexyeoh
+Remark: Was absent for consultation
+```
 
 The selected student's record is updated with the new remark, and the Result Box displays a confirmation message. 
 To view all existing remarks of a student, go to [View](#view).
 Remarks are shown when you select that student, allowing you to view the newly added remark together with any existing remarks.
-
-<img src="images/remarksuccessmessage.png" alt="remark success message" width="700">
 
 
 <a name="unremark"></a>
@@ -495,6 +499,13 @@ unremark INDEX r/REMARK_INDEX
 **Examples:**
 
 - `unremark 1 r/2` - removes the 2nd remark for the 1st student on the list.
+
+**Expected output:**
+```
+Deleted remark from Person: 
+Alex Yeoh; Student ID: A1234567X; Email: alexyeoh@u.nus.edu; Course ID: CS2103T; TGroup: T12; Tele: @alexyeoh
+Deleted Remark: Usually well-prepared for tutorials
+```
 
 
 <a name="view"></a>
@@ -619,9 +630,9 @@ Action | Format, Examples
 **Find** | `find KEYWORD [MORE_KEYWORDS]...`<br> e.g., `find John Tan`
 **Filter** | `filter [crs/COURSE_ID] [tg/TUTORIAL_GROUP] [p/PROGRESS] [abs/ABSENCE_COUNT]`<br> e.g., `filter crs/CS2103T tg/T02 p/needs_attention abs/1`
 **Edit** | `edit INDEX [n/NAME] [id/STUDENT_ID] [e/EMAIL] [crs/COURSE_ID] [tg/TUTORIAL_GROUP] [tel/TELEGRAM_USERNAME]`<br> e.g., `edit 2 e/johndoe@u.nus.edu tg/T03`
-**Mark Attendance** | `markattendance INDEX week/WEEK sta/STATUS`<br> e.g., `markattendance 1 week/3 sta/y`
-**Cancel Week** | `cancelweek crs/COURSE_ID tg/TUTORIAL_GROUP week/WEEK`<br> e.g., `cancelweek crs/CS2103T tg/T12 week/5`
-**Uncancel Week** | `uncancelweek crs/COURSE_ID tg/TUTORIAL_GROUP week/WEEK`<br> e.g., `uncancelweek crs/CS2103T tg/T12 week/5`
+**Mark Attendance** | `marka INDEX wk/WEEK s/STATUS`<br> e.g., `marka 1 wk/3 s/y`
+**Cancel Week** | `cancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK`<br> e.g., `cancelw crs/CS2103T tg/T12 wk/5`
+**Uncancel Week** | `uncancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK`<br> e.g., `uncancelw crs/CS2103T tg/T12 wk/5`
 **Update Progress** | `updateprogress INDEX p/PROGRESS`<br> e.g., `updateprogress 1 p/on_track`
 **Remark** | `remark INDEX txt/REMARK`<br> e.g., `remark 1 txt/Participates actively in class!`
 **Unremark** | `unremark INDEX r/REMARK_INDEX`<br> e.g., `unremark 1 r/2`
@@ -642,8 +653,8 @@ Parameter             | Prefix  | Constraints                                   
 **TUTORIAL_GROUP**    | `tg/`   | Alphanumeric characters only. Stored in uppercase.                                                                             | `T01`, `B03`
 **TELEGRAM_USERNAME** | `tel/`  | Alphanumeric characters and underscores; optional leading `@`; must not be blank. (Optional field)                             | `@johndoe`, `john_doe`
 **PROGRESS**          | `p/`    | One of `on_track`, `needs_attention`, `at_risk`, or `not_set`. Case-insensitive.                                               | `on_track`, `AT_RISK`
-**WEEK**              | `week/` | Integer from `1` to `13` inclusive.                                                                                            | `1`, `7`, `13`
-**STATUS**            | `sta/`  | One of `y` (present), `a` (absent), or `n` (unmarked). Case-insensitive.                                                       | `y`, `a`, `n`
+**WEEK**              | `wk/` | Integer from `1` to `13` inclusive.                                                                                            | `1`, `7`, `13`
+**STATUS**            | `s/`  | One of `y` (present), `a` (absent), or `n` (unmarked). Case-insensitive.                                                       | `y`, `a`, `n`
 **ABSENCE_COUNT**     | `abs/`  | Integer from `0` to `13` inclusive.                                                                                            | `0`, `2`, `13`
 **REMARK**            | `txt/`  | Any text up to 100 characters; must not be blank.                                                                              | `Needs help with finals`
 **REMARK_INDEX**      | `r/`    | Positive integer; must not exceed the number of remarks the student currently has.                                             | `1`, `2`

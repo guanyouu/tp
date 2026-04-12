@@ -28,7 +28,7 @@ public class MarkAttendanceCommandParserTest {
 
     @Test
     public void parseValidAttendanceInputReturnsSuccessModel() throws Exception {
-        MarkAttendanceCommand command = parser.parse("1 week/1 sta/Y");
+        MarkAttendanceCommand command = parser.parse("1 wk/1 s/Y");
 
         assertEquals(Index.fromOneBased(1), command.index);
         assertEquals(Index.fromOneBased(1), command.weekNumber);
@@ -37,7 +37,7 @@ public class MarkAttendanceCommandParserTest {
 
     @Test
     public void parse_validInput_absentSuccess() throws Exception {
-        MarkAttendanceCommand command = parser.parse("2 week/3 sta/A");
+        MarkAttendanceCommand command = parser.parse("2 wk/3 s/A");
 
         assertEquals(Index.fromOneBased(2), command.index);
         assertEquals(Index.fromOneBased(3), command.weekNumber);
@@ -46,7 +46,7 @@ public class MarkAttendanceCommandParserTest {
 
     @Test
     public void parse_validInput_defaultSuccess() throws Exception {
-        MarkAttendanceCommand command = parser.parse("5 week/2 sta/N");
+        MarkAttendanceCommand command = parser.parse("5 wk/2 s/N");
 
         assertEquals(Index.fromOneBased(5), command.index);
         assertEquals(Index.fromOneBased(2), command.weekNumber);
@@ -56,7 +56,7 @@ public class MarkAttendanceCommandParserTest {
     @Test
     public void parse_invalidStatus_throwsParseException() {
         assertThrows(ParseException.class, () ->
-                parser.parse("1 week/1 sta/X")
+                parser.parse("1 wk/1 s/X")
         );
     }
 
@@ -64,20 +64,20 @@ public class MarkAttendanceCommandParserTest {
     public void parse_duplicateStatusPrefix_throwsParseException() {
         // Simulate duplicated prefix
         assertThrows(ParseException.class, () ->
-                parser.parse("1 week/1 sta/Y sta/A")
+                parser.parse("1 wk/1 s/Y s/A")
         );
     }
 
     @Test
     public void parse_invalidIndex_throwsParseException() {
         assertThrows(ParseException.class, () ->
-                parser.parse("abc week/1 sta/Y")
+                parser.parse("abc wk/1 s/Y")
         );
     }
     @Test
     public void parse_validArgs_success() {
         assertParseSuccess(parser,
-                "1 week/2 sta/Y",
+                "1 wk/2 s/Y",
                 new MarkAttendanceCommand(Index.fromOneBased(1),
                         Index.fromOneBased(2),
                         Week.Status.Y));
@@ -86,7 +86,7 @@ public class MarkAttendanceCommandParserTest {
     @Test
     public void parse_invalidStatus_failure() {
         assertParseFailure(parser,
-                "1 week/2 sta/X",
+                "1 wk/2 s/X",
                 Week.MESSAGE_CONSTRAINTS);
     }
 }

@@ -381,7 +381,7 @@ Another design consideration was whether to show `NOT_SET` explicitly in the UI.
 
 #### Overview
 
-The `markattendance` command allows tutors to record or update a student’s attendance for a specific week. This feature enables per-week attendance tracking instead of aggregate counts, providing finer control over tutorial participation records.
+The `marka` command allows tutors to record or update a student’s attendance for a specific week. This feature enables per-week attendance tracking instead of aggregate counts, providing finer control over tutorial participation records.
 
 Each student’s attendance is tracked weekly, allowing tutors to:
 - Mark attendance as **attended (Y)**, **absent (A)**, or **not marked (N)**
@@ -416,11 +416,11 @@ Cancelled weeks are derived from a **course–tutorial level cancelled week map*
 
 #### Implementation
 
-The `markattendance` feature is implemented using `MarkAttendanceCommand` and `MarkAttendanceCommandParser`.
+The `marka` feature is implemented using `MarkAttendanceCommand` and `MarkAttendanceCommandParser`.
 
 **Parsing phase:**
 1. User input is tokenized using `ArgumentTokenizer`
-2. Required prefixes (`week/`, `sta/`) are validated
+2. Required prefixes (`wk/`, `s/`) are validated
 3. Values are parsed into:
     - `Index` (student)
     - `Index` (week)
@@ -451,13 +451,13 @@ The following diagram shows how attendance input is parsed, validated, and appli
 
 #### Overview
 
-The `cancelweek` command allows tutors to mark a specific tutorial week as cancelled for **all students belonging to a given course and tutorial group**. This is useful when a tutorial session is cancelled due to public holidays, instructor absence, or rescheduled lessons.
+The `cancelw` command allows tutors to mark a specific tutorial week as cancelled for **all students belonging to a given course and tutorial group**. This is useful when a tutorial session is cancelled due to public holidays, instructor absence, or rescheduled lessons.
 
-The command word is `cancelweek`, and its expected format is:
+The command word is `cancelw`, and its expected format is:
 
-`cancelweek crs/COURSE_ID tg/TUTORIAL_GROUP week/WEEK_NUMBER`
+`cancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK_NUMBER`
 
-For example, `cancelweek crs/CS2103T tg/T01 week/5` cancels week 5 for all students in CS2103T T01.
+For example, `cancelw crs/CS2103T tg/T01 wk/5` cancels week 5 for all students in CS2103T T01.
 
 ---
 
@@ -480,10 +480,10 @@ When a week is cancelled:
 
 #### Implementation
 
-The `cancelweek` feature is implemented using `CancelWeekCommand` and `CancelWeekCommandParser`.
+The `cancelw` feature is implemented using `CancelWeekCommand` and `CancelWeekCommandParser`.
 
 Execution flow:
-1. Parser validates `crs/`, `tg/`, and `week/`
+1. Parser validates `crs/`, `tg/`, and `wk/`
 2. Command checks that `(CourseId, TGroup)` exists
 3. Command validates week range
 4. Model checks duplicate cancellation
@@ -497,13 +497,13 @@ If the week is already cancelled, a `CommandException` is thrown.
 
 #### Overview
 
-The `uncancelweek` command removes a previously cancelled week for a specific course and tutorial group. This restores the week’s attendance status for all affected students.
+The `uncancelw` command removes a previously cancelled week for a specific course and tutorial group. This restores the week’s attendance status for all affected students.
 
-The command word is `uncancelweek`, and its expected format is:
+The command word is `uncancelw`, and its expected format is:
 
-`uncancelweek crs/COURSE_ID tg/TUTORIAL_GROUP week/WEEK_NUMBER`
+`uncancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK_NUMBER`
 
-For example, `uncancelweek crs/CS2103T tg/T01 week/5` restores week 5.
+For example, `uncancelw crs/CS2103T tg/T01 wk/5` restores week 5.
 
 ---
 
@@ -519,7 +519,7 @@ When a cancelled week is restored:
 
 #### Implementation
 
-The `uncancelweek` feature is implemented using `UnCancelWeekCommand` and `UnCancelWeekCommandParser`.
+The `uncancelw` feature is implemented using `UnCancelWeekCommand` and `UnCancelWeekCommandParser`.
 
 Execution flow:
 1. Parser validates prefixes
@@ -697,7 +697,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 
 ### Use cases
+<help>
 
+<Add student>
 **Use Case: UC01 – Add Student**<br>
 **Actor:** User<br>
 **MSS:**
@@ -719,6 +721,11 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 3b2. TeachAssist informs the user that the student already exists.
     * Use case ends.
 
+<find student>
+
+<filter student>
+
+<edit student>
 **Use Case: UC02 – Edit Student**<br>
 **Actor:** User<br>
 **MSS:**
@@ -737,6 +744,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 2b1. TeachAssist informs the user that the specified student could not be found.
     * Use case ends.
 
+<mark attendance>
 **Use Case: UC05 – Mark Attendance**<br>
 **Actor:** User<br>
 **MSS:**
@@ -755,18 +763,35 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 2b1. TeachAssist informs the user and aborts the operation.
     * Use case ends.
 
-**Use Case: UC06 – Add Academic Notes**<br>
+<cancelweek>
+
+<uncancelweek>
+
+<updateprogress>
+
+<add remark>
+**Use Case: UC06 – Add remark to student**<br>
 **Actor:** User<br>
 **MSS:**
 
-1. User selects a student.
-2. User enters the add note command.
-3. TeachAssist requests the note content.
-4. User enters the note.
-5. TeachAssist attaches the note with a timestamp to the student profile.
-6. TeachAssist confirms the addition.
-7. Use case ends.
+1. User views the student list.
+2. User enters the command `remark INDEX txt/REMARK`.
+3. TeachAssist adds the remark with the current date to the specified student's record.
+4. TeachAssist shows a success message confirming that the remark was added.
 
+**Extensions:**
+
+* 2a. The index is missing, invalid, or out of range.
+    * 2a1. TeachAssist shows an error message.
+    * Use case ends.
+* 2b. The `txt` prefix is missing.
+    * 2b1. TeachAssist shows an error message.
+    * Use case ends.
+* 2c. The remark text is empty or exceeds the allowed length.
+    * 2c1. TeachAssist shows an error message.
+    * Use case ends. 
+
+<delete remark>
 
 **Use Case: UC08 – Update Student Progress Status**<br>
 **Actor:** User<br>
@@ -789,6 +814,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 1c1. TeachAssist informs the user of the valid progress statuses.
     * Use case ends.
 
+<view student>
 **Use Case: UC09 – View Student Details**<br>
 **Actor:** User<br>
 **MSS:**
@@ -813,6 +839,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 4. User reviews the available commands.
 5. Use case ends
 
+<delete student>
 **Use Case: UC11 – Delete Student** <br>
 **Actor:** User <br>
 **MSS:**
