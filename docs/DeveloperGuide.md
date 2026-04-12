@@ -338,69 +338,164 @@ If the specified progress value is `NOT_SET`, the student's progress is effectiv
 
 </box>
 
-### Feature: Mark Attendance
+#### UI integration
+
+Progress is displayed on each student card in the UI as a progress label. The label is colour-coded to help TAs quickly distinguish student status across `ON_TRACK`, `NEEDS_ATTENTION`, and `AT_RISK`. If the progress value is `NOT_SET`, no progress label is shown. This design keeps the UI uncluttered while still surfacing important student status information when it is available.
+
+#### Design considerations
+
+A key design consideration was how to represent progress in the model. One possible approach was to store progress as a plain string. However, this would require repeated string validation and would make invalid values easier to introduce. The chosen approach was to represent progress using an enum, which ensures that only valid progress states can exist and makes the implementation easier to maintain.
+
+Another design consideration was whether to show `NOT_SET` explicitly in the UI. Showing `NOT_SET` as a visible label would make the implementation more uniform, but it would also add unnecessary visual clutter for students whose progress has not been set. The chosen design hides `NOT_SET` in the UI, so only meaningful progress statuses are shown.
+
+### Feature: Mark Attendance Command
 
 #### Overview
 
 The `marka` command allows tutors to record or update a student’s attendance for a specific week. This feature enables per-week attendance tracking instead of aggregate counts, providing finer control over tutorial participation records.
 
-Each student’s attendance is tracked weekly, allowing tutors to:
-- Mark attendance as **attended (Y)**, **absent (A)**, or **not marked (N)**
-- Prevent marking for cancelled weeks
-- Avoid duplicate updates to the same attendance status
-- Automatically respect course-level cancelled weeks
+This command operates on a single student identified by index from the currently displayed list and updates the attendance status for one week.
 
----
-
-#### Attendance representation
-
-Attendance is represented as a **structured list of weekly records**.
-
-- Each `Person` contains a `WeekList`
-- `WeekList` stores a fixed-size array of **13 `Week` objects**
-- Each `Week` represents one tutorial session
-
-Each `Week` contains:
-- `weekNo` — week number
-- `status` — current attendance state
-- `prevStatus` — used for cancellation recovery
-
-Attendance status is defined using an enum:
-- `Y` → Attended
+Supported statuses:
+- `Y` → Present
 - `A` → Absent
 - `N` → Not marked
-- `C` → Cancelled
 
-Cancelled weeks are derived from a **course–tutorial level cancelled week map** stored in the `Model`. When a week is cancelled, all students in the same `(CourseId, TGroup)` pair automatically inherit the cancelled state.
+**Format:**
+marka <INDEX> wk/<WEEK_NUMBER> s/<STATUS>
 
----
+**Example:**
+marka 1 wk/5 s/Y
+
 
 #### Implementation
 
-The `marka` feature is implemented using `MarkAttendanceCommand` and `MarkAttendanceCommandParser`.
+The mark attendance feature is implemented using:
+- MarkAttendanceCommand
+- MarkAttendanceCommandParser
+- Week
+- WeekList
 
-**Parsing phase:**
-1. User input is tokenized using `ArgumentTokenizer`
-2. Required prefixes (`wk/`, `s/`) are validated
-3. Values are parsed into:
-    - `Index` (student)
-    - `Index` (week)
-    - `Week.Status` (attendance state)
+#### Execution Flow
 
-**Execution phase:**
-1. The command retrieves the filtered student list from the `Model`
-2. The target `Person` is identified using the provided index
-3. The student’s `WeekList` is copied to preserve immutability
-4. The specified week is validated:
-    - Must be within range (1–13)
-    - Must not be cancelled
-5. The attendance status is updated via `WeekList`
-6. A new `Person` object is created with the updated `WeekList`
-7. The model replaces the old `Person` with the updated one
+1. LogicManager calls AddressBookParser
+2. MarkAttendanceCommandParser:
+    - Tokenizes input using prefixes `wk/` and `s/`
+    - Validates:
+        - Index is present in preamble
+        - Required prefixes exist
+        - No duplicate prefixes
+        - No unknown prefixes
+        - All required values are provided
+    - Parses:
+        - Index
+        - Week number
+        - Attendance status (`Week.Status`)
+3. MarkAttendanceCommand is created
+4. MarkAttendanceCommand#execute(Model) is invoked
 
-If an invalid operation occurs (e.g., duplicate status or cancelled week), a `CommandException` is thrown.
+Execution steps:
 
----
+1. Validate that the student index is within the filtered list
+    - If invalid → throw CommandException
+
+2. Validate that the week number is within valid range
+    - If invalid → throw CommandException
+
+3. Retrieve and copy the student’s WeekList to avoid mutating original state
+
+4. Check whether the selected week is cancelled
+    - If cancelled → throw CommandException  
+      (Cancelled weeks cannot be modified under any attendance operation rule)
+
+5. Apply attendance update based on status:
+    - `Y` → markWeekAsAttended
+    - `A` → markWeekAsAbsent
+    - `N` → markWeekAsDefault
+
+6. Handle invalid state transitions:
+    - If the same status is already set → throw CommandException
+
+7. Create updated Person with modified WeekList
+
+8. Replace original Person in model using:
+   model.setPerson(target, updatedPerson)
+
+9. Return success message
+
+
+#### Model-Level Logic
+
+WeekList update behavior:
+
+- WeekList is copied before modification to preserve immutability
+- Individual Week objects enforce state rules:
+    - Prevent redundant updates
+    - Prevent modification of cancelled weeks
+    - Maintain internal consistency of attendance state
+
+#### Key Behaviours
+
+- **Strict index validation**
+    - Invalid student index results in CommandException
+
+- **Week boundary validation**
+    - Week index must be within valid range (1–13)
+
+- **Cancelled week protection**
+    - Attendance cannot be modified if the week is cancelled
+
+- **Duplicate state protection**
+    - Re-applying the same attendance status is rejected
+
+- **Immutability**
+    - Updates are performed via copying WeekList and replacing Person
+
+
+#### Design Considerations
+
+**Aspect: Enforcement of business rules (cancelled weeks)**
+
+Current choice: Command-layer validation before model update
+- Pros:
+    - Provides immediate and clear user feedback
+    - Prevents invalid state transitions early
+- Cons:
+    - Slight duplication with Week-level internal checks
+
+Alternative: Allow Week class to silently ignore invalid updates
+- Pros:
+    - Simpler command logic
+- Cons:
+    - Reduces transparency and makes debugging harder
+
+
+**Aspect: State update strategy**
+
+Current choice: Copy-on-write (WeekList duplication before update)
+- Pros:
+    - Preserves immutability of Person objects
+    - Prevents unintended side effects across references
+- Cons:
+    - Slight performance overhead due to object copying
+
+Alternative: Direct mutation of WeekList
+- Pros:
+    - More efficient
+- Cons:
+    - Risk of shared-state bugs and inconsistent UI updates
+
+**Aspect: Responsibility separation**
+
+- Parser:
+    - Handles only syntax-level validation
+- Command:
+    - Handles semantic validation and business rules
+- Model:
+    - Performs state updates only after validation
+
+This separation ensures clear layering and maintainability of the system.
+
 
 #### Sequence diagram
 
@@ -408,90 +503,244 @@ The following diagram shows how attendance input is parsed, validated, and appli
 <puml src="diagrams/MarkAttendanceSequenceDiagram.puml" width="600" />
 
 
-### Feature: Cancel Week
+### Feature: Cancel Week Command
 
 #### Overview
 
-The `cancelw` command allows tutors to mark a specific tutorial week as cancelled for **all students belonging to a given course and tutorial group**. This is useful when a tutorial session is cancelled due to public holidays, instructor absence, or rescheduled lessons.
+The `cancelw` command marks a specific week as cancelled for all students in a given course and tutorial group.
 
-The command word is `cancelw`, and its expected format is:
+A cancelled week:
+- Cannot be marked for attendance
+- Is excluded from attendance calculations
 
-`cancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK_NUMBER`
+**Format:**
+cancelw crs/<COURSE_ID> tg/<TUTORIAL_GROUP> wk/<WEEK_NUMBER>
 
-For example, `cancelw crs/CS2103T tg/T01 wk/5` cancels week 5 for all students in CS2103T T01.
+**Example:**
+cancelw crs/CS2103T tg/T01 wk/5
 
----
-
-#### Cancelled week representation
-
-Cancelled weeks are stored at **course-tutorial level**, not per student.
-
-The `Model` maintains:
-- A mapping of `(CourseId, TGroup)` pairs
-- Each entry stores cancelled week indices
-
-When a week is cancelled:
-- The week index is stored in the model
-- All students in the matching `(CourseId, TGroup)` are updated
-- Their `WeekList` marks the week as `C`
-- Previous status is stored for recovery
-  - however, when TeachAssist is closed you cannot recover the statuses, in cancelled week
-
----
 
 #### Implementation
 
-The `cancelw` feature is implemented using `CancelWeekCommand` and `CancelWeekCommandParser`.
+The cancel week feature is implemented using:
+- CancelWeekCommand
+- CancelWeekCommandParser
+- ModelManager#addCancelledWeek
+- WeekList#markAsCancelled
 
-Execution flow:
-1. Parser validates `crs/`, `tg/`, and `wk/`
-2. Command checks that `(CourseId, TGroup)` exists
-3. Command validates week range
-4. Model checks duplicate cancellation
-5. `ModelManager.addCancelledWeek()` is called
-6. Matching students' `WeekList` objects are updated
-7. Cancelled week is stored in persistent map
 
-If the week is already cancelled, a `CommandException` is thrown.
+#### Execution Flow
 
-### Feature: Uncancel Week
+1. LogicManager calls AddressBookParser
+2. CancelWeekCommandParser:
+    - Tokenizes input using prefixes `crs/`, `tg/`, `wk/`
+    - Validates:
+        - All required prefixes are present
+        - No duplicate prefixes
+        - No unknown prefixes
+        - No unexpected preamble
+    - Parses:
+        - CourseId
+        - TGroup
+        - Week index
+3. CancelWeekCommand is created
+4. CancelWeekCommand#execute(Model) is invoked
+
+Execution steps:
+
+1. Validate that the course–tutorial group exists
+    - If not found → throw CommandException
+
+2. Validate that the week number is within valid range
+    - If invalid → throw CommandException
+
+3. Check whether the week is already cancelled
+    - If already cancelled → throw CommandException
+
+4. Update model via:
+   model.addCancelledWeek(courseId, tGroup, weekIndex)
+
+#### Model-Level Logic
+
+ModelManager#addCancelledWeek:
+
+1. Construct key: <courseId>-<tGroup>
+2. Retrieve or initialise cancelled week set
+3. Add week index to cancelledWeeksMap
+4. Propagate cancellation to all matching students:
+    - Copy each student's WeekList
+    - Mark the week as cancelled
+    - Replace updated Person in model
+5. Persist updated cancellation state to AddressBook
+
+
+#### Key Behaviours
+
+- **Strict validation**
+    - Invalid course–tutorial pair results in CommandException
+    - Already cancelled week results in CommandException
+
+- **Batch update**
+    - Cancellation is applied consistently to all students in the same tutorial group
+
+- **State preservation**
+    - Previous attendance status is stored inside `Week` before cancellation
+
+
+#### Design Considerations
+
+**Aspect: Consistency of cancellation state**
+
+Current choice: Centralised `cancelledWeeksMap` with propagation to WeekList
+- Pros:
+    - Ensures consistent view across all students
+    - Efficient lookup for cancellation status
+- Cons:
+    - Requires careful synchronisation between map and WeekList
+
+Alternative: Store cancellation only in WeekList
+- Pros:
+    - Simpler data ownership model
+- Cons:
+    - Harder to query and maintain group-level cancellation state
+
+
+**Aspect: Validation strategy**
+
+Current choice: Command-layer validation with explicit exceptions
+- Pros:
+    - Provides immediate and clear user feedback
+    - Prevents invalid state changes early
+- Cons:
+    - Slight duplication with model-level safety checks
+
+---
+
+
+### Feature: Uncancel Week Command
 
 #### Overview
 
-The `uncancelw` command removes a previously cancelled week for a specific course and tutorial group. This restores the week’s attendance status for all affected students.
+The `uncancelw` command reverses a previously cancelled week for a given course and tutorial group.
 
-The command word is `uncancelw`, and its expected format is:
+After uncancelling:
+- The week becomes available for attendance marking
+- The previously stored attendance status is restored
 
-`uncancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK_NUMBER`
+<box type="info" seamless></box>
 
-For example, `uncancelw crs/CS2103T tg/T01 wk/5` restores week 5.
+**Note:** Transience of Previous Week Status
 
----
+The `prevStatus` field in `Week` is **transient and not persisted to storage**. 
+It is only used during runtime to support the uncancel operation, allowing a cancelled week to restore its previous attendance state.
 
-#### Behaviour
+This design is intentional because:
 
-When a cancelled week is restored:
-- The week is removed from the cancelled week map
-- All students in the `(CourseId, TGroup)` pair are updated
-- Their `WeekList` restores the previous status
-- UI reflects restored attendance values
+- `prevStatus` is only meaningful during a single session’s cancellation lifecycle
+- Persisting it would unnecessarily increase storage complexity and risk stale state restoration
 
----
+As a result, uncancelling after restart restores to default.
+
+</box></box>
+
+
+**Format:**
+uncancelw crs/<COURSE_ID> tg/<TUTORIAL_GROUP> wk/<WEEK_NUMBER>
+
+**Example:**
+uncancelw crs/CS2103T tg/T01 wk/5
+
 
 #### Implementation
 
-The `uncancelw` feature is implemented using `UnCancelWeekCommand` and `UnCancelWeekCommandParser`.
+The uncancel week feature is implemented using:
+- UnCancelWeekCommand
+- UnCancelWeekCommandParser
+- ModelManager#removeCancelledWeek
+- WeekList#markAsUncancelled
 
-Execution flow:
-1. Parser validates prefixes
-2. Command checks course–tutorial existence
-3. Command verifies week is currently cancelled
-4. `ModelManager.removeCancelledWeek()` is called
-5. Matching students are updated
-6. Persistent map is updated
 
-If the week is not currently cancelled, the command throws a `CommandException` indicating that the week is not cancelled.
+#### Execution Flow
 
+1. LogicManager calls AddressBookParser
+2. UnCancelWeekCommandParser:
+    - Tokenizes input using prefixes `crs/`, `tg/`, `wk/`
+    - Validates:
+        - All required prefixes are present
+        - No duplicate prefixes
+        - No unexpected preamble
+        - No unknown prefixes
+    - Parses:
+        - CourseId
+        - TGroup
+        - Week index
+3. UnCancelWeekCommand is created
+4. UnCancelWeekCommand#execute(Model) is invoked
+
+Execution steps:
+
+1. Validate that the course–tutorial group exists
+    - If not found → throw CommandException
+
+2. Validate that the week number is within valid range
+    - If invalid → throw CommandException
+
+3. Check whether the week is currently cancelled
+    - If not cancelled → throw CommandException
+
+4. Update model via:
+   model.removeCancelledWeek(courseId, tGroup, weekIndex)
+
+
+#### Model-Level Logic
+
+ModelManager#removeCancelledWeek:
+
+1. Locate cancellation entry in cancelledWeeksMap
+2. Remove week index from map
+3. Propagate uncancellation to all matching students:
+    - Copy each student's WeekList
+    - Restore previous status using Week#markAsUncancelled
+    - Replace updated Person in model
+4. Persist updated cancellation state
+
+#### Key Behaviours
+
+- **Strict validation**
+    - Only cancelled weeks can be uncancelled
+    - Invalid operations result in CommandException
+
+- **State restoration**
+    - Previous attendance status is restored using Week.prevStatus
+
+- **Batch update**
+    - Ensures all students in the tutorial group remain consistent
+
+#### Design Considerations
+
+**Aspect: Restoring previous attendance state**
+
+Current choice: Store previous status inside Week
+- Pros:
+    - Accurate restoration of original attendance
+    - Preserves user input history
+- Cons:
+    - Additional state management complexity
+
+Alternative: Reset to default status
+- Pros:
+    - Simpler implementation
+- Cons:
+    - Loss of original attendance information
+
+**Aspect: Validation responsibility**
+
+Current choice: Command-layer validation with model queries
+- Pros:
+    - Clear separation of concerns
+    - User-friendly error messages
+- Cons:
+    - Some duplication with model safeguards
 
 ### Feature: Remark Command
 #### Overview
@@ -675,7 +924,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 **Actor:** User<br>
 **MSS:**
 1. User enters the command to add a student.
-2. User provides the student’s name, student ID, course, tutorial group, and optionally a Telegram username.
+2. User provides the student’s name, student ID, course, tutorial group, and optional Email and Telegram username.
 3. TeachAssist validates the input.
 4. TeachAssist creates the student record.
 5. TeachAssist adds the student to the student list.
@@ -906,6 +1155,100 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * Use case ends.
 * 2b. No students match the query.
     * 2b1. TeachAssist displays an empty list and a message such as "No students found for: <query>".
+    * Use case ends.
+
+**Use Case: UC16 – Mark Student Attendance**<br>
+**Actor:** User<br>
+**MSS:**
+
+1. User enters a command to mark a student’s attendance for a specific week with a status.
+2. TeachAssist validates the student index, week number, and attendance status.
+3. TeachAssist updates the student’s attendance record for the specified week.
+4. TeachAssist confirms the update.
+5. Use case ends.
+
+**Extensions**
+
+* 1a. The command format is invalid.
+    * 1a1. TeachAssist displays an error message and the correct command format.
+    * Use case ends.
+
+* 2a. The specified student does not exist.
+    * 2a1. TeachAssist informs the user that the student record cannot be found.
+    * Use case ends.
+
+* 2b. The specified week number is invalid.
+    * 2b1. TeachAssist informs the user that the week number is out of range.
+    * Use case ends.
+
+* 2c. The specified week is cancelled.
+    * 2c1. TeachAssist informs the user that cancelled weeks cannot be modified.
+    * Use case ends.
+
+* 2d. The attendance status is invalid or already set.
+    * 2d1. TeachAssist informs the user of valid statuses or that the status is already assigned.
+    * Use case ends.
+
+---
+
+**Use Case: UC17 – Cancel Tutorial Week**<br>
+**Actor:** User<br>
+**MSS:**
+
+1. User enters a command to cancel a specific week for a course and tutorial group.
+2. TeachAssist validates the course ID, tutorial group, and week number.
+3. TeachAssist marks the specified week as cancelled for all students in the tutorial group.
+4. TeachAssist updates the system state.
+5. TeachAssist confirms the cancellation.
+6. Use case ends.
+
+**Extensions**
+
+* 1a. The command format is invalid.
+    * 1a1. TeachAssist displays an error message and the correct command format.
+    * Use case ends.
+
+* 2a. The course or tutorial group does not exist.
+    * 2a1. TeachAssist informs the user that the course-tutorial pair cannot be found.
+    * Use case ends.
+
+* 2b. The week number is invalid.
+    * 2b1. TeachAssist informs the user that the week number is out of range.
+    * Use case ends.
+
+* 2c. The week is already cancelled.
+    * 2c1. TeachAssist informs the user that the week is already cancelled.
+    * Use case ends.
+
+---
+
+**Use Case: UC18 – Uncancel Tutorial Week**<br>
+**Actor:** User<br>
+**MSS:**
+
+1. User enters a command to uncancel a specific week for a course and tutorial group.
+2. TeachAssist validates the course ID, tutorial group, and week number.
+3. TeachAssist restores the previously cancelled week to active status for all students in the tutorial group.
+4. TeachAssist updates the system state.
+5. TeachAssist confirms the uncancellation.
+6. Use case ends.
+
+**Extensions**
+
+* 1a. The command format is invalid.
+    * 1a1. TeachAssist displays an error message and the correct command format.
+    * Use case ends.
+
+* 2a. The course or tutorial group does not exist.
+    * 2a1. TeachAssist informs the user that the course-tutorial pair cannot be found.
+    * Use case ends.
+
+* 2b. The week number is invalid.
+    * 2b1. TeachAssist informs the user that the week number is out of range.
+    * Use case ends.
+
+* 2c. The week is not cancelled.
+    * 2c1. TeachAssist informs the user that the week is not cancelled.
     * Use case ends.
 
 ### Non-Functional Requirements

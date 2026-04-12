@@ -313,8 +313,10 @@ When the edit is successful, you will receive the following message:
 <a name="attendance"></a>
 ### Updating students' attendance
 
-After setting up your student list, the next thing you will likely do throughout the semester is keep attendance records updated. You may be marking one student's attendance for a particular week, or handling a tutorial session that was cancelled for the whole class.
-TeachAssist provides three attendance-related commands. Use `marka` to update an individual student's attendance for a specific week, `cancelw` to cancel a tutorial week for an entire class, and `uncancelw` to restore a previously cancelled week.
+Now that you have finally set up your student list here comes the part you can never avoid: keeping attendance records. 
+That maybe done by marking attendance for a particular week or canceling a tutorial session for the whole class.
+TeachAssist provides three commands to solve all you needs. Use `marka` to update an individual student's attendance for a specific week, 
+`cancelw` to cancel a tutorial week for an entire class, and `uncancelw` to restore a previously cancelled week.
 
 <box type="info">
 Note:
@@ -333,10 +335,10 @@ Supported attendance statuses:
 
 **Format:**
 ```
-marka INDEX wk/WEEK s/STATUS
+marka INDEX wk/WEEK_NUMBER s/STATUS
 ```
 
-* Updates the attendance of student at the specified `INDEX` and `WEEK` to `STATUS`.
+* Updates the attendance of student at the specified `INDEX` and `WEEK_NUMBER` to `STATUS`.
 * The index refers to the index number shown in the currently displayed student list.
 * The index **must be a positive integer** 1, 2, 3, …
 
@@ -345,16 +347,12 @@ marka INDEX wk/WEEK s/STATUS
 
 - `marka 1 wk/3 s/y` - marks the attendance of the 1st student's attendance in week 3 as present -> Green.
 
-- `marka 2 wk/6 s/a` - marks the attendance of the 2nd student's attendance in week 6 as absent -> Red.
-
-- `marka 4 wk/4 s/n` - marks the attendance of the 4th student's attendance in week 4 as unmarked -> Grey.
-
 **Expected output:**
 
 The selected student's attendance record is updated immediately in the student list, and the corresponding week is shown with the updated attendance status.
 mark
 
-The following shows week 3 marked as present for Alex Tan, week 6 marked as absent for Bernice Yu, and unmarked for everything else.
+The following shows week 3 marked as present(green) for Alex Tan, week 6 marked as absent(red) for Bernice Yu, and unmarked(default) for everything else.
 <img src="images/markattendancesuccess.png" alt="marka success" width="700">
 
 <a name="cancel-week"></a>
@@ -364,11 +362,11 @@ Sometimes, a tutorial may not take place for a particular week, for example due 
 
 **Format:**
 
-`cancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK`
+`cancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK_NUMBER`
 
-* Cancels the specified `WEEK` for **all students** in the matching `COURSE_ID` and `TUTORIAL_GROUP`.
+* Cancels the specified week for **all students** in the matching `COURSE_ID` and `TUTORIAL_GROUP`.
 * A cancelled week will be reflected in each student’s attendance record.
-* If the week is already cancelled, the command will have no additional effect.
+* If the week is already cancelled, the command will throw an error message.
 
 <box type="info">
 Note:
@@ -379,11 +377,11 @@ Note:
 
 **Example:**
 
-- `cancelw crs/CS2103T tg/T12 wk/5` — cancels week 5 for all students in course `CS2103T` and tutorial group `T12can`.
+- `cancelw crs/CS2103T tg/T12 wk/5` — cancels week 5 for all students in course `CS2103T` and tutorial group `T12`.
 
 **Expected output:**
 
-All matching students will show week 5 as cancelled (represented by an X) in their attendance records.
+All students in CS2103T, tutorial T02 will show week 5 as cancelled (represented by an X) in their attendance records.
 
 <img src="images/cancelweeksuccess.png" alt="cancelw success" width="700">
 
@@ -395,15 +393,15 @@ Use this command to restore a previously cancelled tutorial week for all student
 
 **Format:**
 ```
-uncancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK
+uncancelw crs/COURSE_ID tg/TUTORIAL_GROUP wk/WEEK_NUMBER
 ```
 
-* Removes the cancelled status for the specified `WEEK`.
+* Removes the cancelled status for the specified week.
 * The week will return to a normal attendance state for all students in the matching course and tutorial group.
 * This affects:
     * Existing students (their week status will be updated).
     * Future students (the week will no longer be auto-marked as cancelled).
-* If the week was not previously cancelled, the command will have no effect.
+* If the week was not previously cancelled, the command will throw an error message.
 
 **Example:**
 
@@ -667,7 +665,7 @@ Parameter             | Prefix  | Constraints                                   
 ## FAQ
 
 **Q: Do I need to enter parameters in a fixed order?**
-No. For commands with prefixes such as add and filter, parameters can be entered in any order as long as all required fields are provided.
+Excluding index parameters without the '/' prefix. No. For commands with prefixes such as add and filter, parameters can be entered in any order as long as all required fields are provided.
 
 **Q: Why did `delete 1` remove a different student than I expected?**
 The index refers to the *currently displayed* list. If you previously ran `find` or `filter`, the list may be a subset of all students. Run `list` first to see every student, then use the correct index.
@@ -689,6 +687,10 @@ No. Both commands only change which students are *displayed*. Your underlying da
 
 **Q: Why can't I mark attendance for week 14?**
 TeachAssist follows the NUS 13-week teaching schedule (weeks 1–13). Week numbers outside this range are not accepted.
+                       
+**Q: Why doesn't my uncancel week return my status before i cancelled that week?**
+Because recovering cancelled status functionality is transient, i.e if you close the app you can
+no longer recover your cancelled status.
 
 **Q: What happens if I close TeachAssist without running `exit`?**
 Your data is saved automatically after every command that changes it, so closing the window directly (e.g., clicking the × button) will not cause data loss.
