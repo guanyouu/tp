@@ -245,14 +245,16 @@ Cons: Adds complexity; harder to trace combined filtering behavior
 
 #### Overview
 
-The `delete` command removes a student from TeachAssist. Compared to the original AB3 implementation, TeachAssist extends this feature in two ways:
+The `delete` command removes a student from TeachAssist.
+
+Compared to the original AB3 implementation, TeachAssist extends this feature in two ways:
 
 - It supports deleting a student either by displayed index or by exact student identity fields: `StudentId`, `CourseId`, and `TGroup`.
 - It introduces a confirmation step before the deletion is carried out.
 
-This is useful in TeachAssist because student records are identified by student-specific attributes rather than generic contact information, and accidental deletion of a student record should be avoided.
+This is useful because student records are important and should not be removed accidentally, especially when a TA may be managing many students across multiple courses and tutorial groups.
 
-**Supported delete modes**
+#### Supported delete modes
 
 TeachAssist supports the following delete modes:
 
@@ -264,48 +266,11 @@ TeachAssist supports the following delete modes:
   The user deletes a student by specifying the student’s `StudentId`, `CourseId`, and `TGroup`.
   Example: `delete id/A1234567X crs/CS2103T tg/T01`
 
-This identity-based deletion mode is useful when the user wants to target a specific student directly, rather than relying on the current displayed index.
+For detail-based deletion, the match is performed against the **entire TeachAssist list**, rather than only the currently filtered list. This allows the user to delete a specific student directly even if that student is not currently visible in the displayed list.
 
 #### Implementation
 
-The `delete` feature is implemented using `AddressBookParser`, `DeleteCommandParser`, `DeleteCommand`, `ConfirmedDeleteCommand`, `ConfirmCommand`, `CancelCommand`, and `ConfirmationManager`.
-
-`AddressBookParser` first checks whether TeachAssist is currently waiting for a confirmation response. If there is a pending delete action, `yes` is parsed into a `ConfirmCommand` and `no` is parsed into a `CancelCommand`. Otherwise, normal command parsing proceeds.
-
-When the user enters a `delete` command, `AddressBookParser` delegates argument parsing to `DeleteCommandParser`. `DeleteCommandParser` supports two valid formats:
-
-- `delete INDEX`
-- `delete id/STUDENT_ID crs/COURSE_ID tg/TGROUP`
-
-`DeleteCommandParser` performs format-level validation, including:
-- checking that the input is not empty
-- distinguishing between index-based and identity-based deletion
-- ensuring that all required prefixes for detail-based deletion are present
-- rejecting duplicate prefixes
-- rejecting malformed index input
-- rejecting unexpected trailing text after an index
-
-After successful parsing, a `DeleteCommand` object is created. However, checks that depend on the current model state are deferred to command execution. For example, although the parser can verify that an index is written in a valid format, it cannot determine whether that index is within the bounds of the current filtered student list. Similarly, although the parser can verify that `StudentId`, `CourseId`, and `TGroup` are provided in the correct format, it cannot determine whether those values actually match a student in the current filtered list. These checks are therefore performed in `DeleteCommand#execute(Model)`.
-
-The confirmation workflow proceeds as follows:
-
-- `LogicManager#execute(String)` calls `AddressBookParser#parseCommand(String)`.
-- `AddressBookParser` uses `DeleteCommandParser` to create a `DeleteCommand`.
-- `DeleteCommand#execute(Model)` resolves the target student from the current filtered list.
-- If the target student cannot be resolved, a `CommandException` is thrown and no confirmation is requested.
-- If the target student is successfully resolved, `DeleteCommand` creates a `ConfirmedDeleteCommand` containing the resolved `Person`.
-- `DeleteCommand` stores this pending command in `ConfirmationManager` using `ConfirmationManager#setPendingCommand(Command)`.
-- `DeleteCommand` then returns a `CommandResult` containing the confirmation message.
-
-When the user enters `yes`, `AddressBookParser` returns a `ConfirmCommand`. `ConfirmCommand#execute(Model)` retrieves the pending `ConfirmedDeleteCommand` from `ConfirmationManager`, clears the pending state, and executes it. `ConfirmedDeleteCommand#execute(Model)` then performs the actual deletion through `Model#deletePerson(Person)`.
-
-When the user enters `no`, `AddressBookParser` returns a `CancelCommand`. `CancelCommand#execute(Model)` clears the pending command in `ConfirmationManager` and returns a cancellation message.
-
-This separation keeps responsibilities clear:
-- `DeleteCommand` resolves the deletion target and initiates confirmation.
-- `ConfirmedDeleteCommand` performs the actual deletion.
-- `ConfirmCommand` and `CancelCommand` handle the user’s confirmation response.
-- `ConfirmationManager` stores the pending command between the initial delete request and the final user response.
+The `delete` feature is implemented primarily using `DeleteCommand`, `ConfirmedDeleteCommand`, and `LogicManager`.
 
 <box type="info" seamless>
 
@@ -314,6 +279,38 @@ This separation keeps responsibilities clear:
 <puml src="diagrams/DeleteClassDiagram.puml" width="600" />
 
 </box>
+
+`DeleteCommandParser` only performs brief format-level validation. It determines whether the input is index-based or detail-based, checks that the required fields are present, and constructs a `DeleteCommand`. The main design focus of this feature is the confirmation workflow rather than the parsing behaviour.
+
+When the user enters a `delete` command, the command is first parsed into a `DeleteCommand`. However, the student is **not deleted immediately**.
+
+Instead, `LogicManager` handles deletion as a two-stage workflow:
+
+1. the target student is first resolved by `DeleteCommand`
+2. the actual deletion only happens after the user explicitly confirms with `yes`
+
+More specifically, after `DeleteCommand` is parsed, `LogicManager` detects that the parsed command is a `DeleteCommand`. It then calls `DeleteCommand#getConfirmedCommand(model)` to obtain a `ConfirmedDeleteCommand` for the intended student. At the same time, it calls `DeleteCommand#getConfirmationMessage(model)` to obtain the confirmation message to show to the user.
+
+The resulting `ConfirmedDeleteCommand` is then stored temporarily inside `LogicManager` as a pending confirmation command.
+
+This means that after a valid `delete` command is entered:
+
+- no deletion has happened yet
+- TeachAssist is waiting for the user’s next input
+- the pending deletion is represented by a stored `ConfirmedDeleteCommand`
+
+If the user enters `yes`, `LogicManager` executes the stored `ConfirmedDeleteCommand`. `ConfirmedDeleteCommand#execute(Model)` then performs the actual deletion through `Model#deletePerson(Person)`.
+
+If the user enters `no`, `LogicManager` clears the stored pending command and no deletion occurs.
+
+If the user enters some other command instead, `LogicManager` also clears the pending command. In other words, the confirmation is only valid for the immediate follow-up response, and any other input cancels the pending deletion flow.
+
+This design separates the delete process into two distinct responsibilities:
+
+- `DeleteCommand` identifies which student the user intends to delete and prepares the confirmation step
+- `ConfirmedDeleteCommand` performs the actual deletion only after explicit confirmation has been received
+
+This keeps the destructive part of the operation isolated and ensures that a student is only removed after the user has clearly confirmed the action.
 
 <box type="info" seamless>
 
@@ -325,15 +322,17 @@ This separation keeps responsibilities clear:
 
 #### Design considerations
 
-One possible design was to delete the student immediately after a valid `delete` command. This would have produced a simpler command flow, but it was rejected because it makes accidental deletion easier.
+A simpler design would have been to delete the student immediately after a valid `delete` command. However, this was rejected because deletion is irreversible at the command level and a user may accidentally target the wrong student, especially when working quickly with many similar records.
 
-The chosen design introduces a confirmation step. This adds extra classes and command flow, but improves safety by requiring an explicit user confirmation before the student record is removed. This is more suitable for TeachAssist, where student data should not be deleted unintentionally.
+TeachAssist therefore requires an explicit confirmation step for `delete`.
+
+This differs from `clear`, which does not require confirmation. The rationale is that `clear` is a deliberate bulk-action command whose purpose is already explicit from the command word itself, whereas `delete` is more prone to accidental misuse, such as deleting the wrong student by index or entering the wrong identity fields. Requiring confirmation for `delete` therefore improves safety where the risk of unintended removal is higher.
 
 ### Feature: Update Progress
 
 #### Overview
 
-The `progress` command allows TAs to record a student's current academic or follow-up status in TeachAssist.
+The `updateprogress` command allows TAs to record a student's current academic or follow-up status in TeachAssist.
 
 This helps TAs quickly identify which students are doing well, which students may need support, and which students require closer monitoring. By storing progress directly in each student record, TeachAssist makes it easier to keep track of follow-up priorities across multiple students.
 
@@ -347,35 +346,24 @@ The supported progress values are:
 - `AT_RISK`
 - `NOT_SET`
 
-`NOT_SET` is the default value and represents the absence of an explicitly assigned progress status.
-
+`NOT_SET` is the default value and represents the absence of an explicitly assigned progress status. It is used internally in the model, and no progress label is shown in the UI when a student's progress is `NOT_SET`.
 Using an enum ensures that only valid progress values can be stored, which simplifies validation and prevents inconsistent states.
 
 #### Implementation
 
-The `progress` feature is implemented using `ProgressCommand`, `ProgressCommandParser`, the `Progress` enum, and the model's person update mechanism.
+The `updateprogress` feature is implemented using `ProgressCommand`, `ProgressCommandParser`, the `Progress` enum, and the model's person update mechanism.
 
-When the user enters a `progress` command, `AddressBookParser` delegates parsing of the command arguments to `ProgressCommandParser`. `ProgressCommandParser` parses the target student index and the new progress value. The parser validates that the index is present and in a valid format, that the `p/` prefix is provided, and that the progress value is one of the supported enum values. After successful parsing, a `ProgressCommand` is created.
+When the user enters an `updateprogress` command, `AddressBookParser` delegates parsing to `ProgressCommandParser`, which parses the target student index and the new progress value before constructing a `ProgressCommand`.
 
-During execution, `ProgressCommand` retrieves the student at the specified index from the current filtered student list. If the index is out of range, the command fails. If the index is valid, a new `Person` object is created based on the original student but with the updated progress value. The old student record is then replaced with the updated one through the model.
+During execution, `ProgressCommand` retrieves the target student from the current filtered student list, creates an updated `Person` object with the new progress value, and replaces the original student in the model.
 
-This follows the same general approach as other commands that modify a student record: instead of mutating the existing student directly, TeachAssist creates an updated `Person` object and replaces the original in the model. If the new progress value is `NOT_SET`, the student's progress is effectively cleared.
+If the specified progress value is `NOT_SET`, the student's progress is effectively cleared.
 
 <box type="info" seamless>
 
-**Note:** The sequence diagram illustrating how `ProgressCommand` is executed is shown in the [Logic component](#logic-component) section above.
+**Note:** The sequence diagram for command execution is similar to the general command execution flow shown in the [Logic component](#logic-component) section above.
 
 </box>
-
-#### UI integration
-
-Progress is displayed on each student card in the UI as a progress label. The label is colour-coded to help TAs quickly distinguish student status across `ON_TRACK`, `NEEDS_ATTENTION`, and `AT_RISK`. If the progress value is `NOT_SET`, no progress label is shown. This design keeps the UI uncluttered while still surfacing important student status information when it is available.
-
-#### Design considerations
-
-A key design consideration was how to represent progress in the model. One possible approach was to store progress as a plain string. However, this would require repeated string validation and would make invalid values easier to introduce. The chosen approach was to represent progress using an enum, which ensures that only valid progress states can exist and makes the implementation easier to maintain.
-
-Another design consideration was whether to show `NOT_SET` explicitly in the UI. Showing `NOT_SET` as a visible label would make the implementation more uniform, but it would also add unnecessary visual clutter for students whose progress has not been set. The chosen design hides `NOT_SET` in the UI, so only meaningful progress statuses are shown.
 
 ### Feature: Mark Attendance
 
@@ -723,7 +711,27 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 <uncancelweek>
 
-<updateprogress>
+**Use Case: UC08 – Update Student Progress Status**<br>
+**Actor:** User<br>
+**MSS:**
+
+1. User enters a command to update a student’s progress status.
+2. TeachAssist validates the command and identifies the target student.
+3. TeachAssist updates the student’s progress status.
+4. TeachAssist displays a success message confirming the update.
+5. Use case ends.
+
+**Extensions**
+
+* 1a. The command format is invalid.
+    * 1a1. TeachAssist displays an error message and the correct command format.
+    * Use case ends.
+* 2a. The specified student does not exist.
+    * 2a1. TeachAssist informs the user that the student record cannot be found.
+    * Use case ends.
+* 2b. The specified progress status is invalid.
+    * 2b1. TeachAssist informs the user of the valid progress statuses.
+    * Use case ends.
 
 <add remark>
 **Use Case: UC06 – Add remark to student**<br>
@@ -745,30 +753,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * Use case ends.
 * 2c. The remark text is empty or exceeds the allowed length.
     * 2c1. TeachAssist shows an error message.
-    * Use case ends. 
+    * Use case ends.
 
 <delete remark>
-
-**Use Case: UC08 – Update Student Progress Status**<br>
-**Actor:** User<br>
-**MSS:**
-
-1. User enters a command to update a student’s progress status to a specific status.
-3. TeachAssist updates the student progress status.
-4. TeachAssist confirms the update.
-5. Use case ends.
-
-**Extensions**
-
-* 1a. The command format is invalid.
-    * 1a1. TeachAssist displays an error message and the correct command format.
-    * Use case ends.
-* 1b. The specified student does not exist.
-    * 1b1. TeachAssist informs the user that the student record cannot be found.
-    * Use case ends.
-* 1c. The specified progress status is invalid.
-    * 1c1. TeachAssist informs the user of the valid progress statuses.
-    * Use case ends.
 
 <view student>
 **Use Case: UC09 – View Student Details**<br>
@@ -795,7 +782,6 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 4. User reviews the available commands.
 5. Use case ends
 
-<delete student>
 **Use Case: UC11 – Delete Student** <br>
 **Actor:** User <br>
 **MSS:**
@@ -803,7 +789,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 1. User enters a command to delete a student.
 2. TeachAssist validates the command and identifies the student record to be deleted.
 3. TeachAssist displays the student details and asks the user to confirm the deletion.
-4. User enters a confirmation response.
+4. User enters `yes`.
 5. TeachAssist deletes the student record from the system.
 6. Use case ends.
 
@@ -815,11 +801,16 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * 2a. The specified student does not exist.
     * 2a1. TeachAssist informs the user that the student record cannot be found.
     * Use case ends.
-* 4a. The user declines the deletion.
+* 4a. The user enters `no`.
     * 4a1. TeachAssist cancels the deletion.
     * Use case ends.
-* 4b. The confirmation response is invalid.
-    * 4b1. TeachAssist informs the user to enter a valid confirmation response.
+* 4b. The user enters another command instead of `yes` or `no`.
+    * 4b1. TeachAssist cancels the pending deletion.
+    * 4b2. TeachAssist processes the new command.
+    * Use case resumes from the relevant step of the new command.
+* 4c. The user enters an invalid confirmation response that is not a recognised command.
+    * 4c1. TeachAssist cancels the pending deletion.
+    * 4c2. TeachAssist displays an error message.
     * Use case ends.
 
 **Use Case: UC12 – View Student List** <br>
@@ -1017,7 +1008,7 @@ testers are expected to do more *exploratory* testing.
     3. **Expected behaviour:** The existing Help window is brought to the front/focus. No duplicate window is created.
 
 
-### Find command (`find`) 
+### Find command (`find`)
 
 1. Single-keyword search
 
@@ -1049,7 +1040,7 @@ testers are expected to do more *exploratory* testing.
 
     2. **Expected behaviour:** Command rejected with error message: `"Keywords should contain alphabetic characters separated by spaces only."` followed by the `find` command usage.
 
-### Filter command (`filter`) 
+### Filter command (`filter`)
 
 1. Single criterion filtering
 
@@ -1117,7 +1108,7 @@ testers are expected to do more *exploratory* testing.
 
     1. **Test case:** `delete id/A1234567X crs/CS2103T tg/T01`
 
-    2. **Expected behaviour:** If a student matching the given `StudentId`, `CourseId`, and `TGroup` exists, TeachAssist does not delete the student immediately. Instead, it shows a confirmation message: `"Are you sure you want to delete <student name>? Type 'yes' to confirm or 'no' to cancel."`.
+    2. **Expected behaviour:** If a student matching the given `StudentId`, `CourseId`, and `TGroup` exists in the entire TeachAssist list, TeachAssist does not delete the student immediately. Instead, it shows a confirmation message asking the user to type `yes` to confirm or `no` to cancel.
 
 3. Confirming a deletion
 
@@ -1400,3 +1391,5 @@ Note: There is no dedicated `clearfilter` command. To reset any active filter an
 3.Add support for multi-value filtering. Currently, each filter prefix accepts only a single value; we plan to extend this to allow multiple values under the same prefix in a single filter command.
 
 4.Add support for more flexible absence filtering. Currently, absence filtering only supports values greater than or equal to a given threshold; we plan to extend this to support exact values, upper bounds, and ranges.
+
+5. Add confirmation support for `clear`. Currently, `clear` removes all student records immediately after execution. We plan to introduce an optional confirmation workflow similar to `delete`, so that users must explicitly confirm before all records are removed. One possible implementation is to let `LogicManager` temporarily store a pending clear action after a valid `clear` command is entered, and only execute the actual clearing when the user responds with `yes`. Entering `no` or another command would cancel the pending clear action. This would reduce the risk of accidental mass deletion while keeping the command behaviour consistent with other destructive operations.
