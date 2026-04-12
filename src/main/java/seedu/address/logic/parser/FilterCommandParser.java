@@ -102,39 +102,4 @@ public class FilterCommandParser implements Parser<FilterCommand> {
                 FilterCommand.MESSAGE_USAGE);
     }
 
-    /**
-     * Parses the CourseId field.
-     */
-    private Optional<CourseId> parseCourseId(ArgumentMultimap argMultimap) throws ParseException {
-        return argMultimap.getValue(PREFIX_COURSEID).isPresent()
-                ? Optional.of(ParserUtil.parseCourseId(argMultimap.getValue(PREFIX_COURSEID).get()))
-                : Optional.empty();
-    }
-
-    /**
-     * Parses the Tutorial Group field.
-     */
-    private Optional<TGroup> parseTGroup(ArgumentMultimap argMultimap) throws ParseException {
-        return argMultimap.getValue(PREFIX_TGROUP).isPresent()
-                ? Optional.of(ParserUtil.parseTGroup(argMultimap.getValue(PREFIX_TGROUP).get()))
-                : Optional.empty();
-    }
-
-    /**
-     * Parses the Progress status field.
-     */
-    private Optional<Progress> parseProgress(ArgumentMultimap argMultimap) throws ParseException {
-        return argMultimap.getValue(PREFIX_PROGRESS).isPresent()
-                ? Optional.of(ParserUtil.parseProgress(argMultimap.getValue(PREFIX_PROGRESS).get()))
-                : Optional.empty();
-    }
-
-    /**
-     * Parses the Absence count field.
-     */
-    private Optional<Integer> parseAbsenceCount(ArgumentMultimap argMultimap) throws ParseException {
-        return argMultimap.getValue(PREFIX_ABSENCE).isPresent()
-                ? Optional.of(ParserUtil.parseAbsenceCount(argMultimap.getValue(PREFIX_ABSENCE).get()))
-                : Optional.empty();
-    }
 }
