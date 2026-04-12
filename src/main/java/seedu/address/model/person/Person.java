@@ -28,11 +28,11 @@ public class Person {
     private final WeekList weekList;
 
     /**
-     * Every field must be present and not null.
+     * Name, courseId, studentId, tGroup, weeklist, progress must be present and not null.
      */
     public Person(Name name, CourseId courseId, Email email, StudentId studentId,
                   TGroup tGroup, Tele tele, WeekList weekList, Progress progress) {
-        requireAllNonNull(name, courseId, email, studentId, tGroup, weekList, progress);
+        requireAllNonNull(name, courseId, studentId, tGroup, weekList, progress);
         this.name = name;
         this.courseId = courseId;
         this.email = email;
@@ -135,7 +135,7 @@ public class Person {
 
         return otherPerson != null
                 && (otherPerson.getStudentId().equals(getStudentId())
-                || otherPerson.getEmail().equals(getEmail())
+                || (otherPerson.getEmail() != null && otherPerson.getEmail().equals(getEmail()))
                 || (otherPerson.getTele() != null && otherPerson.getTele().equals(getTele())));
     }
 
