@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
@@ -51,6 +52,9 @@ public class MainWindow extends UiPart<Stage> {
 
     @FXML
     private StackPane personListPanelPlaceholder;
+
+    @FXML
+    private SplitPane splitPane;
 
     @FXML
     private StackPane viewWindowPlaceholder;
@@ -140,6 +144,9 @@ public class MainWindow extends UiPart<Stage> {
 
         commandBox = new CommandBox(this::executeCommand);
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
+        splitPane.getDividers().get(0).positionProperty().addListener((
+                obs, oldVal, newVal) -> {
+                    splitPane.setDividerPositions(0.5); });
     }
 
     /**

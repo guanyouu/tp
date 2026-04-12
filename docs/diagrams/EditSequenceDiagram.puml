@@ -68,4 +68,3 @@ deactivate EditCommand
 [<--LogicManager
 deactivate LogicManager
 @enduml
-
