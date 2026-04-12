@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <fx:root type="javafx.stage.Stage" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-         title="Address App" minWidth="1150" minHeight="600" onCloseRequest="#handleExit">
+         title="TeachAssist" minWidth="1150" minHeight="600" onCloseRequest="#handleExit">
   <icons>
     <Image url="@/images/address_book_32.png" />
   </icons>
@@ -51,10 +51,10 @@
             <padding>
               <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <StackPane fx:id="personListPanelPlaceholder" VBox.vgrow="ALWAYS" minWidth="550"/>
+            <StackPane fx:id="personListPanelPlaceholder" VBox.vgrow="ALWAYS" minWidth="450"/>
           </VBox>
 
-          <StackPane fx:id="viewWindowPlaceholder" styleClass="pane-with-border" minWidth="550" prefWidth="550" VBox.vgrow="ALWAYS">
+          <StackPane fx:id="viewWindowPlaceholder" styleClass="pane-with-border" minWidth="450" prefWidth="550" VBox.vgrow="ALWAYS">
             <padding>
               <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>

@@ -18,7 +18,7 @@ public class Messages {
     public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d students listed!";
     public static final String MESSAGE_DUPLICATE_FIELDS =
             "Multiple values specified for the following single-valued field(s): %s";
-
+    public static final String MESSAGE_MISSING_PREFIX = "At least one prefix must be provided.";
     /**
      * Returns an error message indicating the duplicate prefixes.
      */

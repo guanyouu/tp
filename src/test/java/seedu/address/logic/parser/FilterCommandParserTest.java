@@ -26,8 +26,12 @@ public class FilterCommandParserTest {
     @Test
     public void parse_missingArguments_failure() {
         // EP: Empty or blank inputs (BVA: 0 filters provided)
-        assertParseFailure(parser, "", FilterCommandParser.MESSAGE_NO_FILTERS);
-        assertParseFailure(parser, "    ", FilterCommandParser.MESSAGE_NO_FILTERS);
+        assertParseFailure(parser, "",
+                "At least one prefix must be provided.\n"
+                + FilterCommand.MESSAGE_USAGE);
+        assertParseFailure(parser, "    ",
+                "At least one prefix must be provided.\n"
+                + FilterCommand.MESSAGE_USAGE);
     }
 
     @Test

@@ -65,7 +65,7 @@ class JsonAdaptedPerson {
     public JsonAdaptedPerson(Person source) {
         name = source.getName().fullName;
         courseId = source.getCourseId().value;
-        email = source.getEmail().value;
+        email = source.getEmail() == null ? null : source.getEmail().value;
         studentId = source.getStudentId().value;
         tGroup = source.getTGroup().value;
         tele = source.getTele() == null ? null : source.getTele().value;

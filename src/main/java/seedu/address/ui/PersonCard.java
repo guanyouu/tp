@@ -62,7 +62,7 @@ public class PersonCard extends UiPart<Region> {
         studentId.setText(person.getStudentId().value);
         courseId.setText(person.getCourseId().value);
         tGroup.setText(person.getTGroup().value);
-        email.setText(person.getEmail().value);
+        email.setText(person.getEmail() == null ? "-" : person.getEmail().value);
         tele.setText(person.getTele() == null ? "-" : person.getTele().value);
         renderProgress();
         renderWeekAttendance(weekAttendance, (WeekList) person.getWeekList());

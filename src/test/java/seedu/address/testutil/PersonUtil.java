@@ -32,11 +32,13 @@ public class PersonUtil {
         StringBuilder sb = new StringBuilder();
         sb.append(PREFIX_NAME).append(person.getName().fullName).append(" ");
         sb.append(PREFIX_STUDENTID).append(person.getStudentId().value).append(" ");
-        sb.append(PREFIX_EMAIL).append(person.getEmail().value).append(" ");
         sb.append(PREFIX_COURSEID).append(person.getCourseId().value).append(" ");
         sb.append(PREFIX_TGROUP).append(person.getTGroup().value).append(" ");
         if (person.getTele() != null) {
             sb.append(PREFIX_TELE).append(person.getTele().value).append(" ");
+        }
+        if (person.getEmail() != null) {
+            sb.append(PREFIX_EMAIL).append(person.getEmail().value).append(" ");
         }
         return sb.toString();
     }
@@ -55,4 +57,3 @@ public class PersonUtil {
         return sb.toString();
     }
 }
-
