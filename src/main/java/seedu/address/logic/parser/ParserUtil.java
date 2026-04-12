@@ -31,7 +31,7 @@ public class ParserUtil {
     public static final String MESSAGE_INVALID_PROGRESS =
             "Invalid progress value. Allowed values are: on_track, needs_attention, at_risk, clear.";
     public static final String MESSAGE_INVALID_ABSENCE_COUNT =
-            "Absence count must be a non-negative integer and at most 13.";
+            "Absence count must be an integer between 0 and 13 (inclusive).";
     public static final String MESSAGE_INVALID_KEYWORDS =
             "Keywords should contain alphabetic characters separated by spaces only.";
     public static final String MESSAGE_EMPTY_KEYWORDS =
