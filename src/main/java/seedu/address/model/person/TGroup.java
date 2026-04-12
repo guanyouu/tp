@@ -10,7 +10,7 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 public class TGroup {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Tutorial ID should follow the format used in the app, e.g. T03.";
+            "Tutorial ID should be alphanumeric, e.g. T03";
     public static final String VALIDATION_REGEX = "[A-Za-z0-9]+";
     public final String value;
 

@@ -6,7 +6,6 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_COURSEID;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PROGRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TGROUP;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 import seedu.address.logic.commands.FilterCommand;
@@ -93,7 +92,7 @@ public class FilterCommandParser implements Parser<FilterCommand> {
     private void validateInput(String args, ArgumentMultimap argMultimap) throws ParseException {
         ParserValidators.checkForUnknownPrefixTokens(args, FILTER_PREFIXES, "crs/, tg/, p/, and abs/",
                 FilterCommand.MESSAGE_USAGE);
-        ensureAtLeastOneFilterPresent(argMultimap);
+        ParserValidators.ensureAtLeastOnePrefixPresent(argMultimap, FILTER_PREFIXES, FilterCommand.MESSAGE_USAGE);
         ParserValidators.checkForUnexpectedPreamble(argMultimap, FilterCommand.MESSAGE_USAGE);
         argMultimap.verifyNoDuplicatePrefixesFor(FILTER_PREFIXES);
         ParserValidators.checkForMissingValues(argMultimap, FILTER_PREFIXES,
@@ -103,14 +102,4 @@ public class FilterCommandParser implements Parser<FilterCommand> {
                 FilterCommand.MESSAGE_USAGE);
     }
 
-    /**
-     * Ensures that the user has provided at least one criteria to filter by.
-     */
-    private void ensureAtLeastOneFilterPresent(ArgumentMultimap argMultimap) throws ParseException {
-        boolean anyPresent = Arrays.stream(FILTER_PREFIXES)
-                .anyMatch(prefix -> argMultimap.getValue(prefix).isPresent());
-        if (!anyPresent) {
-            throw new ParseException(MESSAGE_NO_FILTERS);
-        }
-    }
 }

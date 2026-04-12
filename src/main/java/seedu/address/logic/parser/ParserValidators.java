@@ -103,6 +103,18 @@ public final class ParserValidators {
     }
 
     /**
+     * Ensures that the user has provided at least one criteria to filter by.
+     */
+    public static void ensureAtLeastOnePrefixPresent(ArgumentMultimap argMultimap,
+            Prefix[] prefix, String commandUsage) throws ParseException {
+        boolean anyPresent = Arrays.stream(prefix)
+                .anyMatch(prefixes -> argMultimap.getValue(prefixes).isPresent());
+        if (!anyPresent) {
+            throw new ParseException("At least one prefix must be provided.\n" + commandUsage);
+        }
+    }
+
+    /**
      * Checks that all prefixes and the Index are present.
      *
      * @param argMultimap   the token map

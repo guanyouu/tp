@@ -38,27 +38,26 @@ public class AddCommandParser implements Parser<AddCommand> {
             PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL,
             PREFIX_COURSEID, PREFIX_TGROUP, PREFIX_TELE
         };
-        String allowedReadable = "n/, sid/, e/, crs/, tg/, tele/";
+        String allowedReadable = "n/, id/, e/, crs/, tg/, tel/";
 
         ParserValidators.checkForUnknownPrefixTokens(args, allowedPrefixes,
                 allowedReadable, AddCommand.MESSAGE_USAGE);
 
         Prefix[] requiredPrefixes = {
-            PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL, PREFIX_COURSEID, PREFIX_TGROUP
+            PREFIX_NAME, PREFIX_STUDENTID, PREFIX_COURSEID, PREFIX_TGROUP
         };
         String[] requiredPrefixStrings = {
-            "n/", "sid/", "e/", "crs/", "tg/"
+            "n/", "id/", "crs/", "tg/"
         };
         String[] requiredPrefixDetails = {
             "Name cannot be empty.",
             "Student ID cannot be empty.",
-            "Email cannot be empty.",
             "Course ID cannot be empty.",
             "Tutorial group cannot be empty."
         };
 
         if (!argMultimap.arePrefixesPresent(PREFIX_NAME, PREFIX_STUDENTID,
-                PREFIX_EMAIL, PREFIX_COURSEID, PREFIX_TGROUP)
+                    PREFIX_COURSEID, PREFIX_TGROUP)
                 || !argMultimap.getPreamble().isEmpty()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
                     AddCommand.MESSAGE_USAGE));
@@ -68,7 +67,10 @@ public class AddCommandParser implements Parser<AddCommand> {
                 PREFIX_COURSEID, PREFIX_TGROUP, PREFIX_TELE);
         Name name = ParserUtil.parseName(argMultimap.getValue(PREFIX_NAME).get());
         StudentId studentId = ParserUtil.parseStudentId(argMultimap.getValue(PREFIX_STUDENTID).get());
-        Email email = ParserUtil.parseEmail(argMultimap.getValue(PREFIX_EMAIL).get());
+        Email email = null;
+        if (argMultimap.getValue(PREFIX_EMAIL).isPresent()) {
+            email = ParserUtil.parseEmail(argMultimap.getValue(PREFIX_EMAIL).get());
+        }
         CourseId courseId = ParserUtil.parseCourseId(argMultimap.getValue(PREFIX_COURSEID).get());
         TGroup tGroup = ParserUtil.parseTGroup(argMultimap.getValue(PREFIX_TGROUP).get());
         Tele tele = null;

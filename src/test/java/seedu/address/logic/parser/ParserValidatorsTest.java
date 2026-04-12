@@ -25,15 +25,18 @@ public class ParserValidatorsTest {
         // EP: Input consists only of text that looks like prefixes but missing slashes
         // Logic: Since slashes are missing, they are treated as preamble, triggering the "No Filters" check.
         assertParseFailure(parser, " abs 5",
-                FilterCommandParser.MESSAGE_NO_FILTERS);
+                "At least one prefix must be provided.\n"
+                + FilterCommand.MESSAGE_USAGE);
 
         // EP: Multiple bare tokens
         assertParseFailure(parser, " abs crs tg p",
-                FilterCommandParser.MESSAGE_NO_FILTERS);
+                "At least one prefix must be provided.\n"
+                + FilterCommand.MESSAGE_USAGE);
 
         // EP: Case-insensitive bare tokens
         assertParseFailure(parser, " ABS 5",
-                FilterCommandParser.MESSAGE_NO_FILTERS);
+                "At least one prefix must be provided.\n"
+                + FilterCommand.MESSAGE_USAGE);
     }
 
     @Test

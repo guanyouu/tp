@@ -8,8 +8,10 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_STUDENTID;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TELE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TGROUP;
 
+import java.util.Arrays;
+
 import seedu.address.commons.core.index.Index;
-import seedu.address.logic.commands.AddCommand;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -34,23 +36,13 @@ public class EditCommandParser implements Parser<EditCommand> {
             PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL,
             PREFIX_COURSEID, PREFIX_TGROUP, PREFIX_TELE
         };
-        String allowedReadable = "n/, sid/, e/, crs/, tg/, tele/";
-
-        ParserValidators.checkForUnknownPrefixTokens(args, allowedPrefixes,
-                allowedReadable, AddCommand.MESSAGE_USAGE);
-
-        ParserValidators.checkForMissingValues(argMultimap,
-                new Prefix[]{
-                    PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL, PREFIX_COURSEID, PREFIX_TGROUP},
-                new String[]{
-                    "n/", "sid/", "e/", "crs/", "tg/"},
-                new String[]{
-                    "Name cannot be empty.", "Student ID cannot be empty.",
-                    "Email cannot be empty.", "Course ID cannot be empty.",
-                    "Tutorial group cannot be empty."},
-                AddCommand.MESSAGE_USAGE);
+        String allowedReadable = "n/, id/, e/, crs/, tg/, tel/";
 
         Index index;
+
+        if (argMultimap.getPreamble().isEmpty()) {
+            throw new ParseException(String.format(Messages.MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE));
+        }
 
         try {
             index = ParserUtil.parseIndex(argMultimap.getPreamble());
@@ -60,6 +52,22 @@ public class EditCommandParser implements Parser<EditCommand> {
 
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL,
             PREFIX_COURSEID, PREFIX_TGROUP, PREFIX_TELE);
+
+        ParserValidators.ensureAtLeastOnePrefixPresent(argMultimap, allowedPrefixes, EditCommand.MESSAGE_USAGE);
+
+        ParserValidators.checkForUnknownPrefixTokens(args, allowedPrefixes,
+                allowedReadable, EditCommand.MESSAGE_USAGE);
+
+        ParserValidators.checkForMissingValues(argMultimap,
+                new Prefix[] {
+                    PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL, PREFIX_COURSEID, PREFIX_TGROUP, PREFIX_TELE },
+                new String[] {
+                    "n/", "id/", "crs/", "tg/", "e/", "tel/" },
+                new String[] {
+                    "Name cannot be empty.", "Student ID cannot be empty.",
+                    "Course ID cannot be empty.", "Tutorial group cannot be empty.",
+                    "Email cannot be empty.", "Telephone cannot be empty." },
+                EditCommand.MESSAGE_USAGE);
 
         EditPersonDescriptor editPersonDescriptor = new EditPersonDescriptor();
 
@@ -82,21 +90,25 @@ public class EditCommandParser implements Parser<EditCommand> {
             editPersonDescriptor.setTele(ParserUtil.parseTele(argMultimap.getValue(PREFIX_TELE).get()));
         }
 
-        ParserValidators.checkForUnknownPrefixTokens(args, allowedPrefixes,
-                allowedReadable, AddCommand.MESSAGE_USAGE);
 
-        ParserValidators.checkForMissingValues(argMultimap,
-                new Prefix[] {
-                    PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL, PREFIX_COURSEID, PREFIX_TGROUP },
-                new String[] {
-                    "n/", "sid/", "e/", "crs/", "tg/" },
-                new String[] {
-                    "Name cannot be empty.", "Student ID cannot be empty.",
-                    "Email cannot be empty.", "Course ID cannot be empty.",
-                    "Tutorial group cannot be empty." },
-                AddCommand.MESSAGE_USAGE);
 
         return new EditCommand(index, editPersonDescriptor);
+    }
+
+    /**
+     * Validates the presence of at least one filter prefix and checks for unknown prefixes.
+     */
+    private void ensureAtLeastOneFieldPresent(ArgumentMultimap argMultimap) throws ParseException {
+        Prefix[] allowedPrefixes = {
+            PREFIX_NAME, PREFIX_STUDENTID, PREFIX_EMAIL,
+            PREFIX_COURSEID, PREFIX_TGROUP, PREFIX_TELE
+        };
+
+        boolean anyPresent = Arrays.stream(allowedPrefixes)
+                .anyMatch(prefix -> argMultimap.getValue(prefix).isPresent());
+        if (!anyPresent) {
+            throw new ParseException("At least one field to edit must be provided.\n" + EditCommand.MESSAGE_USAGE);
+        }
     }
 
 }
