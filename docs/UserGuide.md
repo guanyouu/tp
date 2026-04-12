@@ -465,15 +465,18 @@ remark INDEX txt/REMARK
 
 **Examples:**
 
-- `remark 1 txt/Participates actively in class!`
+- `remark 1 txt/Was absent for consultation.`
 
 **Expected output:**
+```
+Added remark to Person:
+Alex Yeoh; Student ID: A1234567X; Email: alexyeoh@u.nus.edu; Course ID: CS2103T; TGroup: T12; Tele: @alexyeoh
+Remark: Was absent for consultation
+```
 
 The selected student's record is updated with the new remark, and the Result Box displays a confirmation message. 
 To view all existing remarks of a student, go to [View](#view).
 Remarks are shown when you select that student, allowing you to view the newly added remark together with any existing remarks.
-
-<img src="images/remarksuccessmessage.png" alt="remark success message" width="700">
 
 
 <a name="unremark"></a>
@@ -495,6 +498,13 @@ unremark INDEX r/REMARK_INDEX
 **Examples:**
 
 - `unremark 1 r/2` - removes the 2nd remark for the 1st student on the list.
+
+**Expected output:**
+```
+Deleted remark from Person: 
+Alex Yeoh; Student ID: A1234567X; Email: alexyeoh@u.nus.edu; Course ID: CS2103T; TGroup: T12; Tele: @alexyeoh
+Deleted Remark: Usually well-prepared for tutorials
+```
 
 
 <a name="view"></a>
