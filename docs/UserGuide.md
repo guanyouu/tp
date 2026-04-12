@@ -445,8 +445,6 @@ remark INDEX txt/REMARK
 **Examples:**
 
 - `remark 1 txt/Participates actively in class!`
-- `remark 1 txt/Shows steady improvements.`
-- `remark 1 txt/Was absent for consultation.`
 
 **Expected output:**
 
@@ -471,6 +469,7 @@ unremark INDEX r/REMARK_INDEX
 - The index refers to the index number shown iabs/14n the currently displayed student list.
 - The remark index refers to the position of the remark in that student's remark list.
 - Both `INDEX` and `REMARK_INDEX` must be positive integers 1, 2, 3, …
+- If multiple `r/` prefixes are provided, only the last specified remark index is removed
 
 **Examples:**
 
