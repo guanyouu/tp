@@ -670,6 +670,7 @@ Action | Format
 **Exit** | `exit`
 
 --------------------------------------------------------------------------------------------------------------------
+<div style="page-break-before: always; break-before: page;"></div>
 
 ## Parameter Summary
 Parameter             | Prefix  | Constraints                                                                                                                                                                                                                           | Examples
@@ -688,6 +689,7 @@ Parameter             | Prefix  | Constraints                                   
 **REMARK_INDEX**      | `r/`    | Positive integer; must not exceed the number of remarks the student currently has.                                                                                                                                                    | `1`, `2`
 
 --------------------------------------------------------------------------------------------------------------------
+<div style="page-break-before: always; break-before: page;"></div>
 
 ## Known issues
 1. If you minimize the Help Window and then run the help command (or use the Help menu, or the keyboard shortcut F1) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
