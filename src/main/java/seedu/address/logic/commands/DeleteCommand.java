@@ -27,7 +27,7 @@ public class DeleteCommand extends Command {
             + ": Deletes a student identified either by the index number used in the displayed student list, "
             + "or by exact student details.\n"
             + "Parameters: (a) INDEX (must be a positive integer) "
-            + "or (b) id/STUDENT_ID crs/COURSE_ID tg/TGROUP\n"
+            + "or (b) id/STUDENT_ID crs/COURSE_ID tg/TUTORIAL_GROUP\n"
             + "Example: " + COMMAND_WORD + " 1\n"
             + "Example: " + COMMAND_WORD + " id/A1234567X crs/CS2103T tg/T01";
 
