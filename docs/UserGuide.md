@@ -45,6 +45,9 @@ And the best part? No technical expertise needed—just basic computer skills li
 - [FAQ](#faq)
 - [Glossary](#glossary)
 ---
+
+<div style="page-break-before: always; break-before: page;"></div>
+
 ## Quick start
 
 Can't wait to get TeachAssist up and running? Let’s begin!
@@ -140,7 +143,8 @@ You’re all set! From here, head to the Features section to learn what TeachAss
 <a name="help"></a>
 ### Viewing help : `help`
 
-Lost? Use `help` to open the Help Window for a quick overview of all available commands and a link to this guide.
+Need a quick reminder of how TeachAssist works? Use the `help` command to open the Help Window, which gives you a summary of
+available commands and a direct link to the User Guide
 
 **Format:**
 ```
@@ -194,11 +198,8 @@ It must be noted that when entering parameters, they should not be blank.
 
 <box type="warning">
 
-**Warning:**
-
-What makes an entry a duplicate?
-
-* When a student that already exists in TeachAssist is being added (same `STUDENT_ID`, `EMAIL` or `TELEGRAM_USERNAME`),
+**Warning:** What makes an entry a duplicate? <br>
+ When a student that already exists in TeachAssist is being added (same `STUDENT_ID`, `EMAIL` or `TELEGRAM_USERNAME`),
  they must be of a different `COURSE_ID` and `TUTORIAL_GROUP`.
 </box>
 
@@ -612,7 +613,7 @@ delete id/STUDENT_ID crs/COURSE_ID tg/TUTORIAL_GROUP
 <a name="clear"></a>
 ### Clears all students : `clear`
 
-Wipe all student records at once with `clear`. Useful at the end of a semester when preparing for the next!
+Wipe all student records at once with `clear`. Useful at the end of a semester when preparing for the next semester!
 
 Format:
 ```
@@ -668,26 +669,26 @@ Action | Format
 --------------------------------------------------------------------------------------------------------------------
 
 ## Parameter Summary
-Parameter             | Prefix  | Constraints                                                                                                                    | Examples
-----------------------|---------|--------------------------------------------------------------------------------------------------------------------------------|------------------------------
-**NAME**              | `n/`    | Alphabets and spaces only; must not be blank. Stored in title case.                                                            | `John Doe`, `Mary Ann`
-**STUDENT_ID**        | `id/`   | Starts with `A`, followed by exactly 7 digits, ends with a letter. Case-insensitive; stored in uppercase.                      | `A0123456X`, `a9876543b`
-**EMAIL**             | `e/`    | Format `local-part@u.nus.edu`. Local part: alphanumeric plus `+`, `_`, `.`, `-`; cannot start or end with a special character. | `e1234567@u.nus.edu`
-**COURSE_ID**         | `crs/`  | Alphanumeric characters only (no spaces or special characters). Stored in uppercase.                                           | `CS2103T`, `MA1521`
-**TUTORIAL_GROUP**    | `tg/`   | Alphanumeric characters only. Stored in uppercase.                                                                             | `T01`, `B03`
-**TELEGRAM_USERNAME** | `tel/`  | Alphanumeric characters and underscores; optional leading `@`; must not be blank. (Optional field)                             | `@johndoe`, `john_doe`
-**PROGRESS**          | `p/`    | One of `on_track`, `needs_attention`, `at_risk`, or `not_set`. Case-insensitive.                                               | `on_track`, `AT_RISK`
-**WEEK**              | `wk/` | Integer from `1` to `13` inclusive.                                                                                            | `1`, `7`, `13`
-**STATUS**            | `s/`  | One of `y` (present), `a` (absent), or `n` (unmarked). Case-insensitive.                                                       | `y`, `a`, `n`
-**ABSENCE_COUNT**     | `abs/`  | Integer from `0` to `13` inclusive.                                                                                            | `0`, `2`, `13`
-**REMARK**            | `txt/`  | Any text up to 100 characters; must not be blank.                                                                              | `Needs help with finals`
-**REMARK_INDEX**      | `r/`    | Positive integer; must not exceed the number of remarks the student currently has.                                             | `1`, `2`
+Parameter             | Prefix  | Constraints                                                                                                                                                                                                                           | Examples
+----------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------
+**NAME**              | `n/`    | Alphabets and spaces only; must not be blank.                                                                                                                                                                                         | `John Doe`, `Mary Ann`
+**STUDENT_ID**        | `id/`   | Starts with `A`, followed by exactly 7 digits, ends with a letter. Case-insensitive; stored in uppercase.                                                                                                                             | `A0123456X`, `a9876543b`
+**EMAIL**             | `e/`    | Should only end with valid NUS domains (`@u.nus.edu`, `@u.duke.nus.edu`, `@u.yale-nus.edu.sg`). The local part before the `@` should be alphanumeric and can contain these special characters: ` . `, ` _ `, ` - `, without any spaces. | `e1234567@u.nus.edu`
+**COURSE_ID**         | `crs/`  | Alphanumeric characters only (no spaces or special characters). Stored in uppercase.                                                                                                                                                  | `CS2103T`, `MA1521`
+**TUTORIAL_GROUP**    | `tg/`   | Alphanumeric characters only.                                                                                                                                                                                                         | `T01`, `B03`
+**TELEGRAM_USERNAME** | `tel/`  | Alphanumeric characters and underscores; optional leading `@`; must not be blank. (Optional field)                                                                                                                                    | `@johndoe`, `john_doe`
+**PROGRESS**          | `p/`    | One of `on_track`, `needs_attention`, `at_risk`, or `not_set`. Case-insensitive.                                                                                                                                                      | `on_track`, `AT_RISK`
+**WEEK**              | `wk/` | Integer from `1` to `13` inclusive.                                                                                                                                                                                                   | `1`, `7`, `13`
+**STATUS**            | `s/`  | One of `y` (present), `a` (absent), or `n` (unmarked). Case-insensitive.                                                                                                                                                              | `y`, `a`, `n`
+**ABSENCE_COUNT**     | `abs/`  | Integer from `0` to `13` inclusive.                                                                                                                                                                                                   | `0`, `2`, `13`
+**REMARK**            | `txt/`  | Any text up to 100 characters; must not be blank.                                                                                                                                                                                     | `Needs help with finals`
+**REMARK_INDEX**      | `r/`    | Positive integer; must not exceed the number of remarks the student currently has.                                                                                                                                                    | `1`, `2`
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## Known issues
-1. Cancelled-week recovery is transient: When a week is cancelled, the app stores previous per-student attendance statuses in memory to allow in-session recovery. However, this transient state is not persisted to disk. As a result, after the application is closed and restarted, recovering the pre-cancellation Y/A/N statuses may not be possible. Consider this when cancelling weeks; if you need to retain historical statuses across restarts, avoid relying on the transient recovery mechanism.
-2. If you minimize the Help Window and then run the help command (or use the Help menu, or the keyboard shortcut F1) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
+1. If you minimize the Help Window and then run the help command (or use the Help menu, or the keyboard shortcut F1) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
+2. Cancelled-week recovery is transient: When a week is cancelled, the app stores previous per-student attendance statuses in memory to allow in-session recovery. However, this transient state is not persisted to disk. As a result, after the application is closed and restarted, recovering the pre-cancellation Y/A/N statuses may not be possible. Consider this when cancelling weeks; if you need to retain historical statuses across restarts, avoid relying on the transient recovery mechanism.
 
 --------------------------------------------------------------------------------------------------------------------
 
